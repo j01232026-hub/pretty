@@ -25,6 +25,7 @@ export default async function handler(req, res) {
 
         // --- Google Calendar 開始 ---
         let insertedBooking = null;
+        let eventUrl = '';
         try {
             if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
                 throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is missing');
@@ -150,7 +151,6 @@ export default async function handler(req, res) {
             };
 
             // 4. 寫入日曆
-            let eventUrl = '';
             try {
                 const { data: calendarEvent } = await calendar.events.insert({
                     calendarId: process.env.GOOGLE_CALENDAR_ID,
@@ -223,6 +223,9 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Submit API Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ 
+            error: 'Internal Server Error', 
+            message: `系統發生未預期的錯誤 (${error.message})` 
+        });
     }
 }
