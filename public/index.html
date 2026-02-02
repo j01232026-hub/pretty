@@ -110,9 +110,19 @@
         // 初始化 LIFF
         async function initializeLiff() {
             try {
-                await liff.init({ liffId: LIFF_ID });
+                // 更新按鈕狀態，讓使用者知道目前進度
+                submitBtn.textContent = '連接 LINE 中...';
+                
+                // 設定 10 秒超時，避免無限等待
+                const initPromise = liff.init({ liffId: LIFF_ID });
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('連線逾時 (Timeout)')), 10000)
+                );
+
+                await Promise.race([initPromise, timeoutPromise]);
                 
                 if (!liff.isLoggedIn()) {
+                    submitBtn.textContent = '登入中...';
                     liff.login();
                     return;
                 }
@@ -126,17 +136,22 @@
                 console.log('LIFF Context:', context);
                 
                 // 顯示目前的權限狀態在畫面上，方便除錯
-                const permissionStatus = await liff.permission.query('chat_message.write');
-                if (permissionStatus.state !== 'granted') {
-                    statusDiv.innerHTML = '⚠️ 缺少發送訊息權限<br><button id="authBtn" style="margin-top:10px;padding:5px 10px;">點此開啟權限</button>';
-                    statusDiv.classList.add('error');
-                    
-                    document.getElementById('authBtn').addEventListener('click', () => {
-                        liff.login({ scope: 'chat_message.write' });
-                    });
-                } else {
-                    statusDiv.textContent = '';
-                    statusDiv.classList.remove('error');
+                try {
+                    const permissionStatus = await liff.permission.query('chat_message.write');
+                    if (permissionStatus.state !== 'granted') {
+                        statusDiv.innerHTML = '⚠️ 缺少發送訊息權限<br><button id="authBtn" style="margin-top:10px;padding:5px 10px;">點此開啟權限</button>';
+                        statusDiv.classList.add('error');
+                        
+                        document.getElementById('authBtn').addEventListener('click', () => {
+                            liff.login({ scope: 'chat_message.write' });
+                        });
+                    } else {
+                        statusDiv.textContent = '';
+                        statusDiv.classList.remove('error');
+                    }
+                } catch (permError) {
+                    console.error('權限檢查失敗 (可能是瀏覽器不支援):', permError);
+                    // 忽略權限檢查錯誤，讓使用者還是可以嘗試送出
                 }
 
                 // 自動填入今天的日期作為預設值（選填）
