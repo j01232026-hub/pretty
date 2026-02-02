@@ -104,18 +104,28 @@
                 
                 // 1. 檢查是否在 LINE App 內部開啟
                 if (!liff.isInClient()) {
-                    log('偵測到外部瀏覽器');
+                    log('偵測到外部瀏覽器 (或非 LIFF 模式)');
+                    
+                    // 隱藏表單，避免誤用
+                    form.style.display = 'none';
+                    
                     statusDiv.innerHTML = `
-                        <div style="color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-                            ⚠️ 建議在 LINE App 中開啟<br>
-                            <button id="openLineBtn" style="width:100%; margin-top:10px; padding:10px; background:#06c755; color:white; border:none; border-radius:4px; font-weight:bold;">
-                                點此喚起 LINE App
-                            </button>
+                        <div style="text-align: center; padding: 20px;">
+                            <h2 style="color: #d32f2f;">⚠️ 開啟方式錯誤</h2>
+                            <p style="color: #555; line-height: 1.6;">
+                                您目前是直接開啟網頁，導致無法連接 LINE 聊天室。<br>
+                                請改用下方的 <strong>LIFF 專用連結</strong> 開啟。
+                            </p>
+                            <a href="https://liff.line.me/${LIFF_ID}" 
+                               style="display: inline-block; margin-top: 15px; padding: 15px 30px; background-color: #06c755; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                🚀 點此正確開啟預約頁面
+                            </a>
+                            <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                                (請直接點擊上方按鈕，或將連結貼到 LINE 聊天室中點擊)
+                            </p>
                         </div>
                     `;
-                    document.getElementById('openLineBtn').addEventListener('click', () => {
-                        window.location.href = `https://liff.line.me/${LIFF_ID}`;
-                    });
+                    return; // 停止後續初始化
                 }
 
                 // 2. 登入檢查
