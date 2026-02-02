@@ -62,40 +62,14 @@ export default async function handler(req, res) {
           console.log('收到預約請求:', userMessage);
 
           // --- Google Calendar 開始 ---
+          let insertedBooking = null;
           try {
             const body = JSON.parse(userMessage);
             const { date, time } = body; // 解構出 date 和 time
 
-            // 0. 內部撞期檢查 (查 Supabase)
-            // 為了防止雙重預約，我們先檢查資料庫是否已經有同一天同一時間的預約紀錄
-            const { data: existingBookings, error: checkError } = await supabase
-                .from('bookings')
-                .select('id')
-                .ilike('message', `%"date": "${date}", "time": "${time}"%`);
-                
-            if (checkError) {
-                console.error('Supabase check error (Webhook):', checkError);
-            } else if (existingBookings && existingBookings.length > 0) {
-                 console.warn('撞期偵測 (Webhook Internal Supabase)！該時段已被佔用。');
-                 // 發送失敗訊息
-                 const replyToken = event.replyToken;
-                 const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-                 if (replyToken && accessToken) {
-                     await axios.post(
-                         'https://api.line.me/v2/bot/message/reply',
-                         {
-                             replyToken: replyToken,
-                             messages: [{
-                                 type: 'text',
-                                 text: `❌ 抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (系統偵測)。`
-                             }]
-                         },
-                         { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` } }
-                     );
-                 }
-                 return res.status(200).send('OK'); // 結束請求
-            }
-
+            // 0. 內部撞期檢查 (查 Supabase) - 改為 "寫入後檢查" 模式 (Optimistic Concurrency Control)
+            // 先不查，直接往下走，利用 Insert 後的再次查詢來確保原子性
+            
             if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
                 throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is missing');
             }
@@ -183,8 +157,8 @@ export default async function handler(req, res) {
                 return res.status(200).send('OK'); // 結束這次請求
             }
 
-            // --- 6. 存入 Supabase (移至撞期檢查後) ---
-            const { error } = await supabase
+            // --- 6. 存入 Supabase (搶先佔位) ---
+            const { data: bookingData, error: insertError } = await supabase
               .from('bookings')
               .insert([
                 {
@@ -193,11 +167,51 @@ export default async function handler(req, res) {
                   created_at: new Date().toISOString(),
                   raw_event: event
                 },
-              ]);
+              ])
+              .select()
+              .single();
 
-            if (error) {
-              console.error('Supabase 寫入錯誤:', error);
-              // Supabase 寫入失敗不應視為致命錯誤，仍嘗試寫入日曆
+            if (insertError) {
+              console.error('Supabase 寫入錯誤:', insertError);
+              throw insertError; // 寫入失敗則直接報錯
+            }
+            insertedBooking = bookingData;
+
+            // --- 6.5 雙重預約檢查 (Compensating Transaction) ---
+            // 寫入後立即查詢該時段的所有預約
+            const { data: duplicateBookings } = await supabase
+                .from('bookings')
+                .select('id, created_at')
+                .ilike('message', `%"date": "${date}", "time": "${time}"%`)
+                .order('created_at', { ascending: true }); // 按時間排序，最先建立的在前面
+
+            if (duplicateBookings && duplicateBookings.length > 1) {
+                // 如果有多筆預約，檢查自己是不是第一筆
+                const firstBooking = duplicateBookings[0];
+                if (firstBooking.id !== insertedBooking.id) {
+                    console.warn(`雙重預約偵測！我 (${insertedBooking.id}) 晚了一步。第一筆是 ${firstBooking.id}`);
+                    
+                    // 補償措施：刪除自己剛寫入的資料
+                    await supabase.from('bookings').delete().eq('id', insertedBooking.id);
+                    
+                    // 回傳失敗訊息
+                    const replyToken = event.replyToken;
+                    const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+                    if (replyToken && accessToken) {
+                        await axios.post(
+                            'https://api.line.me/v2/bot/message/reply',
+                            {
+                                replyToken: replyToken,
+                                messages: [{
+                                    type: 'text',
+                                    text: `❌ 抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (競爭失敗)。`
+                                }]
+                            },
+                            { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` } }
+                        );
+                    }
+                    return res.status(200).send('OK');
+                }
             }
 
             // 3. 建立事件物件
@@ -215,11 +229,11 @@ export default async function handler(req, res) {
             };
 
             // 4. 寫入日曆
-            await calendar.events.insert({
+            const { data: calendarEvent } = await calendar.events.insert({
               calendarId: process.env.GOOGLE_CALENDAR_ID,
               resource: eventData,
             });
-            console.log('Google 日曆寫入成功');
+            console.log('Google 日曆寫入成功', calendarEvent.htmlLink);
 
             // 7. 回覆 LINE 訊息 (只有在日曆寫入成功後才發送)
             const replyToken = event.replyToken;
@@ -250,6 +264,12 @@ export default async function handler(req, res) {
           } catch (googleError) {
             console.error('Google Calendar Error:', googleError);
             
+            // 補償措施：如果日曆寫入失敗，刪除 Supabase 中的預約
+            if (insertedBooking) {
+                console.warn(`日曆寫入失敗，回滾 Supabase 預約 (${insertedBooking.id})...`);
+                await supabase.from('bookings').delete().eq('id', insertedBooking.id);
+            }
+
             // 發生錯誤時，回覆使用者系統忙碌中
             const replyToken = event.replyToken;
             const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;

@@ -20,26 +20,11 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // 0. 內部撞期檢查 (查 Supabase)
-        // 為了防止雙重預約，我們先檢查資料庫是否已經有同一天同一時間的預約紀錄
-        // 由於我們把資料存在 message JSON 字串裡，這裡用簡易的字串比對
-        const { data: existingBookings, error: checkError } = await supabase
-            .from('bookings')
-            .select('id')
-            .ilike('message', `%"date": "${date}", "time": "${time}"%`);
-            
-        if (checkError) {
-            console.error('Supabase check error:', checkError);
-            // 檢查失敗不阻擋，繼續往下
-        } else if (existingBookings && existingBookings.length > 0) {
-             console.warn('撞期偵測 (Internal Supabase)！該時段已被佔用。');
-             return res.status(409).json({ 
-                 error: 'Conflict', 
-                 message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (系統記錄)。` 
-             });
-        }
+        // 0. 內部撞期檢查 (查 Supabase) - 改為 "寫入後檢查" 模式
+        // 先移除這裡的讀取檢查，改用 Optimistic Locking
 
         // --- Google Calendar 開始 ---
+        let insertedBooking = null;
         try {
             if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
                 throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is missing');
@@ -108,24 +93,46 @@ export default async function handler(req, res) {
                 });
             }
 
-            // 1. 寫入 Supabase (移至撞期檢查後)
+            // 1. 寫入 Supabase (搶先佔位)
             const messageStr = `{"action": "book", "date": "${date}", "time": "${time}", "phone": "${phone}"}`;
-            const { error: supabaseError } = await supabase
+            const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
                 .insert([
                     {
                         user_id: userId,
                         message: messageStr,
                         created_at: new Date().toISOString(),
-                        // raw_event: null // 這是直接 API 呼叫，沒有原始 LINE 事件
                     },
-                ]);
+                ])
+                .select()
+                .single();
 
             if (supabaseError) {
                 console.error('Supabase 寫入錯誤:', supabaseError);
-                // 讓前端知道具體的錯誤訊息，方便除錯 (但既然已經通過撞期檢查，這裡選擇不阻擋，或者回傳錯誤？)
-                // 為了保持一致性，如果有 DB 錯誤，最好還是報錯，但日曆寫入邏輯在下面。
-                // 這裡選擇記錄錯誤，繼續寫入日曆 (與 webhook.js 保持一致)
+                throw supabaseError;
+            }
+            insertedBooking = bookingData;
+
+            // 1.5 雙重預約檢查 (Compensating Transaction)
+            const { data: duplicateBookings } = await supabase
+                .from('bookings')
+                .select('id, created_at')
+                .ilike('message', `%"date": "${date}", "time": "${time}"%`)
+                .order('created_at', { ascending: true });
+
+            if (duplicateBookings && duplicateBookings.length > 1) {
+                const firstBooking = duplicateBookings[0];
+                if (firstBooking.id !== insertedBooking.id) {
+                    console.warn(`雙重預約偵測 (API)！我 (${insertedBooking.id}) 晚了一步。第一筆是 ${firstBooking.id}`);
+                    
+                    // 補償措施：刪除自己剛寫入的資料
+                    await supabase.from('bookings').delete().eq('id', insertedBooking.id);
+                    
+                    return res.status(409).json({ 
+                        error: 'Conflict', 
+                        message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (競爭失敗)。` 
+                    });
+                }
             }
 
             // 3. 建立事件物件
@@ -144,11 +151,11 @@ export default async function handler(req, res) {
 
             // 4. 寫入日曆
             try {
-                await calendar.events.insert({
+                const { data: calendarEvent } = await calendar.events.insert({
                     calendarId: process.env.GOOGLE_CALENDAR_ID,
                     resource: event,
                 });
-                console.log('Google 日曆寫入成功 (API)');
+                console.log('Google 日曆寫入成功 (API)', calendarEvent.htmlLink);
             } catch (insertError) {
                 console.error('Google Calendar Insert Failed:', insertError.response?.data || insertError);
                 throw insertError; // 重新拋出錯誤，讓外層 catch 處理
@@ -184,6 +191,13 @@ export default async function handler(req, res) {
 
         } catch (googleError) {
             console.error('Google Calendar Error (API):', googleError);
+            
+            // 補償措施：如果日曆寫入失敗，刪除 Supabase 中的預約
+            if (insertedBooking) {
+                console.warn(`日曆寫入失敗 (API)，回滾 Supabase 預約 (${insertedBooking.id})...`);
+                await supabase.from('bookings').delete().eq('id', insertedBooking.id);
+            }
+
             // 嘗試抓取更詳細的錯誤資訊
             const errorDetails = googleError.response?.data || googleError.message;
             console.error('Detailed Error:', JSON.stringify(errorDetails));
