@@ -121,6 +121,18 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出預約';
                 
+                // 檢查權限 (除錯用)
+                const context = liff.getContext();
+                console.log('LIFF Context:', context);
+                
+                // 顯示目前的權限狀態在畫面上，方便除錯
+                const permissionStatus = await liff.permission.query('chat_message.write');
+                if (permissionStatus.state !== 'granted') {
+                    statusDiv.textContent = '⚠️ 缺少發送訊息權限，正在嘗試請求...';
+                    statusDiv.classList.add('error');
+                    // 這裡不自動執行，避免無限迴圈，但提示使用者
+                }
+
                 // 自動填入今天的日期作為預設值（選填）
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('date').min = today;
