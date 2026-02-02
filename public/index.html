@@ -299,12 +299,23 @@
                 }
 
                 // 成功處理
-                statusDiv.textContent = '✅ 預約成功！視窗即將關閉';
                 statusDiv.className = 'success';
-                
-                setTimeout(() => {
-                    liff.closeWindow();
-                }, 2000);
+
+                if (liff.isInClient()) {
+                    statusDiv.textContent = '✅ 預約成功！視窗即將關閉';
+                    setTimeout(() => {
+                        liff.closeWindow();
+                    }, 2000);
+                } else {
+                    // 在外部瀏覽器 (Chrome/Safari) 無法自動關閉，提示使用者手動關閉
+                    statusDiv.textContent = '✅ 預約成功！請手動關閉此頁面';
+                    submitBtn.textContent = '預約完成';
+                    
+                    // 嘗試關閉 (雖然現代瀏覽器通常會擋)
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
+                }
 
             } catch (error) {
                 console.error('Submission Error:', error);
