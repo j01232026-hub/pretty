@@ -1,3 +1,4 @@
+import { google } from 'googleapis';
 const crypto = require('crypto');
 const axios = require('axios');
 const supabase = require('../../lib/supabaseClient');
@@ -77,6 +78,58 @@ export default async function handler(req, res) {
             // 就算資料庫存失敗，可能還是要回覆使用者，或者不回覆視為失敗
             // 這裡選擇繼續嘗試回覆
           }
+
+          // --- Google Calendar 開始 ---
+          try {
+            const body = JSON.parse(userMessage);
+            
+            // 1. 初始化 Google 日曆 API
+            const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+            const jwtClient = new google.auth.JWT(
+              serviceAccountKey.client_email,
+              null,
+              serviceAccountKey.private_key,
+              ['https://www.googleapis.com/auth/calendar']
+            );
+            const calendar = google.calendar({ version: 'v3', auth: jwtClient });
+
+            // 2. 準備時間
+            // 格式: 2023-10-20T10:00:00
+            const startDateTime = `${body.date}T${body.time}:00`;
+            
+            // 計算結束時間 (加 1 小時)
+            const startDateObj = new Date(startDateTime);
+            const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
+            // 轉回 ISO 格式並去掉毫秒與 Z，保持 "YYYY-MM-DDTHH:mm:ss" 結構
+            // 這樣搭配 timeZone: 'Asia/Taipei' 才會被視為當地時間
+            const endDateTime = endDateObj.toISOString().split('.')[0];
+
+            // 3. 建立事件物件
+            const event = {
+              summary: `【新預約】${body.phone}`,
+              description: `透過 LINE 預約系統建立`,
+              start: {
+                dateTime: startDateTime,
+                timeZone: 'Asia/Taipei',
+              },
+              end: {
+                dateTime: endDateTime,
+                timeZone: 'Asia/Taipei',
+              },
+            };
+
+            // 4. 寫入日曆
+            await calendar.events.insert({
+              calendarId: process.env.GOOGLE_CALENDAR_ID,
+              resource: event,
+            });
+            console.log('Google 日曆寫入成功');
+
+          } catch (googleError) {
+            console.error('Google Calendar Error:', googleError);
+            // 不阻擋後續 LINE 回覆，僅紀錄錯誤
+          }
+          // --- Google Calendar 結束 ---
 
           // 7. 回覆 LINE 訊息
           const replyToken = event.replyToken;
