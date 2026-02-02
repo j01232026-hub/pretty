@@ -12,56 +12,17 @@
             margin: 0 auto;
             background-color: #f5f5f5;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input, select {
-            width: 100%;
+        /* ... existing styles ... */
+        .debug-box {
+            background: #333;
+            color: #0f0;
             padding: 10px;
-            border: 1px solid #ddd;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
             border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #06c755;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:disabled {
-            background-color: #ccc;
-        }
-        #status {
-            margin-top: 15px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-        .error {
-            color: #d32f2f;
+            word-break: break-all;
+            display: block; /* 預設顯示，方便除錯 */
         }
     </style>
 </head>
@@ -69,6 +30,7 @@
     <div class="container">
         <h1>預約服務</h1>
         <form id="bookingForm">
+            <!-- ... form fields ... -->
             <div class="form-group">
                 <label for="date">日期</label>
                 <input type="date" id="date" required>
@@ -95,6 +57,9 @@
             <button type="submit" id="submitBtn" disabled>載入中...</button>
         </form>
         <div id="status"></div>
+        
+        <!-- 除錯訊息區 -->
+        <div id="debugLog" class="debug-box">系統初始化中...</div>
     </div>
 
     <!-- 載入 LINE LIFF SDK -->
@@ -106,89 +71,102 @@
         const submitBtn = document.getElementById('submitBtn');
         const statusDiv = document.getElementById('status');
         const form = document.getElementById('bookingForm');
+        const debugEl = document.getElementById('debugLog');
+
+        // 除錯日誌功能
+        function log(msg, isError = false) {
+            console.log(msg);
+            const time = new Date().toLocaleTimeString();
+            const color = isError ? 'red' : '#0f0';
+            debugEl.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
+        }
+
+        window.onerror = function(msg, url, line) {
+            log(`全域錯誤: ${msg} (行號:${line})`, true);
+            return false;
+        };
 
         // 初始化 LIFF
         async function initializeLiff() {
             try {
-                // 更新按鈕狀態，讓使用者知道目前進度
+                log(`開始初始化 LIFF ID: ${LIFF_ID}`);
                 submitBtn.textContent = '連接 LINE 中...';
                 
-                // 設定 5 秒超時
+                // 設定 10 秒超時 (放寬一點)
                 const initPromise = liff.init({ liffId: LIFF_ID });
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('連線逾時 (Timeout)')), 5000)
+                    setTimeout(() => reject(new Error('連線逾時 (Timeout 10s)')), 10000)
                 );
 
                 await Promise.race([initPromise, timeoutPromise]);
+                log('LIFF 初始化成功');
+                log(`InClient: ${liff.isInClient()}, LoggedIn: ${liff.isLoggedIn()}`);
                 
-                // 1. 優先檢查：是否在 LINE App 內部開啟
+                // 1. 檢查是否在 LINE App 內部開啟
                 if (!liff.isInClient()) {
+                    log('偵測到外部瀏覽器');
                     statusDiv.innerHTML = `
                         <div style="color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-                            ⚠️ 偵測到您在外部瀏覽器開啟<br>
-                            此功能需要 LINE 的完整支援。<br>
+                            ⚠️ 建議在 LINE App 中開啟<br>
                             <button id="openLineBtn" style="width:100%; margin-top:10px; padding:10px; background:#06c755; color:white; border:none; border-radius:4px; font-weight:bold;">
-                                點此在 LINE App 中開啟
+                                點此喚起 LINE App
                             </button>
                         </div>
                     `;
                     document.getElementById('openLineBtn').addEventListener('click', () => {
-                        // 使用 LIFF Deep Link 喚起 LINE
                         window.location.href = `https://liff.line.me/${LIFF_ID}`;
                     });
-                    
-                    // 雖然在外部，我們還是讓他可以登入看看，但主要引導去 App
-                    if (!liff.isLoggedIn()) {
-                        submitBtn.textContent = '登入中...';
-                        liff.login();
-                        return;
-                    }
-                } else {
-                    // 在 LINE App 內，正常檢查登入狀態
-                    if (!liff.isLoggedIn()) {
-                        submitBtn.textContent = '登入中...';
-                        liff.login();
-                        return;
-                    }
                 }
 
-                // 初始化成功，啟用按鈕
-                submitBtn.disabled = false;
-                submitBtn.textContent = '送出預約';
-                
-                // 檢查權限 (僅在 LINE App 內才有意義)
+                // 2. 登入檢查
+                if (!liff.isLoggedIn()) {
+                    log('尚未登入，執行 login()...');
+                    submitBtn.textContent = '登入中...';
+                    liff.login(); // 這裡會跳轉
+                    return;
+                }
+
+                // 3. 權限檢查
+                log('開始檢查權限...');
                 const context = liff.getContext();
-                console.log('LIFF Context:', context);
+                log(`Context Type: ${context?.type}`);
                 
-                // 顯示目前的權限狀態在畫面上，方便除錯
                 try {
                     const permissionStatus = await liff.permission.query('chat_message.write');
+                    log(`權限狀態: ${permissionStatus.state}`);
+                    
                     if (permissionStatus.state !== 'granted') {
+                        log('權限未授權，顯示手動按鈕');
                         statusDiv.innerHTML = '⚠️ 缺少發送訊息權限<br><button id="authBtn" style="margin-top:10px;padding:5px 10px;">點此開啟權限</button>';
                         statusDiv.classList.add('error');
                         
                         document.getElementById('authBtn').addEventListener('click', () => {
+                            log('使用者點擊授權按鈕');
                             liff.login({ scope: 'chat_message.write' });
                         });
-                    } else {
-                        statusDiv.textContent = '';
-                        statusDiv.classList.remove('error');
                     }
                 } catch (permError) {
-                    console.error('權限檢查失敗 (可能是瀏覽器不支援):', permError);
-                    // 忽略權限檢查錯誤，讓使用者還是可以嘗試送出
+                    log(`權限檢查略過: ${permError.message}`);
                 }
 
-                // 自動填入今天的日期作為預設值（選填）
+                // 初始化完成
+                submitBtn.disabled = false;
+                submitBtn.textContent = '送出預約';
+                log('系統準備就緒');
+                
+                // 自動填入日期
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('date').min = today;
 
             } catch (error) {
-                console.error('LIFF 初始化失敗:', error);
-                statusDiv.textContent = '初始化失敗，請檢查 LIFF ID 設定';
+                log(`初始化嚴重錯誤: ${error.message}`, true);
+                log(`Stack: ${error.stack}`, true);
+                statusDiv.textContent = '系統初始化失敗，請截圖此畫面回報';
                 statusDiv.classList.add('error');
+                submitBtn.textContent = '發生錯誤';
             }
         }
+
 
         // 處理表單送出
         form.addEventListener('submit', async (e) => {
