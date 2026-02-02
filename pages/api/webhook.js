@@ -82,25 +82,37 @@ export default async function handler(req, res) {
           // --- Google Calendar 開始 ---
           try {
             const body = JSON.parse(userMessage);
+
+            if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+                throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is missing');
+            }
             
             // 1. 初始化 Google 日曆 API
             const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
             
-            // 修正私鑰格式 (處理 Vercel 環境變數中的換行符號問題)
+            // 除錯日誌：檢查金鑰結構 (隱藏敏感資訊)
+            console.log('Google Credentials Keys:', Object.keys(serviceAccountKey));
+            if (!serviceAccountKey.private_key) {
+                throw new Error('Missing private_key in GOOGLE_SERVICE_ACCOUNT_KEY');
+            }
+
+            // 修正私鑰格式
             const privateKey = serviceAccountKey.private_key.replace(/\\n/g, '\n');
 
-            const jwtClient = new google.auth.JWT(
-              serviceAccountKey.client_email,
-              null,
-              privateKey,
-              ['https://www.googleapis.com/auth/calendar']
-            );
+            const auth = new google.auth.GoogleAuth({
+                credentials: {
+                    client_email: serviceAccountKey.client_email,
+                    private_key: privateKey,
+                    project_id: serviceAccountKey.project_id, // optional but good practice
+                },
+                scopes: ['https://www.googleapis.com/auth/calendar'],
+            });
             
-            // 明確執行授權
-            await jwtClient.authorize();
+            // 取得已授權的客戶端
+            const authClient = await auth.getClient();
             console.log('Google Auth 授權成功');
 
-            const calendar = google.calendar({ version: 'v3', auth: jwtClient });
+            const calendar = google.calendar({ version: 'v3', auth: authClient });
 
             // 2. 準備時間
             // 格式: 2023-10-20T10:00:00
