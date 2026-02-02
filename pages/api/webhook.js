@@ -61,24 +61,6 @@ export default async function handler(req, res) {
         if (userMessage.includes('{"action": "book"}')) {
           console.log('收到預約請求:', userMessage);
 
-          // 6. 存入 Supabase
-          const { error } = await supabase
-            .from('bookings') // 假設資料表叫做 bookings
-            .insert([
-              {
-                user_id: event.source.userId,
-                message: userMessage,
-                created_at: new Date().toISOString(),
-                raw_event: event
-              },
-            ]);
-
-          if (error) {
-            console.error('Supabase 寫入錯誤:', error);
-            // 就算資料庫存失敗，可能還是要回覆使用者，或者不回覆視為失敗
-            // 這裡選擇繼續嘗試回覆
-          }
-
           // --- Google Calendar 開始 ---
           try {
             const body = JSON.parse(userMessage);
@@ -125,8 +107,67 @@ export default async function handler(req, res) {
             // 這樣搭配 timeZone: 'Asia/Taipei' 才會被視為當地時間
             const endDateTime = endDateObj.toISOString().split('.')[0];
 
+            // --- 新增：寫入前的最後檢查 ---
+            console.log('正在進行寫入前的最後撞期檢查...');
+            const checkResponse = await calendar.freebusy.query({
+                resource: {
+                    timeMin: startDateTime, // ISO 格式
+                    timeMax: endDateTime,   // ISO 格式
+                    timeZone: 'Asia/Taipei',
+                    items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
+                },
+            });
+
+            const busySlots = checkResponse.data.calendars[process.env.GOOGLE_CALENDAR_ID].busy;
+
+            // 如果 busySlots 陣列長度大於 0，表示這個時段已經有行程了
+            if (busySlots.length > 0) {
+                console.warn('撞期偵測！該時段已被佔用，拒絕寫入。');
+                
+                // 呼叫 LINE Reply API 發送失敗訊息
+                const replyToken = event.replyToken;
+                const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+                
+                if (replyToken && accessToken) {
+                    await axios.post(
+                        'https://api.line.me/v2/bot/message/reply',
+                        {
+                            replyToken: replyToken,
+                            messages: [{
+                                type: 'text',
+                                text: `❌ 抱歉！您選擇的時段 [${body.date} ${body.time}] 剛剛被搶先預約了。\n\n請重新開啟預約頁面選擇其他時段，謝謝您的體諒。`
+                            }]
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                        }
+                    );
+                }
+                
+                return res.status(200).send('OK'); // 結束這次請求
+            }
+
+            // --- 6. 存入 Supabase (移至撞期檢查後) ---
+            const { error } = await supabase
+              .from('bookings')
+              .insert([
+                {
+                  user_id: event.source.userId,
+                  message: userMessage,
+                  created_at: new Date().toISOString(),
+                  raw_event: event
+                },
+              ]);
+
+            if (error) {
+              console.error('Supabase 寫入錯誤:', error);
+            }
+
             // 3. 建立事件物件
-            const event = {
+            const eventData = {
               summary: `【新預約】${body.phone}`,
               description: `透過 LINE 預約系統建立`,
               start: {
@@ -142,7 +183,7 @@ export default async function handler(req, res) {
             // 4. 寫入日曆
             await calendar.events.insert({
               calendarId: process.env.GOOGLE_CALENDAR_ID,
-              resource: event,
+              resource: eventData,
             });
             console.log('Google 日曆寫入成功');
 
