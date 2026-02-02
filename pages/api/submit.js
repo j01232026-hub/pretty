@@ -150,12 +150,14 @@ export default async function handler(req, res) {
             };
 
             // 4. 寫入日曆
+            let eventUrl = '';
             try {
                 const { data: calendarEvent } = await calendar.events.insert({
                     calendarId: process.env.GOOGLE_CALENDAR_ID,
                     resource: event,
                 });
-                console.log('Google 日曆寫入成功 (API)', calendarEvent.htmlLink);
+                eventUrl = calendarEvent.htmlLink;
+                console.log('Google 日曆寫入成功 (API)', eventUrl);
             } catch (insertError) {
                 console.error('Google Calendar Insert Failed:', insertError.response?.data || insertError);
                 throw insertError; // 重新拋出錯誤，讓外層 catch 處理
@@ -211,7 +213,11 @@ export default async function handler(req, res) {
         }
         // --- Google Calendar 結束 ---
 
-        return res.status(200).json({ success: true, message: 'Booking saved' });
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Booking saved', 
+            eventUrl: eventUrl 
+        });
 
     } catch (error) {
         console.error('Submit API Error:', error);
