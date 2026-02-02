@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
+import { google } from 'googleapis';
 
 // 初始化 Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -38,6 +39,53 @@ export default async function handler(req, res) {
             // 讓前端知道具體的錯誤訊息，方便除錯
             return res.status(500).json({ error: 'Database error', details: error.message });
         }
+
+        // --- Google Calendar 開始 ---
+        try {
+            // 1. 初始化 Google 日曆 API
+            const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+            const jwtClient = new google.auth.JWT(
+                serviceAccountKey.client_email,
+                null,
+                serviceAccountKey.private_key,
+                ['https://www.googleapis.com/auth/calendar']
+            );
+            const calendar = google.calendar({ version: 'v3', auth: jwtClient });
+
+            // 2. 準備時間
+            const startDateTime = `${date}T${time}:00`;
+            
+            // 計算結束時間 (加 1 小時)
+            const startDateObj = new Date(startDateTime);
+            const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
+            const endDateTime = endDateObj.toISOString().split('.')[0];
+
+            // 3. 建立事件物件
+            const event = {
+                summary: `【新預約】${phone}`,
+                description: `透過 LINE 預約系統建立 (API)`,
+                start: {
+                    dateTime: startDateTime,
+                    timeZone: 'Asia/Taipei',
+                },
+                end: {
+                    dateTime: endDateTime,
+                    timeZone: 'Asia/Taipei',
+                },
+            };
+
+            // 4. 寫入日曆
+            await calendar.events.insert({
+                calendarId: process.env.GOOGLE_CALENDAR_ID,
+                resource: event,
+            });
+            console.log('Google 日曆寫入成功 (API)');
+
+        } catch (googleError) {
+            console.error('Google Calendar Error (API):', googleError);
+            // 不阻擋後續回覆
+        }
+        // --- Google Calendar 結束 ---
 
         // 2. 嘗試發送 Push Message 通知使用者 (替代 Reply Message)
         const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
