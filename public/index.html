@@ -7,22 +7,90 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
             background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        /* ... existing styles ... */
-        .debug-box {
-            background: #333;
-            color: #0f0;
-            padding: 10px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            border-radius: 4px;
-            word-break: break-all;
-            display: block; /* 預設顯示，方便除錯 */
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #06c755;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #06c755;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #05b34c;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        .error {
+            color: #d32f2f;
+        }
+        .success {
+            color: #06c755;
+            font-weight: bold;
+        }
+        /* 隱藏未初始化完成的表單 */
+        #bookingForm {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        #bookingForm.visible {
+            opacity: 1;
         }
     </style>
 </head>
@@ -30,7 +98,6 @@
     <div class="container">
         <h1>預約服務</h1>
         <form id="bookingForm">
-            <!-- ... form fields ... -->
             <div class="form-group">
                 <label for="date">日期</label>
                 <input type="date" id="date" required>
@@ -57,126 +124,43 @@
             <button type="submit" id="submitBtn" disabled>載入中...</button>
         </form>
         <div id="status"></div>
-        
-        <!-- 除錯訊息區 -->
-        <div id="debugLog" class="debug-box">系統初始化中...</div>
     </div>
 
-    <!-- 載入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // TODO: 請在此填入您的 LIFF ID
         const LIFF_ID = '2009027968-7nFLpFJt';
-
         const submitBtn = document.getElementById('submitBtn');
         const statusDiv = document.getElementById('status');
         const form = document.getElementById('bookingForm');
-        const debugEl = document.getElementById('debugLog');
-
-        // 除錯日誌功能
-        function log(msg, isError = false) {
-            console.log(msg);
-            const time = new Date().toLocaleTimeString();
-            const color = isError ? 'red' : '#0f0';
-            debugEl.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
-        }
-
-        window.onerror = function(msg, url, line) {
-            log(`全域錯誤: ${msg} (行號:${line})`, true);
-            return false;
-        };
 
         // 初始化 LIFF
         async function initializeLiff() {
             try {
-                log(`開始初始化 LIFF ID: ${LIFF_ID}`);
-                submitBtn.textContent = '連接 LINE 中...';
-                
-                // 設定 10 秒超時 (放寬一點)
-                const initPromise = liff.init({ liffId: LIFF_ID });
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('連線逾時 (Timeout 10s)')), 10000)
-                );
+                await liff.init({ liffId: LIFF_ID });
 
-                await Promise.race([initPromise, timeoutPromise]);
-                log('LIFF 初始化成功');
-                log(`InClient: ${liff.isInClient()}, LoggedIn: ${liff.isLoggedIn()}`);
-                
-                // 1. 檢查是否在 LINE App 內部開啟
-                if (!liff.isInClient()) {
-                    log('偵測到外部瀏覽器 (或非 LIFF 模式)');
-                    
-                    // 隱藏表單，避免誤用
-                    form.style.display = 'none';
-                    
-                    statusDiv.innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <h2 style="color: #d32f2f;">⚠️ 開啟方式錯誤</h2>
-                            <p style="color: #555; line-height: 1.6;">
-                                您目前是直接開啟網頁，導致無法連接 LINE 聊天室。<br>
-                                請改用下方的 <strong>LIFF 專用連結</strong> 開啟。
-                            </p>
-                            <a href="https://liff.line.me/${LIFF_ID}" 
-                               style="display: inline-block; margin-top: 15px; padding: 15px 30px; background-color: #06c755; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                🚀 點此正確開啟預約頁面
-                            </a>
-                            <p style="margin-top: 20px; font-size: 12px; color: #999;">
-                                (請直接點擊上方按鈕，或將連結貼到 LINE 聊天室中點擊)
-                            </p>
-                        </div>
-                    `;
-                    return; // 停止後續初始化
-                }
-
-                // 2. 登入檢查
+                // 檢查是否已登入
                 if (!liff.isLoggedIn()) {
-                    log('尚未登入，執行 login()...');
-                    submitBtn.textContent = '登入中...';
-                    liff.login(); // 這裡會跳轉
+                    liff.login();
                     return;
                 }
 
-                // 3. 權限檢查
-                log('開始檢查權限...');
-                const context = liff.getContext();
-                log(`Context Type: ${context?.type}`);
-                
-                try {
-                    const permissionStatus = await liff.permission.query('chat_message.write');
-                    log(`權限狀態: ${permissionStatus.state}`);
-                    
-                    if (permissionStatus.state !== 'granted') {
-                        log('權限未授權，顯示手動按鈕');
-                        statusDiv.innerHTML = '⚠️ 缺少發送訊息權限<br><button id="authBtn" style="margin-top:10px;padding:5px 10px;">點此開啟權限</button>';
-                        statusDiv.classList.add('error');
-                        
-                        document.getElementById('authBtn').addEventListener('click', () => {
-                            log('使用者點擊授權按鈕');
-                            liff.login({ scope: 'chat_message.write' });
-                        });
-                    }
-                } catch (permError) {
-                    log(`權限檢查略過: ${permError.message}`);
-                }
-
-                // 初始化完成
+                // 準備就緒
+                form.classList.add('visible');
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出預約';
-                log('系統準備就緒');
-                
-                // 自動填入日期
+
+                // 自動填入今日日期 (限制不能選過去日期)
                 const today = new Date().toISOString().split('T')[0];
-                document.getElementById('date').min = today;
+                const dateInput = document.getElementById('date');
+                dateInput.min = today;
+                dateInput.value = today;
 
             } catch (error) {
-                log(`初始化嚴重錯誤: ${error.message}`, true);
-                log(`Stack: ${error.stack}`, true);
-                statusDiv.textContent = '系統初始化失敗，請截圖此畫面回報';
-                statusDiv.classList.add('error');
-                submitBtn.textContent = '發生錯誤';
+                console.error('LIFF Init Error:', error);
+                statusDiv.textContent = '系統載入失敗，請重新整理';
+                statusDiv.className = 'error';
             }
         }
-
 
         // 處理表單送出
         form.addEventListener('submit', async (e) => {
@@ -185,105 +169,71 @@
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value;
             const phone = document.getElementById('phone').value;
-
-            // 準備要傳送的 JSON 資料
-            const bookingData = {
-                action: "book",
-                date: date,
-                time: time,
-                phone: phone
-            };
-
-            // 轉成字串
+            const bookingData = { action: "book", date, time, phone };
             const messageText = JSON.stringify(bookingData);
 
             submitBtn.disabled = true;
-            submitBtn.textContent = '傳送中...';
+            submitBtn.textContent = '處理中...';
+            statusDiv.textContent = '';
 
             try {
-                // 判斷是否可以使用 liff.sendMessages
-                // 條件：在 Client 內 且 Context 類型不是 none 且 權限已授權
-                const context = liff.getContext();
-                const permission = await liff.permission.query('chat_message.write');
-                const canSendInChat = liff.isInClient() && 
-                                      context && context.type !== 'none' && 
-                                      permission.state === 'granted';
+                let sentViaChat = false;
 
-                if (canSendInChat) {
-                    log('嘗試使用 liff.sendMessages 發送...');
-                    await liff.sendMessages([
-                        {
-                            type: 'text',
-                            text: messageText
+                // 嘗試 1: 使用 liff.sendMessages
+                // 條件: 在 Client 內 + 有 Context + 有權限
+                if (liff.isInClient()) {
+                    const context = liff.getContext();
+                    // 靜默檢查權限，不打擾使用者
+                    const permission = await liff.permission.query('chat_message.write');
+                    
+                    if (context && context.type !== 'none' && permission.state === 'granted') {
+                        try {
+                            await liff.sendMessages([{ type: 'text', text: messageText }]);
+                            sentViaChat = true;
+                            console.log('Sent via LINE Chat');
+                        } catch (err) {
+                            console.warn('sendMessages failed, falling back to API', err);
                         }
-                    ]);
-                    log('liff.sendMessages 成功');
-                } else {
-                    log(`無法使用訊息發送 (Context: ${context?.type}, Perm: ${permission.state})`);
-                    log('改用 API 直接寫入資料庫...');
-                    
-                    // 取得使用者 ID
-                    const profile = await liff.getProfile().catch(e => {
-                        log('無法取得 Profile: ' + e);
-                        return null;
-                    });
-                    
-                    // 如果無法取得 profile，嘗試從 decodedIDToken 拿 sub
-                    const userId = profile?.userId || liff.getDecodedIDToken()?.sub;
-
-                    if (!userId) {
-                        throw new Error('無法識別使用者身分 (User ID)');
                     }
-
-                    // 呼叫後端 API
-                    const response = await fetch('/api/submit', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            userId: userId,
-                            date: date,
-                            time: time,
-                            phone: phone
-                        })
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`API 回傳錯誤: ${response.status} - ${errorData.details || errorData.error}`);
-                    }
-                    log('API 寫入成功');
                 }
 
-                statusDiv.textContent = '✅ 預約資料已送出！';
-                statusDiv.classList.remove('error');
-                statusDiv.style.color = 'green';
+                // 嘗試 2: 如果沒透過 Chat 發送 (可能是在外部瀏覽器、或是沒權限、或是發送失敗)，則走 API
+                if (!sentViaChat) {
+                    console.log('Using API fallback');
+                    // 取得 User ID (一定有，因為前面檢查過 isLoggedIn)
+                    const profile = await liff.getProfile().catch(() => null);
+                    const userId = profile?.userId || liff.getDecodedIDToken()?.sub;
+
+                    if (!userId) throw new Error('無法識別使用者');
+
+                    const response = await fetch('/api/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, ...bookingData }) // 解構 bookingData 包含 date, time, phone
+                    });
+
+                    if (!response.ok) throw new Error('伺服器連線錯誤');
+                }
+
+                // 成功處理
+                statusDiv.textContent = '✅ 預約成功！視窗即將關閉';
+                statusDiv.className = 'success';
                 
-                // 延遲一下讓使用者看到成功訊息
                 setTimeout(() => {
                     liff.closeWindow();
                 }, 2000);
 
             } catch (error) {
-                log('流程失敗: ' + error.message, true);
-                console.error('訊息發送失敗:', error);
-                
-                statusDiv.textContent = '發送失敗: ' + error.message;
-                statusDiv.classList.add('error');
+                console.error('Submission Error:', error);
+                statusDiv.textContent = '發生錯誤，請稍後再試';
+                statusDiv.className = 'error';
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出預約';
             }
         });
 
-        // 執行初始化
-        // 確保在 DOM 載入後執行，雖然放在 body 底部通常沒問題，但為了保險起見
-        if (LIFF_ID === 'YOUR_LIFF_ID_HERE') {
-            statusDiv.textContent = '請在程式碼中設定正確的 LIFF ID';
-            statusDiv.classList.add('error');
-        } else {
-            initializeLiff();
-        }
+        // 啟動
+        initializeLiff();
     </script>
 </body>
 </html>
