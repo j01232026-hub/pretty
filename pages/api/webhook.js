@@ -97,22 +97,24 @@ export default async function handler(req, res) {
             const calendar = google.calendar({ version: 'v3', auth: authClient });
 
             // 2. 準備時間
-            // 格式: 2023-10-20T10:00:00
-            const startDateTime = `${body.date}T${body.time}:00`;
+            // 確保格式為 RFC3339 (含時區 +08:00)
+            const startDateTime = `${body.date}T${body.time}:00+08:00`;
             
             // 計算結束時間 (加 1 小時)
             const startDateObj = new Date(startDateTime);
             const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
-            // 轉回 ISO 格式並去掉毫秒與 Z，保持 "YYYY-MM-DDTHH:mm:ss" 結構
-            // 這樣搭配 timeZone: 'Asia/Taipei' 才會被視為當地時間
-            const endDateTime = endDateObj.toISOString().split('.')[0];
+            
+            // 轉換為台北時間格式字串 (+08:00)
+            const tempDate = new Date(endDateObj.getTime());
+            tempDate.setUTCHours(tempDate.getUTCHours() + 8);
+            const endDateTime = tempDate.toISOString().replace('Z', '+08:00');
 
             // --- 新增：寫入前的最後檢查 ---
-            console.log('正在進行寫入前的最後撞期檢查...');
+            console.log(`正在進行寫入前的最後撞期檢查 (Webhook)... Start: ${startDateTime}, End: ${endDateTime}`);
             const checkResponse = await calendar.freebusy.query({
                 resource: {
-                    timeMin: startDateTime, // ISO 格式
-                    timeMax: endDateTime,   // ISO 格式
+                    timeMin: startDateTime,
+                    timeMax: endDateTime,
                     timeZone: 'Asia/Taipei',
                     items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
                 },

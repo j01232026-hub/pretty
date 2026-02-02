@@ -56,19 +56,25 @@ export default async function handler(req, res) {
             const calendar = google.calendar({ version: 'v3', auth: authClient });
 
             // 2. 準備時間
-            const startDateTime = `${date}T${time}:00`;
+            // 確保格式為 RFC3339 (含時區 +08:00)
+            const startDateTime = `${date}T${time}:00+08:00`;
             
             // 計算結束時間 (加 1 小時)
             const startDateObj = new Date(startDateTime);
             const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
-            const endDateTime = endDateObj.toISOString().split('.')[0];
+            
+            // 轉換為台北時間格式字串
+            // 技巧：先將時間加 8 小時，轉成 UTC ISO 字串，再把 Z 換成 +08:00
+            const tempDate = new Date(endDateObj.getTime());
+            tempDate.setUTCHours(tempDate.getUTCHours() + 8);
+            const endDateTime = tempDate.toISOString().replace('Z', '+08:00');
 
             // --- 新增：寫入前的最後檢查 ---
-            console.log('正在進行寫入前的最後撞期檢查 (API)...');
+            console.log(`正在進行寫入前的最後撞期檢查 (API)... Start: ${startDateTime}, End: ${endDateTime}`);
             const checkResponse = await calendar.freebusy.query({
                 resource: {
-                    timeMin: startDateTime, // ISO 格式
-                    timeMax: endDateTime,   // ISO 格式
+                    timeMin: startDateTime,
+                    timeMax: endDateTime,
                     timeZone: 'Asia/Taipei',
                     items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
                 },
@@ -160,10 +166,15 @@ export default async function handler(req, res) {
 
         } catch (googleError) {
             console.error('Google Calendar Error (API):', googleError);
+            // 嘗試抓取更詳細的錯誤資訊
+            const errorDetails = googleError.response?.data || googleError.message;
+            console.error('Detailed Error:', JSON.stringify(errorDetails));
+
             // 關鍵修改：如果 Google API 失敗，回傳 500 給前端，讓前端顯示錯誤
             return res.status(500).json({ 
                 error: 'Calendar Error', 
-                message: '系統發生暫時性錯誤 (Calendar)，請稍後再試' 
+                message: `日曆連線失敗 (${googleError.message})`,
+                details: errorDetails
             });
         }
         // --- Google Calendar 結束 ---
