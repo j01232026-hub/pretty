@@ -257,45 +257,25 @@
             statusDiv.textContent = '';
 
             try {
-                let sentViaChat = false;
+                // 不再使用 liff.sendMessages 發送 JSON 字串到聊天室
+                // 改為統一呼叫後端 API 處理，避免使用者看到奇怪的 JSON 代碼
+                
+                console.log('Using API for submission');
+                // 取得 User ID (一定有，因為前面檢查過 isLoggedIn)
+                const profile = await liff.getProfile().catch(() => null);
+                const userId = profile?.userId || liff.getDecodedIDToken()?.sub;
 
-                // 嘗試 1: 使用 liff.sendMessages
-                // 條件: 在 Client 內 + 有 Context + 有權限
-                if (liff.isInClient()) {
-                    const context = liff.getContext();
-                    // 靜默檢查權限，不打擾使用者
-                    const permission = await liff.permission.query('chat_message.write');
-                    
-                    if (context && context.type !== 'none' && permission.state === 'granted') {
-                        try {
-                            await liff.sendMessages([{ type: 'text', text: messageText }]);
-                            sentViaChat = true;
-                            console.log('Sent via LINE Chat');
-                        } catch (err) {
-                            console.warn('sendMessages failed, falling back to API', err);
-                        }
-                    }
-                }
+                if (!userId) throw new Error('無法識別使用者');
 
-                // 嘗試 2: 如果沒透過 Chat 發送 (可能是在外部瀏覽器、或是沒權限、或是發送失敗)，則走 API
-                if (!sentViaChat) {
-                    console.log('Using API fallback');
-                    // 取得 User ID (一定有，因為前面檢查過 isLoggedIn)
-                    const profile = await liff.getProfile().catch(() => null);
-                    const userId = profile?.userId || liff.getDecodedIDToken()?.sub;
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, ...bookingData }) // 解構 bookingData 包含 date, time, phone
+                });
 
-                    if (!userId) throw new Error('無法識別使用者');
-
-                    const response = await fetch('/api/submit', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId, ...bookingData }) // 解構 bookingData 包含 date, time, phone
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.message || '伺服器連線錯誤');
-                    }
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || '伺服器連線錯誤');
                 }
 
                 // 成功處理
