@@ -35,7 +35,8 @@ export default async function handler(req, res) {
 
         if (error) {
             console.error('Supabase 寫入錯誤:', error);
-            return res.status(500).json({ error: 'Database error' });
+            // 讓前端知道具體的錯誤訊息，方便除錯
+            return res.status(500).json({ error: 'Database error', details: error.message });
         }
 
         // 2. 嘗試發送 Push Message 通知使用者 (替代 Reply Message)

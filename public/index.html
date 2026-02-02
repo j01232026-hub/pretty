@@ -250,7 +250,8 @@
                     });
 
                     if (!response.ok) {
-                        throw new Error('API 回傳錯誤: ' + response.status);
+                        const errorData = await response.json();
+                        throw new Error(`API 回傳錯誤: ${response.status} - ${errorData.details || errorData.error}`);
                     }
                     log('API 寫入成功');
                 }
