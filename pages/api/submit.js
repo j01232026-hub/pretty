@@ -35,7 +35,7 @@ export default async function handler(req, res) {
              console.warn('撞期偵測 (Internal Supabase)！該時段已被佔用。');
              return res.status(409).json({ 
                  error: 'Conflict', 
-                 message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了。` 
+                 message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (系統記錄)。` 
              });
         }
 
@@ -101,10 +101,10 @@ export default async function handler(req, res) {
 
             // 如果 busySlots 陣列長度大於 0，表示這個時段已經有行程了
             if (busySlots.length > 0) {
-                console.warn('撞期偵測 (API)！該時段已被佔用，拒絕寫入。');
-                return res.status(409).json({ 
-                    error: 'Conflict', 
-                    message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了。` 
+                console.warn('撞期偵測 (Google Calendar Check)！該時段已被佔用。');
+                return res.status(409).json({
+                    error: 'Conflict',
+                    message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (日曆同步)。`
                 });
             }
 

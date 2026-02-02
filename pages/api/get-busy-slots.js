@@ -1,4 +1,13 @@
 import { google } from 'googleapis';
+import { createClient } from '@supabase/supabase-js';
+
+// 初始化 Supabase (如果環境變數不存在，createClient 會報錯或無法運作，需在 handler 內檢查)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+let supabase;
+if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 export default async function handler(req, res) {
   // 1. 檢查請求方法 (只接受 GET)
@@ -61,10 +70,66 @@ export default async function handler(req, res) {
 
     // 7. 整理回傳資料
     // Google 回傳結構: response.data.calendars[id].busy 是一個陣列 [{start, end}, ...]
-    const busySlots = response.data.calendars[calendarId].busy;
+    let busySlots = response.data.calendars[calendarId].busy || [];
+
+    // --- 新增：合併 Supabase 資料庫中的預約 ---
+    if (supabase) {
+        try {
+            // 查詢當天的所有預約 (利用 message 欄位中的 JSON 字串進行模糊搜尋)
+            // 格式: "date": "YYYY-MM-DD"
+            const { data: dbBookings, error } = await supabase
+                .from('bookings')
+                .select('message')
+                .ilike('message', `%"date": "${date}"%`);
+
+            if (!error && dbBookings) {
+                const dbSlots = dbBookings.map(booking => {
+                    try {
+                        const msg = JSON.parse(booking.message);
+                        if (msg.time) {
+                            // 組合時間字串，模擬 Google 的格式
+                            // Start: YYYY-MM-DDTHH:mm:00+08:00
+                            const start = `${msg.date}T${msg.time}:00+08:00`;
+                            
+                            // 計算結束時間 (預設 +1 小時)
+                            const startDate = new Date(start);
+                            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+                            
+                            // 轉換結束時間為 ISO 字串並修正時區 (簡易處理，保持 +08:00 格式)
+                            // 這裡我們手動組字串比較保險，因為 Date.toISOString() 會轉 UTC
+                            // 取得 +1 小時後的小時數 (需處理跨日，但這裡簡化只看小時)
+                            // 為了準確，我們用 Date 物件計算後，再轉回本地時間字串
+                            // 或者直接依賴 Google 格式，前端只比對 start 字串
+                            // 前端邏輯：slot.start.includes(timeOption)
+                            // 所以 end 時間其實前端沒用到，但為了格式統一我們還是給它
+                            
+                            // 簡易計算 End Time 字串 (假設不跨日，或者跨日也沒關係只要格式對)
+                            // 為了正確轉換，我們用 UTC offset 技巧
+                            const tzOffset = 8 * 60 * 60 * 1000;
+                            const endIso = new Date(endDate.getTime() + tzOffset).toISOString().replace('Z', '+08:00');
+                            
+                            return {
+                                start: start,
+                                end: endIso
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Error parsing booking message:', e);
+                    }
+                    return null;
+                }).filter(slot => slot !== null);
+
+                // 合併 Google 和 Supabase 的時段
+                busySlots = [...busySlots, ...dbSlots];
+            }
+        } catch (dbError) {
+            console.error('Supabase fetch error:', dbError);
+            // 資料庫錯誤不應阻擋回傳 Google 的結果
+        }
+    }
     
     // 回傳 JSON
-    return res.status(200).json(busySlots || []);
+    return res.status(200).json(busySlots);
 
   } catch (error) {
     console.error('Get Busy Slots Error:', error);
