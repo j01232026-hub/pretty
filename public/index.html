@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>預約服務</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #06c755;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        #status {
+            margin-top: 15px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .error {
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>預約服務</h1>
+        <form id="bookingForm">
+            <div class="form-group">
+                <label for="date">日期</label>
+                <input type="date" id="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">時間</label>
+                <select id="time" required>
+                    <option value="">請選擇時間</option>
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="13:00">13:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="15:00">15:00</option>
+                    <option value="16:00">16:00</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">手機號碼</label>
+                <input type="tel" id="phone" placeholder="0912345678" pattern="[0-9]{10}" required>
+            </div>
+
+            <button type="submit" id="submitBtn" disabled>載入中...</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <!-- 載入 LINE LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        // TODO: 請在此填入您的 LIFF ID
+        const LIFF_ID = '2009027968';
+
+        const submitBtn = document.getElementById('submitBtn');
+        const statusDiv = document.getElementById('status');
+        const form = document.getElementById('bookingForm');
+
+        // 初始化 LIFF
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                // 初始化成功，啟用按鈕
+                submitBtn.disabled = false;
+                submitBtn.textContent = '送出預約';
+                
+                // 自動填入今天的日期作為預設值（選填）
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').min = today;
+
+            } catch (error) {
+                console.error('LIFF 初始化失敗:', error);
+                statusDiv.textContent = '初始化失敗，請檢查 LIFF ID 設定';
+                statusDiv.classList.add('error');
+            }
+        }
+
+        // 處理表單送出
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const phone = document.getElementById('phone').value;
+
+            // 準備要傳送的 JSON 資料
+            const bookingData = {
+                action: "book",
+                date: date,
+                time: time,
+                phone: phone
+            };
+
+            // 轉成字串
+            const messageText = JSON.stringify(bookingData);
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '傳送中...';
+
+            try {
+                // 使用 liff.sendMessages 發送訊息
+                await liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: messageText
+                    }
+                ]);
+
+                statusDiv.textContent = '預約資料已送出！視窗即將關閉...';
+                
+                // 延遲一下讓使用者看到成功訊息
+                setTimeout(() => {
+                    liff.closeWindow();
+                }, 1500);
+
+            } catch (error) {
+                console.error('訊息發送失敗:', error);
+                statusDiv.textContent = '發送失敗，請確認您是在 LINE App 中開啟此頁面';
+                statusDiv.classList.add('error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '送出預約';
+            }
+        });
+
+        // 執行初始化
+        // 確保在 DOM 載入後執行，雖然放在 body 底部通常沒問題，但為了保險起見
+        if (LIFF_ID === 'YOUR_LIFF_ID_HERE') {
+            statusDiv.textContent = '請在程式碼中設定正確的 LIFF ID';
+            statusDiv.classList.add('error');
+        } else {
+            initializeLiff();
+        }
+    </script>
+</body>
+</html>
