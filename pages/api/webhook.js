@@ -64,6 +64,37 @@ export default async function handler(req, res) {
           // --- Google Calendar 開始 ---
           try {
             const body = JSON.parse(userMessage);
+            const { date, time } = body; // 解構出 date 和 time
+
+            // 0. 內部撞期檢查 (查 Supabase)
+            // 為了防止雙重預約，我們先檢查資料庫是否已經有同一天同一時間的預約紀錄
+            const { data: existingBookings, error: checkError } = await supabase
+                .from('bookings')
+                .select('id')
+                .ilike('message', `%"date": "${date}", "time": "${time}"%`);
+                
+            if (checkError) {
+                console.error('Supabase check error (Webhook):', checkError);
+            } else if (existingBookings && existingBookings.length > 0) {
+                 console.warn('撞期偵測 (Webhook Internal Supabase)！該時段已被佔用。');
+                 // 發送失敗訊息
+                 const replyToken = event.replyToken;
+                 const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+                 if (replyToken && accessToken) {
+                     await axios.post(
+                         'https://api.line.me/v2/bot/message/reply',
+                         {
+                             replyToken: replyToken,
+                             messages: [{
+                                 type: 'text',
+                                 text: `❌ 抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (系統偵測)。`
+                             }]
+                         },
+                         { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` } }
+                     );
+                 }
+                 return res.status(200).send('OK'); // 結束請求
+            }
 
             if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
                 throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is missing');

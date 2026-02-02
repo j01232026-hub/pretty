@@ -133,25 +133,32 @@
         // 更新時間選單
         function updateTimeOptions(busySlots = []) {
             timeSelect.innerHTML = '<option value="">請選擇時間</option>';
+            const selectedDateStr = dateInput.value;
             
             SHOP_HOURS.forEach(time => {
                 const option = document.createElement('option');
                 option.value = time;
                 
                 // 檢查是否忙碌
-                // busySlots 格式: [{ start: '...', end: '...' }, ...]
-                // 我們簡單檢查: 如果某個 slot 的 start 時間字串包含了這個時段 (例如 "T10:00")
-                // 注意：這裡假設後端回傳的是 ISO 字串，且時區正確
-                const isBusy = busySlots.some(slot => {
-                    // 將 ISO 字串轉換為本地時間字串來比對，或者直接比對字串
-                    // 簡單做法：檢查 start 是否包含 "T10:00"
-                    // 為了更精準，我們可以解析 Date 物件
-                    const slotStart = new Date(slot.start);
-                    const slotHour = slotStart.getHours().toString().padStart(2, '0');
-                    const slotMinute = slotStart.getMinutes().toString().padStart(2, '0');
-                    const slotTime = `${slotHour}:${slotMinute}`;
-                    return slotTime === time;
-                });
+                // 邏輯修正：檢查目前這個時段 (time) 是否落在任何一個 busySlot 的區間內 [start, end)
+                // Google Calendar 可能會合併連續的忙碌時段 (例如 14:00-16:00)，所以不能只比對 start
+                
+                let isBusy = false;
+                
+                if (selectedDateStr) {
+                    // 組合出目前這個選項的完整時間 Date 物件
+                    // 注意：這裡直接用 ISO 格式組合，並假設是當地時間
+                    // 為了避免時區問題，我們統一比對時間戳記 (Timestamp)
+                    const currentOptionDate = new Date(`${selectedDateStr}T${time}:00`);
+                    
+                    isBusy = busySlots.some(slot => {
+                        const slotStart = new Date(slot.start);
+                        const slotEnd = new Date(slot.end);
+                        
+                        // 檢查：slotStart <= currentOptionDate < slotEnd
+                        return currentOptionDate >= slotStart && currentOptionDate < slotEnd;
+                    });
+                }
 
                 if (isBusy) {
                     option.disabled = true;

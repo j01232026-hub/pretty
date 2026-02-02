@@ -20,7 +20,24 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const messageStr = `{"action": "book", "date": "${date}", "time": "${time}", "phone": "${phone}"}`;
+        // 0. 內部撞期檢查 (查 Supabase)
+        // 為了防止雙重預約，我們先檢查資料庫是否已經有同一天同一時間的預約紀錄
+        // 由於我們把資料存在 message JSON 字串裡，這裡用簡易的字串比對
+        const { data: existingBookings, error: checkError } = await supabase
+            .from('bookings')
+            .select('id')
+            .ilike('message', `%"date": "${date}", "time": "${time}"%`);
+            
+        if (checkError) {
+            console.error('Supabase check error:', checkError);
+            // 檢查失敗不阻擋，繼續往下
+        } else if (existingBookings && existingBookings.length > 0) {
+             console.warn('撞期偵測 (Internal Supabase)！該時段已被佔用。');
+             return res.status(409).json({ 
+                 error: 'Conflict', 
+                 message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了。` 
+             });
+        }
 
         // --- Google Calendar 開始 ---
         try {
@@ -92,6 +109,7 @@ export default async function handler(req, res) {
             }
 
             // 1. 寫入 Supabase (移至撞期檢查後)
+            const messageStr = `{"action": "book", "date": "${date}", "time": "${time}", "phone": "${phone}"}`;
             const { error: supabaseError } = await supabase
                 .from('bookings')
                 .insert([
