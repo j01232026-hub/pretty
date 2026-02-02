@@ -275,11 +275,14 @@
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    // 如果是 500 且有成功寫入日曆 (極端情況)，或者後端回傳成功但 status code 錯了 (不太可能)
+                    // 這裡只處理真正的錯誤
                     throw new Error(errorData.message || '伺服器連線錯誤');
                 }
 
                 // 成功處理
                 statusDiv.className = 'success';
+                statusDiv.textContent = ''; // 清除任何先前的錯誤訊息
 
                 if (liff.isInClient()) {
                     statusDiv.textContent = '✅ 預約成功！視窗即將關閉';
