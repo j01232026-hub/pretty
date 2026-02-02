@@ -274,7 +274,10 @@
                         body: JSON.stringify({ userId, ...bookingData }) // 解構 bookingData 包含 date, time, phone
                     });
 
-                    if (!response.ok) throw new Error('伺服器連線錯誤');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || '伺服器連線錯誤');
+                    }
                 }
 
                 // 成功處理
@@ -287,7 +290,7 @@
 
             } catch (error) {
                 console.error('Submission Error:', error);
-                statusDiv.textContent = '發生錯誤，請稍後再試';
+                statusDiv.textContent = error.message || '發生錯誤，請稍後再試';
                 statusDiv.className = 'error';
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出預約';
