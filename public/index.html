@@ -106,13 +106,7 @@
             <div class="form-group">
                 <label for="time">時間</label>
                 <select id="time" required>
-                    <option value="">請選擇時間</option>
-                    <option value="10:00">10:00</option>
-                    <option value="11:00">11:00</option>
-                    <option value="13:00">13:00</option>
-                    <option value="14:00">14:00</option>
-                    <option value="15:00">15:00</option>
-                    <option value="16:00">16:00</option>
+                    <option value="">請先選擇日期</option>
                 </select>
             </div>
 
@@ -129,12 +123,78 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         const LIFF_ID = '2009027968-7nFLpFJt';
+        const SHOP_HOURS = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
         const submitBtn = document.getElementById('submitBtn');
         const statusDiv = document.getElementById('status');
         const form = document.getElementById('bookingForm');
+        const timeSelect = document.getElementById('time');
+        const dateInput = document.getElementById('date');
+
+        // 更新時間選單
+        function updateTimeOptions(busySlots = []) {
+            timeSelect.innerHTML = '<option value="">請選擇時間</option>';
+            
+            SHOP_HOURS.forEach(time => {
+                const option = document.createElement('option');
+                option.value = time;
+                
+                // 檢查是否忙碌
+                // busySlots 格式: [{ start: '...', end: '...' }, ...]
+                // 我們簡單檢查: 如果某個 slot 的 start 時間字串包含了這個時段 (例如 "T10:00")
+                // 注意：這裡假設後端回傳的是 ISO 字串，且時區正確
+                const isBusy = busySlots.some(slot => {
+                    // 將 ISO 字串轉換為本地時間字串來比對，或者直接比對字串
+                    // 簡單做法：檢查 start 是否包含 "T10:00"
+                    // 為了更精準，我們可以解析 Date 物件
+                    const slotStart = new Date(slot.start);
+                    const slotHour = slotStart.getHours().toString().padStart(2, '0');
+                    const slotMinute = slotStart.getMinutes().toString().padStart(2, '0');
+                    const slotTime = `${slotHour}:${slotMinute}`;
+                    return slotTime === time;
+                });
+
+                if (isBusy) {
+                    option.disabled = true;
+                    option.textContent = `${time} (已預約)`;
+                } else {
+                    option.textContent = time;
+                }
+                
+                timeSelect.appendChild(option);
+            });
+        }
+
+        // 監聽日期改變
+        dateInput.addEventListener('change', async () => {
+            const selectedDate = dateInput.value;
+            if (!selectedDate) {
+                updateTimeOptions(); // 重置
+                return;
+            }
+
+            // 顯示載入中
+            timeSelect.innerHTML = '<option>載入中...</option>';
+            timeSelect.disabled = true;
+
+            try {
+                const res = await fetch(`/api/get-busy-slots?date=${selectedDate}`);
+                if (!res.ok) throw new Error('API Error');
+                const busySlots = await res.json();
+                
+                updateTimeOptions(busySlots);
+            } catch (err) {
+                console.error('Fetch slots error:', err);
+                timeSelect.innerHTML = '<option value="">無法載入時段，請稍後再試</option>';
+            } finally {
+                timeSelect.disabled = false;
+            }
+        });
 
         // 初始化 LIFF
         async function initializeLiff() {
+            // 頁面載入初始化時間選單
+            updateTimeOptions();
+
             try {
                 await liff.init({ liffId: LIFF_ID });
 
@@ -151,9 +211,11 @@
 
                 // 自動填入今日日期 (限制不能選過去日期)
                 const today = new Date().toISOString().split('T')[0];
-                const dateInput = document.getElementById('date');
                 dateInput.min = today;
-                dateInput.value = today;
+                
+                // 預設不選日期，讓使用者自己選觸發 change 事件，或者我們可以手動觸發
+                // dateInput.value = today; 
+                // dateInput.dispatchEvent(new Event('change')); 
 
             } catch (error) {
                 console.error('LIFF Init Error:', error);
