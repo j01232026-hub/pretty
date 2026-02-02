@@ -92,11 +92,17 @@
         #bookingForm.visible {
             opacity: 1;
         }
+        #loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>預約服務</h1>
+        <div id="loading">系統初始化中...</div>
         <form id="bookingForm">
             <div class="form-group">
                 <label for="date">日期</label>
@@ -127,6 +133,7 @@
         const submitBtn = document.getElementById('submitBtn');
         const statusDiv = document.getElementById('status');
         const form = document.getElementById('bookingForm');
+        const loadingDiv = document.getElementById('loading');
         const timeSelect = document.getElementById('time');
         const dateInput = document.getElementById('date');
 
@@ -212,6 +219,7 @@
                 }
 
                 // 準備就緒
+                loadingDiv.style.display = 'none'; // 隱藏載入文字
                 form.classList.add('visible');
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出預約';
@@ -226,8 +234,11 @@
 
             } catch (error) {
                 console.error('LIFF Init Error:', error);
-                statusDiv.textContent = '系統載入失敗，請重新整理';
+                loadingDiv.style.display = 'none';
+                statusDiv.textContent = `系統載入失敗：${error.message || error}。請確認您已將 LIFF 設為公開 (Published)。`;
                 statusDiv.className = 'error';
+                // 顯示更顯眼的錯誤提示
+                alert(`初始化失敗: ${error.message || error}\n請確認 LIFF ID 設定正確且已發布。`);
             }
         }
 
