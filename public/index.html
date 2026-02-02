@@ -128,9 +128,15 @@
                 // 顯示目前的權限狀態在畫面上，方便除錯
                 const permissionStatus = await liff.permission.query('chat_message.write');
                 if (permissionStatus.state !== 'granted') {
-                    statusDiv.textContent = '⚠️ 缺少發送訊息權限，正在嘗試請求...';
+                    statusDiv.innerHTML = '⚠️ 缺少發送訊息權限<br><button id="authBtn" style="margin-top:10px;padding:5px 10px;">點此開啟權限</button>';
                     statusDiv.classList.add('error');
-                    // 這裡不自動執行，避免無限迴圈，但提示使用者
+                    
+                    document.getElementById('authBtn').addEventListener('click', () => {
+                        liff.login({ scope: 'chat_message.write' });
+                    });
+                } else {
+                    statusDiv.textContent = '';
+                    statusDiv.classList.remove('error');
                 }
 
                 // 自動填入今天的日期作為預設值（選填）
