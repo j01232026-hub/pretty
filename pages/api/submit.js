@@ -44,12 +44,21 @@ export default async function handler(req, res) {
         try {
             // 1. 初始化 Google 日曆 API
             const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+            
+            // 修正私鑰格式 (處理 Vercel 環境變數中的換行符號問題)
+            const privateKey = serviceAccountKey.private_key.replace(/\\n/g, '\n');
+
             const jwtClient = new google.auth.JWT(
                 serviceAccountKey.client_email,
                 null,
-                serviceAccountKey.private_key,
+                privateKey,
                 ['https://www.googleapis.com/auth/calendar']
             );
+            
+            // 明確執行授權
+            await jwtClient.authorize();
+            console.log('Google Auth 授權成功');
+
             const calendar = google.calendar({ version: 'v3', auth: jwtClient });
 
             // 2. 準備時間
