@@ -113,25 +113,50 @@
                 // 更新按鈕狀態，讓使用者知道目前進度
                 submitBtn.textContent = '連接 LINE 中...';
                 
-                // 設定 10 秒超時，避免無限等待
+                // 設定 5 秒超時
                 const initPromise = liff.init({ liffId: LIFF_ID });
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('連線逾時 (Timeout)')), 10000)
+                    setTimeout(() => reject(new Error('連線逾時 (Timeout)')), 5000)
                 );
 
                 await Promise.race([initPromise, timeoutPromise]);
                 
-                if (!liff.isLoggedIn()) {
-                    submitBtn.textContent = '登入中...';
-                    liff.login();
-                    return;
+                // 1. 優先檢查：是否在 LINE App 內部開啟
+                if (!liff.isInClient()) {
+                    statusDiv.innerHTML = `
+                        <div style="color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                            ⚠️ 偵測到您在外部瀏覽器開啟<br>
+                            此功能需要 LINE 的完整支援。<br>
+                            <button id="openLineBtn" style="width:100%; margin-top:10px; padding:10px; background:#06c755; color:white; border:none; border-radius:4px; font-weight:bold;">
+                                點此在 LINE App 中開啟
+                            </button>
+                        </div>
+                    `;
+                    document.getElementById('openLineBtn').addEventListener('click', () => {
+                        // 使用 LIFF Deep Link 喚起 LINE
+                        window.location.href = `https://liff.line.me/${LIFF_ID}`;
+                    });
+                    
+                    // 雖然在外部，我們還是讓他可以登入看看，但主要引導去 App
+                    if (!liff.isLoggedIn()) {
+                        submitBtn.textContent = '登入中...';
+                        liff.login();
+                        return;
+                    }
+                } else {
+                    // 在 LINE App 內，正常檢查登入狀態
+                    if (!liff.isLoggedIn()) {
+                        submitBtn.textContent = '登入中...';
+                        liff.login();
+                        return;
+                    }
                 }
 
                 // 初始化成功，啟用按鈕
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出預約';
                 
-                // 檢查權限 (除錯用)
+                // 檢查權限 (僅在 LINE App 內才有意義)
                 const context = liff.getContext();
                 console.log('LIFF Context:', context);
                 
