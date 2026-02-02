@@ -275,9 +275,15 @@
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    // 如果是 500 且有成功寫入日曆 (極端情況)，或者後端回傳成功但 status code 錯了 (不太可能)
-                    // 這裡只處理真正的錯誤
-                    throw new Error(errorData.message || '伺服器連線錯誤');
+                    console.error('API Error Response:', response.status, errorData);
+                    
+                    // 如果是 504 Gateway Timeout，通常代表後端執行太久 (超過 10 秒)
+                    // 但如果使用者已經收到 LINE 通知，其實是成功的
+                    if (response.status === 504) {
+                        throw new Error('伺服器回應逾時 (但預約可能已成功，請檢查 LINE 通知)');
+                    }
+                    
+                    throw new Error(errorData.message || `伺服器連線錯誤 (Code: ${response.status})`);
                 }
 
                 // 成功處理

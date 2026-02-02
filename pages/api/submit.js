@@ -174,17 +174,19 @@ export default async function handler(req, res) {
                             messages: [
                                 {
                                     type: 'text',
-                                    text: `✅ 預約已確認！\n日期: ${date}\n時間: ${time}`,
-                                },
-                            ],
+                                    text: `✅ 預約已確認！\n\n日期：${date}\n時間：${time}\n\n請準時到達，謝謝！`
+                                }
+                            ]
                         },
                         {
                             headers: {
                                 'Content-Type': 'application/json',
-                                Authorization: `Bearer ${accessToken}`,
+                                'Authorization': `Bearer ${accessToken}`
                             },
+                            timeout: 5000 // 設定 5 秒超時，避免卡死 Vercel Function
                         }
                     );
+                    console.log('Push Message sent');
                 } catch (pushError) {
                     console.error('Push Message 發送失敗 (可能是額度不足或使用者封鎖):', pushError.response?.data || pushError.message);
                     // 推播失敗不影響預約成功的結果
