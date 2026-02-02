@@ -164,6 +164,7 @@ export default async function handler(req, res) {
 
             if (error) {
               console.error('Supabase 寫入錯誤:', error);
+              // Supabase 寫入失敗不應視為致命錯誤，仍嘗試寫入日曆
             }
 
             // 3. 建立事件物件
@@ -187,37 +188,63 @@ export default async function handler(req, res) {
             });
             console.log('Google 日曆寫入成功');
 
+            // 7. 回覆 LINE 訊息 (只有在日曆寫入成功後才發送)
+            const replyToken = event.replyToken;
+            const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+
+            if (replyToken && accessToken) {
+              await axios.post(
+                'https://api.line.me/v2/bot/message/reply',
+                {
+                  replyToken: replyToken,
+                  messages: [
+                    {
+                      type: 'text',
+                      text: `✅ 預約已確認！\n日期: ${body.date}\n時間: ${body.time}`,
+                    },
+                  ],
+                },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                }
+              );
+              console.log('預約確認訊息已發送');
+            }
+
           } catch (googleError) {
             console.error('Google Calendar Error:', googleError);
-            // 不阻擋後續 LINE 回覆，僅紀錄錯誤
+            
+            // 發生錯誤時，回覆使用者系統忙碌中
+            const replyToken = event.replyToken;
+            const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+
+            if (replyToken && accessToken) {
+                try {
+                    await axios.post(
+                        'https://api.line.me/v2/bot/message/reply',
+                        {
+                            replyToken: replyToken,
+                            messages: [{
+                                type: 'text',
+                                text: `⚠️ 系統發生暫時性錯誤，預約未完成。\n\n請稍後再試，或聯絡客服人員。\n錯誤代碼: CalendarAPI`
+                            }]
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                        }
+                    );
+                } catch (replyError) {
+                    console.error('Error sending error reply:', replyError);
+                }
+            }
           }
           // --- Google Calendar 結束 ---
-
-          // 7. 回覆 LINE 訊息
-          const replyToken = event.replyToken;
-          const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-
-          if (replyToken && accessToken) {
-            await axios.post(
-              'https://api.line.me/v2/bot/message/reply',
-              {
-                replyToken: replyToken,
-                messages: [
-                  {
-                    type: 'text',
-                    text: '✅ 預約已確認！',
-                  },
-                ],
-              },
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
-                },
-              }
-            );
-            console.log('預約確認訊息已發送');
-          }
         }
       }
     }

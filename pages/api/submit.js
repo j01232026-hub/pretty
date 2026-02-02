@@ -125,39 +125,43 @@ export default async function handler(req, res) {
             });
             console.log('Google 日曆寫入成功 (API)');
 
+            // 5. 嘗試發送 Push Message 通知使用者 (替代 Reply Message) - 只有在日曆寫入成功後才執行
+            const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+            if (accessToken && userId) {
+                try {
+                    await axios.post(
+                        'https://api.line.me/v2/bot/message/push',
+                        {
+                            to: userId,
+                            messages: [
+                                {
+                                    type: 'text',
+                                    text: `✅ 預約已確認！\n日期: ${date}\n時間: ${time}`,
+                                },
+                            ],
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                        }
+                    );
+                } catch (pushError) {
+                    console.error('Push Message 發送失敗 (可能是額度不足或使用者封鎖):', pushError.response?.data || pushError.message);
+                    // 推播失敗不影響預約成功的結果
+                }
+            }
+
         } catch (googleError) {
             console.error('Google Calendar Error (API):', googleError);
-            // 不阻擋後續回覆
+            // 關鍵修改：如果 Google API 失敗，回傳 500 給前端，讓前端顯示錯誤
+            return res.status(500).json({ 
+                error: 'Calendar Error', 
+                message: '系統發生暫時性錯誤 (Calendar)，請稍後再試' 
+            });
         }
         // --- Google Calendar 結束 ---
-
-        // 2. 嘗試發送 Push Message 通知使用者 (替代 Reply Message)
-        const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-        if (accessToken && userId) {
-            try {
-                await axios.post(
-                    'https://api.line.me/v2/bot/message/push',
-                    {
-                        to: userId,
-                        messages: [
-                            {
-                                type: 'text',
-                                text: `✅ 預約已確認！\n日期: ${date}\n時間: ${time}`,
-                            },
-                        ],
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    }
-                );
-            } catch (pushError) {
-                console.error('Push Message 發送失敗 (可能是額度不足或使用者封鎖):', pushError.response?.data || pushError.message);
-                // 推播失敗不影響預約成功的結果
-            }
-        }
 
         return res.status(200).json({ success: true, message: 'Booking saved' });
 
