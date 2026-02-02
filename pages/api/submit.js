@@ -119,11 +119,16 @@ export default async function handler(req, res) {
             };
 
             // 4. 寫入日曆
-            await calendar.events.insert({
-                calendarId: process.env.GOOGLE_CALENDAR_ID,
-                resource: event,
-            });
-            console.log('Google 日曆寫入成功 (API)');
+            try {
+                await calendar.events.insert({
+                    calendarId: process.env.GOOGLE_CALENDAR_ID,
+                    resource: event,
+                });
+                console.log('Google 日曆寫入成功 (API)');
+            } catch (insertError) {
+                console.error('Google Calendar Insert Failed:', insertError.response?.data || insertError);
+                throw insertError; // 重新拋出錯誤，讓外層 catch 處理
+            }
 
             // 5. 嘗試發送 Push Message 通知使用者 (替代 Reply Message) - 只有在日曆寫入成功後才執行
             const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
