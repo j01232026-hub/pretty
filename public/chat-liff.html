@@ -309,7 +309,14 @@
         async function sendMessage() {
             const input = document.getElementById('message-input');
             const content = input.value.trim();
-            if (!content || !currentUserId) return;
+            
+            if (!currentUserId) {
+                console.error('User ID not set');
+                alert('系統尚未初始化完成，請稍後再試');
+                return;
+            }
+            
+            if (!content) return;
 
             // Clear input immediately for better UX
             input.value = '';
@@ -323,7 +330,7 @@
                     body: JSON.stringify({
                         content: content,
                         sender_id: currentUserId,
-                        receiver_id: 'ADMIN' // Default to ADMIN for now
+                        receiver_id: 'ADMIN'
                     })
                 });
 
