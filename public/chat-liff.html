@@ -119,15 +119,15 @@
         </div>
 
         <!-- Input Area -->
-        <div class="absolute bottom-0 left-0 w-full bg-[#f8f6f7] p-2 border-t border-gray-200 flex items-end gap-2 z-20 safe-area-bottom shrink-0">
-            <button class="p-2 text-gray-500 rounded-full hover:bg-gray-200">
+        <div class="absolute bottom-0 left-0 w-full bg-[#f8f6f7] p-2 border-t border-gray-200 flex items-center gap-2 z-20 safe-area-bottom shrink-0">
+            <button class="p-2 text-gray-500 rounded-full hover:bg-gray-200 flex items-center justify-center">
                 <span class="material-symbols-outlined">add</span>
             </button>
             <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
                 <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 outline-none p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..." style="outline: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent;"></textarea>
             </div>
-            <button id="send-btn" class="p-2 text-[#f042c4] rounded-full hover:bg-gray-200 disabled:opacity-50 focus:outline-none" onclick="sendMessage()">
-                <span class="material-symbols-outlined text-3xl fill-1">send</span>
+            <button id="send-btn" class="p-2 text-[#9d2bee] rounded-full hover:bg-gray-200 disabled:opacity-50 focus:outline-none flex items-center justify-center" onclick="sendMessage()">
+                <span class="material-symbols-outlined text-2xl fill-1">send</span>
             </button>
         </div>
     </div>
