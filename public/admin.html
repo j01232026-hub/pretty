@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>預約管理後台</title>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -13,7 +15,7 @@
             color: #333;
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px; /* Widen for chat interface */
             margin: 0 auto;
             background: white;
             padding: 30px;
@@ -24,6 +26,12 @@
             text-align: center;
             color: #2c3e50;
             margin-bottom: 30px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 40px;
         }
         .table-responsive {
             overflow-x: auto;
@@ -84,6 +92,129 @@
             color: #999;
             font-style: italic;
         }
+
+        /* Chat Interface Styles */
+        .chat-layout {
+            display: flex;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .user-list {
+            width: 250px;
+            background: #f8f9fa;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        .user-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .user-item:hover {
+            background: #e6f7ff;
+        }
+        .user-item.active {
+            background: #1890ff;
+            color: white;
+        }
+        .user-id {
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .last-msg {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-item.active .last-msg {
+            color: #e6f7ff;
+        }
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+        .chat-header {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .messages-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+        }
+        .message.received {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #ddd;
+            border-bottom-left-radius: 2px;
+        }
+        .message.sent {
+            align-self: flex-end;
+            background: #1890ff;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+        .msg-time {
+            font-size: 10px;
+            margin-top: 4px;
+            opacity: 0.7;
+            text-align: right;
+        }
+        .input-area {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .input-area textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: none;
+            height: 40px;
+            font-family: inherit;
+        }
+        .input-area button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .input-area button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -105,13 +236,35 @@
             </table>
         </div>
         <div id="status" class="loading">載入中...</div>
+
+        <h2>💬 客服對話管理</h2>
+        <div class="chat-layout">
+            <div class="user-list" id="userList">
+                <div class="loading">載入用戶中...</div>
+            </div>
+            <div class="chat-window">
+                <div class="chat-header" id="chatHeader">請選擇對話</div>
+                <div class="messages-area" id="messagesArea">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="input-area">
+                    <textarea id="msgInput" placeholder="輸入訊息..." disabled></textarea>
+                    <button id="sendBtn" onclick="sendAdminMessage()" disabled>傳送</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         // ⚠️ 請在此處填入您在 Vercel 設定的 ADMIN_SECRET
         const ADMIN_SECRET = 'MyBeautyShop_2026_Boss_Only!'; 
         const API_URL = '/api/admin-manage?secret=' + ADMIN_SECRET;
-
+        
+        // Chat Variables
+        let supabaseClient = null;
+        let currentChatUser = null;
+        let chatSubscription = null;
+        
         const bookingList = document.getElementById('bookingList');
         const statusDiv = document.getElementById('status');
 
@@ -270,12 +423,193 @@
             }
         }
 
+        // 初始化 Chat System
+        async function initChatSystem() {
+            try {
+                await initSupabase();
+                await fetchChatUsers();
+                
+                // Realtime subscription for User List (New users or new messages)
+                if (supabaseClient) {
+                    supabaseClient.channel('public:messages_list')
+                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+                            // Refresh list when any new message arrives (simple approach)
+                            fetchChatUsers(); 
+                            // If we are chatting with someone, the message will also be handled by that specific subscription
+                        })
+                        .subscribe();
+                }
+            } catch (e) {
+                console.error('Chat Init Error:', e);
+                document.getElementById('userList').innerHTML = '<div class="error">載入失敗</div>';
+            }
+        }
+
+        // 1. Initialize Supabase
+        async function initSupabase() {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+            }
+        }
+
+        // 2. Fetch Chat Users
+        async function fetchChatUsers() {
+            if (!supabaseClient) return;
+            
+            // Fetch last 500 messages to extract users
+            const { data: messages, error } = await supabaseClient
+                .from('messages')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(500);
+
+            if (error) {
+                console.error('Fetch Users Error:', error);
+                return;
+            }
+
+            // Extract unique users
+            const userMap = new Map();
+            messages.forEach(msg => {
+                const otherId = msg.sender_id === 'ADMIN' ? msg.receiver_id : msg.sender_id;
+                if (otherId === 'ADMIN') return; // Should not happen if data is correct
+                
+                if (!userMap.has(otherId)) {
+                    userMap.set(otherId, {
+                        userId: otherId,
+                        lastMsg: msg.content,
+                        time: new Date(msg.created_at),
+                        isUnread: false // TODO: Add read status later
+                    });
+                }
+            });
+
+            const users = Array.from(userMap.values());
+            renderUserList(users);
+        }
+
+        // Render User List
+        function renderUserList(users) {
+            const listDiv = document.getElementById('userList');
+            listDiv.innerHTML = '';
+
+            if (users.length === 0) {
+                listDiv.innerHTML = '<div class="empty">尚無對話</div>';
+                return;
+            }
+
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = `user-item ${currentChatUser === u.userId ? 'active' : ''}`;
+                div.onclick = () => selectUser(u.userId);
+                div.innerHTML = `
+                    <div class="user-id">${u.userId}</div>
+                    <div class="last-msg">${u.lastMsg}</div>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        // 3. Select User & Load Chat
+        async function selectUser(userId) {
+            currentChatUser = userId;
+            document.getElementById('chatHeader').textContent = `與 ${userId} 的對話`;
+            document.getElementById('msgInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            
+            // Highlight active user
+            fetchChatUsers(); // Re-render to update active class
+
+            // Load History
+            const { data: messages, error } = await supabaseClient
+                .from('messages')
+                .select('*')
+                .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`) // This filters too broadly if we have multiple users? 
+                // Wait, we want (sender=user AND receiver=ADMIN) OR (sender=ADMIN AND receiver=user)
+                // Supabase .or() syntax: .or(`and(sender_id.eq.${userId},receiver_id.eq.ADMIN),and(sender_id.eq.ADMIN,receiver_id.eq.${userId})`)
+                .or(`and(sender_id.eq.${userId},receiver_id.eq.ADMIN),and(sender_id.eq.ADMIN,receiver_id.eq.${userId})`)
+                .order('created_at', { ascending: true });
+
+            const msgArea = document.getElementById('messagesArea');
+            msgArea.innerHTML = '';
+
+            if (messages) {
+                messages.forEach(msg => appendAdminMessage(msg));
+                msgArea.scrollTop = msgArea.scrollHeight;
+            }
+
+            // Subscribe to this specific chat
+            if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
+            
+            chatSubscription = supabaseClient.channel(`chat:${userId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                    const newMsg = payload.new;
+                    if (
+                        (newMsg.sender_id === userId && newMsg.receiver_id === 'ADMIN') ||
+                        (newMsg.sender_id === 'ADMIN' && newMsg.receiver_id === userId)
+                    ) {
+                        appendAdminMessage(newMsg);
+                        msgArea.scrollTop = msgArea.scrollHeight;
+                    }
+                })
+                .subscribe();
+        }
+
+        // Append Message to Chat Window
+        function appendAdminMessage(msg) {
+            const area = document.getElementById('messagesArea');
+            const div = document.createElement('div');
+            const isMe = msg.sender_id === 'ADMIN';
+            
+            div.className = `message ${isMe ? 'sent' : 'received'}`;
+            div.innerHTML = `
+                ${msg.content}
+                <div class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            `;
+            area.appendChild(div);
+        }
+
+        // 4. Send Message
+        async function sendAdminMessage() {
+            if (!currentChatUser) return;
+            const input = document.getElementById('msgInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            input.value = '';
+            
+            try {
+                const res = await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-secret': ADMIN_SECRET // Authenticate as Admin
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        sender_id: 'ADMIN',
+                        receiver_id: currentChatUser
+                    })
+                });
+
+                if (!res.ok) throw new Error('Send Failed');
+                // Message will appear via Realtime subscription
+
+            } catch (e) {
+                alert('發送失敗: ' + e.message);
+                input.value = content;
+            }
+        }
+
         // 初始化
         if (ADMIN_SECRET === 'CHANGE_ME_PLEASE') {
             statusDiv.textContent = '⚠️ 請先編輯原始碼，設定 ADMIN_SECRET';
             statusDiv.style.color = 'orange';
         } else {
             loadBookings();
+            initChatSystem();
         }
     </script>
 </body>
