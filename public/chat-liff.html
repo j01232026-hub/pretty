@@ -178,7 +178,7 @@
         const LIFF_ID = urlParams.get('liffId') || '2009027968-8FTFYHCQ'; 
 
         let currentUserId = null;
-        let supabase = null;
+        let supabaseClient = null;
 
         // Initialize
         // Use window.onload to match history-liff.html behavior
@@ -233,7 +233,7 @@
                 
                 // 3. Init Supabase
                 log('Initializing Supabase...');
-                supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+                supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
 
                 // 4. Load Messages
                 log('Loading messages...');
@@ -311,9 +311,9 @@
 
         // Subscribe Realtime
         function subscribeRealtime() {
-            if (!supabase) return;
+            if (!supabaseClient) return;
 
-            supabase.channel('public:messages')
+            supabaseClient.channel('public:messages')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
                     const newMsg = payload.new;
                     console.log('New Message:', newMsg);
