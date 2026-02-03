@@ -181,11 +181,27 @@
             const newDate = prompt('請輸入新的日期 (YYYY-MM-DD):', oldDate);
             if (!newDate) return; // 使用者按取消
 
-            const newTime = prompt('請輸入新的時間 (HH:mm):', oldTime);
-            if (!newTime) return; // 使用者按取消
+            const newStartTime = prompt('請輸入新的開始時間 (HH:mm):', oldTime);
+            if (!newStartTime) return; // 使用者按取消
+
+            // 計算預設結束時間 (開始時間 + 1小時)
+            let defaultEndTime = '';
+            try {
+                // 嘗試從輸入的開始時間計算預設結束時間
+                const [h, m] = newStartTime.split(':').map(Number);
+                const d = new Date();
+                d.setHours(h + 1);
+                d.setMinutes(m);
+                defaultEndTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            } catch (e) {
+                // 計算失敗就留空
+            }
+
+            const newEndTime = prompt('請輸入新的結束時間 (HH:mm):', defaultEndTime);
+            if (!newEndTime) return; // 使用者按取消
 
             // 簡單驗證格式 (可選)
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate) || !/^\d{2}:\d{2}$/.test(newTime)) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate) || !/^\d{2}:\d{2}$/.test(newStartTime) || !/^\d{2}:\d{2}$/.test(newEndTime)) {
                 alert('格式錯誤！日期請用 YYYY-MM-DD，時間請用 HH:mm');
                 return;
             }
@@ -201,7 +217,8 @@
                     body: JSON.stringify({ 
                         appointment_id: id, 
                         new_date: newDate, 
-                        new_time: newTime 
+                        new_start_time: newStartTime,
+                        new_end_time: newEndTime
                     })
                 });
 
