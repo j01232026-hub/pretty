@@ -334,16 +334,25 @@
                     })
                 });
 
-                if (!res.ok) throw new Error('Send Failed');
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Send Failed');
+                }
                 
-                // Note: We don't need to append manually here because Realtime subscription will catch it!
-                // But for faster feedback, we COULD append it optimistically.
-                // For now, let's rely on Realtime to ensure consistency.
+                // Optimistically append message to UI
+                // This ensures the user sees their message even if Realtime is slow or fails
+                const tempMsg = {
+                    content: content,
+                    sender_id: currentUserId,
+                    created_at: new Date().toISOString()
+                };
+                appendMessage(tempMsg, true);
 
             } catch (err) {
                 console.error('Send Error:', err);
-                alert('訊息發送失敗');
+                alert('訊息發送失敗: ' + err.message);
                 input.value = content; // Restore content
+                document.getElementById('send-btn').disabled = false;
             }
         }
 
