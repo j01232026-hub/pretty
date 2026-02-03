@@ -59,6 +59,41 @@
             </div>
         </div>
 
+        <!-- History Controls (Search & Chips) - Hidden by default -->
+        <div id="history-controls" class="hidden">
+            <!-- SearchBar & Filters -->
+            <div class="px-4 py-2">
+                <div class="flex gap-2">
+                    <label class="flex flex-col flex-1 h-12">
+                        <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+                            <div class="text-text-muted flex border-none bg-accent-soft dark:bg-white/10 items-center justify-center pl-4 rounded-l-xl">
+                                <span class="material-symbols-outlined text-gray-500">search</span>
+                            </div>
+                            <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-0 border-none bg-accent-soft dark:bg-white/10 placeholder:text-gray-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="搜尋預約" value=""/>
+                        </div>
+                    </label>
+                    <button class="flex size-12 items-center justify-center bg-accent-soft dark:bg-white/10 rounded-xl text-gray-500">
+                        <span class="material-symbols-outlined">tune</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chips -->
+            <div class="flex gap-3 px-4 py-3 overflow-x-auto hide-scrollbar">
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4">
+                    <p class="text-sm font-medium">全部紀錄</p>
+                </button>
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
+                    <p class="text-[#1b0d18] dark:text-white text-sm font-medium">最近30天</p>
+                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                </button>
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
+                    <p class="text-[#1b0d18] dark:text-white text-sm font-medium">服務項目</p>
+                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Content Container -->
         <div class="flex flex-col gap-6 p-4 pb-20 min-h-[500px]" id="appointments-container">
             <!-- Loading State -->
