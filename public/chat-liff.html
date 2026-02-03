@@ -13,6 +13,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
+        // Global Error Handler for Mobile Debugging
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            alert('System Error: ' + msg + '\nLine: ' + lineNo);
+            // Also log to our custom debug console
+            if (typeof log === 'function') {
+                log('Global Error: ' + msg, 'error');
+            }
+            return false;
+        };
+
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -307,23 +317,29 @@
 
         // Send Message
         async function sendMessage() {
-            const input = document.getElementById('message-input');
-            const content = input.value.trim();
+            let content = '';
+            let input = null;
             
-            if (!currentUserId) {
-                console.error('User ID not set');
-                alert('系統尚未初始化完成，請稍後再試');
-                return;
-            }
-            
-            if (!content) return;
-
-            // Clear input immediately for better UX
-            input.value = '';
-            input.style.height = 'auto';
-            document.getElementById('send-btn').disabled = true;
-
             try {
+                input = document.getElementById('message-input');
+                if (!input) {
+                    alert('系統錯誤: 找不到輸入框');
+                    return;
+                }
+                content = input.value.trim();
+                
+                if (!currentUserId) {
+                    alert('系統尚未初始化完成 (User ID missing)，請稍後再試');
+                    return;
+                }
+                
+                if (!content) return;
+
+                // Clear input immediately for better UX
+                input.value = '';
+                input.style.height = 'auto';
+                document.getElementById('send-btn').disabled = true;
+
                 const res = await fetch('/api/send-message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -340,7 +356,6 @@
                 }
                 
                 // Optimistically append message to UI
-                // This ensures the user sees their message even if Realtime is slow or fails
                 const tempMsg = {
                     content: content,
                     sender_id: currentUserId,
@@ -351,7 +366,7 @@
             } catch (err) {
                 console.error('Send Error:', err);
                 alert('訊息發送失敗: ' + err.message);
-                input.value = content; // Restore content
+                if (input && content) input.value = content; // Restore content
                 document.getElementById('send-btn').disabled = false;
             }
         }
