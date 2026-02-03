@@ -157,10 +157,18 @@
             </div>
         </section>
 
-        <!-- Phone Number Section (New) -->
+        <!-- Contact Info Section -->
         <section class="mt-8 px-4 mb-4">
-             <h3 class="text-lg font-bold tracking-tight mb-2">手機號碼</h3>
-             <input type="tel" id="phoneInput" placeholder="0912345678" class="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-lg focus:ring-primary focus:border-primary outline-none">
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold tracking-tight mb-2">姓名</h3>
+                    <input type="text" id="nameInput" placeholder="您的姓名" class="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-lg focus:ring-primary focus:border-primary outline-none">
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold tracking-tight mb-2">手機號碼</h3>
+                    <input type="tel" id="phoneInput" placeholder="0912345678" class="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-lg focus:ring-primary focus:border-primary outline-none">
+                </div>
+            </div>
         </section>
 
     </main>
@@ -215,6 +223,13 @@
                 await liff.init({ liffId: "YOUR_LIFF_ID" }); 
                 if (!liff.isLoggedIn()) {
                     liff.login();
+                } else {
+                    // Get User Profile for Name
+                    const profile = await liff.getProfile();
+                    const nameInput = document.getElementById('nameInput');
+                    if (nameInput && profile.displayName) {
+                        nameInput.value = profile.displayName;
+                    }
                 }
             } catch (err) {
                 console.error('LIFF Init Error:', err);
@@ -404,10 +419,12 @@
         }
 
         async function confirmBooking() {
+            const name = document.getElementById('nameInput').value.trim();
             const phone = document.getElementById('phoneInput').value.trim();
             
             if (!selectedDate) return alert('請選擇日期');
             if (!selectedTime) return alert('請選擇時段');
+            if (!name) return alert('請輸入姓名');
             if (!phone) return alert('請輸入手機號碼');
 
             const payload = {
@@ -416,32 +433,27 @@
                     stylist: selectedStylist,
                     date: selectedDate,
                     time: selectedTime,
+                    name: name,
                     phone: phone
                 }
             };
-            
-            // Format message for LINE
-            // We usually send a text message that the webhook parses, or a specific payload if using LIFF to trigger bot
-            // Here we'll send a structured text for the bot to parse, or a JSON string if the bot supports it
-            // Based on user context, Supabase uses JSON in message.
-            // Let's send a JSON string.
-            const messageText = JSON.stringify(payload.data);
 
-            try {
-                if (liff.isInClient()) {
-                    await liff.sendMessages([{
-                        type: 'text',
-                        text: messageText
-                    }]);
+            // Send via LIFF
+            if (liff.isInClient()) {
+                try {
+                    await liff.sendMessages([
+                        {
+                            type: 'text',
+                            text: `預約資料：\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${selectedTime}\n姓名：${name}\n手機：${phone}`
+                        }
+                    ]);
                     liff.closeWindow();
-                } else {
-                    // Fallback for browser testing
-                    console.log('Booking Payload:', payload);
-                    alert('預約資料已送出 (測試模式):\n' + messageText);
+                } catch (err) {
+                    console.error('Send Error:', err);
+                    alert('發送失敗，請手動截圖傳送給設計師');
                 }
-            } catch (err) {
-                console.error('LIFF Send Error:', err);
-                alert('發送失敗: ' + err.message);
+            } else {
+                alert(`(測試模式)\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${selectedTime}\n姓名：${name}\n手機：${phone}`);
             }
         }
     </script>
