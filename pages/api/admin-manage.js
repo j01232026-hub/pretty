@@ -179,6 +179,125 @@ export default async function handler(req, res) {
             });
         }
 
+        // 3. PUT: 修改預約 (新功能)
+        if (req.method === 'PUT') {
+            const { appointment_id, new_date, new_time } = req.body;
+
+            if (!appointment_id || !new_date || !new_time) {
+                return res.status(400).json({ error: 'Missing required fields' });
+            }
+
+            // 1. 讀取原始資料
+            const { data: booking, error: fetchError } = await supabase
+                .from('bookings')
+                .select('*')
+                .eq('id', appointment_id)
+                .single();
+
+            if (fetchError || !booking) {
+                return res.status(404).json({ error: 'Booking not found' });
+            }
+
+            // 解析原始訊息以取得電話號碼
+            let bookingDetails = {};
+            try {
+                bookingDetails = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
+            } catch (e) { console.warn('JSON parse error during update:', e); }
+
+            const phone = booking.phone || bookingDetails.phone || 'Unknown';
+
+            // 2. 準備新的時間物件 (ISO 8601, Asia/Taipei +08:00)
+            const startDateTime = `${new_date}T${new_time}:00+08:00`;
+            const startDateObj = new Date(startDateTime);
+            const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000); // 預設加 1 小時
+
+            // 手動建構 ISO 字串 (處理 UTC -> +08:00)
+            const tempDate = new Date(endDateObj.getTime());
+            tempDate.setUTCHours(tempDate.getUTCHours() + 8);
+            const endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+
+            // 3. 防撞期檢查 (Google Calendar Freebusy)
+            console.log(`Update Check: ${startDateTime} to ${endDateTime}`);
+            const checkResponse = await calendar.freebusy.query({
+                resource: {
+                    timeMin: startDateTime,
+                    timeMax: endDateTime,
+                    timeZone: 'Asia/Taipei',
+                    items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
+                },
+            });
+
+            const busySlots = checkResponse.data.calendars[process.env.GOOGLE_CALENDAR_ID].busy;
+
+            // 嚴格檢查：只要有任何忙碌時段，就視為衝突
+            // (注意：這可能會擋住「原地延長」的操作，但最安全)
+            if (busySlots.length > 0) {
+                console.warn('Update Conflict: Time slot is busy.', busySlots);
+                return res.status(409).json({
+                    error: 'Conflict',
+                    message: `修改失敗！該時段 [${new_date} ${new_time}] 已有其他預約。`
+                });
+            }
+
+            // 4. 執行更新
+
+            // A. 更新 Google 日曆
+            if (booking.google_event_id) {
+                try {
+                    await calendar.events.patch({
+                        calendarId: process.env.GOOGLE_CALENDAR_ID,
+                        eventId: booking.google_event_id,
+                        resource: {
+                            start: { dateTime: startDateTime, timeZone: 'Asia/Taipei' },
+                            end: { dateTime: endDateTime, timeZone: 'Asia/Taipei' }
+                        }
+                    });
+                    console.log(`Google Event ${booking.google_event_id} updated.`);
+                } catch (googleError) {
+                    console.error('Failed to update Google Calendar:', googleError.message);
+                    // Google 更新失敗是否要阻擋 DB 更新？
+                    // 這裡選擇回傳 500，保持資料一致性
+                    return res.status(500).json({ 
+                        error: 'Calendar Update Failed', 
+                        message: 'Google 日曆更新失敗，請稍後再試。' 
+                    });
+                }
+            } else {
+                console.warn('No google_event_id found, skipping Google Calendar update.');
+            }
+
+            // B. 更新 Supabase 資料庫
+            // 更新 message 欄位內的 JSON
+            const newMessageObj = {
+                ...bookingDetails,
+                action: 'book', // 確保 action 存在
+                date: new_date,
+                time: new_time,
+                phone: phone
+            };
+            const newMessageStr = JSON.stringify(newMessageObj);
+
+            const { error: updateError } = await supabase
+                .from('bookings')
+                .update({ 
+                    message: newMessageStr,
+                    // 如果未來有獨立的 date/time 欄位，也可以在這裡更新
+                    // date: new_date,
+                    // time: new_time
+                })
+                .eq('id', appointment_id);
+
+            if (updateError) {
+                console.error('Supabase Update Failed:', updateError);
+                throw updateError;
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: '預約修改成功 (資料庫 + Google 日曆)'
+            });
+        }
+
         return res.status(405).json({ error: 'Method Not Allowed' });
 
     } catch (error) {
