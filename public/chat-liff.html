@@ -199,11 +199,14 @@
 
             // Set a global timeout to avoid infinite spinning
             const initTimeout = setTimeout(() => {
-                if (spinner.style.display !== 'none') {
+                if (spinner.style.display !== 'none' && !currentUserId) { // Only show error if no user ID set (guest mode sets it)
                     showError('初始化逾時 (5s)，請檢查網路或 LIFF ID');
                     // Force remove spinner even if showError fails
                     spinner.style.setProperty('display', 'none', 'important');
                     spinner.classList.add('hidden');
+                } else if (currentUserId) {
+                    // If we have a user ID (guest or real), hide spinner if it's still there
+                    spinner.style.display = 'none';
                 }
             }, 5000); 
 
@@ -212,18 +215,36 @@
                 log('Initializing LIFF...');
                 
                 // Direct init without Promise.race to avoid premature timeout
-                await liff.init({ liffId: LIFF_ID });
-                
-                log('LIFF Initialized');
+                try {
+                    await liff.init({ liffId: LIFF_ID });
+                    log('LIFF Initialized');
 
-                if (!liff.isLoggedIn()) {
-                    log('User not logged in, calling login...');
-                    liff.login();
-                    return; // Stop here, login will redirect
+                    if (!liff.isLoggedIn()) {
+                        log('User not logged in, calling login...');
+                        liff.login();
+                        return; // Stop here, login will redirect
+                    }
+                    const profile = await liff.getProfile();
+                    currentUserId = profile.userId;
+                    log('User ID: ' + currentUserId);
+                } catch (liffErr) {
+                    console.error('LIFF Init Failed:', liffErr);
+                    // Fallback to Guest Mode
+                    const guestId = 'guest_' + Math.random().toString(36).substr(2, 9);
+                    currentUserId = localStorage.getItem('chat_guest_id') || guestId;
+                    localStorage.setItem('chat_guest_id', currentUserId);
+                    
+                    log('Guest Mode: ' + currentUserId);
+                    // Show a non-blocking toast or banner instead of full error page
+                    const errorContainer = document.getElementById('error-container');
+                    errorContainer.classList.remove('hidden');
+                    errorContainer.classList.add('flex');
+                    errorContainer.innerHTML = `
+                        <p class="text-red-600 font-bold mb-1">LIFF 初始化失敗 (訪客模式)</p>
+                        <p class="text-xs text-red-500 break-all">${liffErr.message || 'Invalid LIFF ID'}</p>
+                    `;
+                    // Don't return, continue to Supabase init
                 }
-                const profile = await liff.getProfile();
-                currentUserId = profile.userId;
-                log('User ID: ' + currentUserId);
 
                 // 2. Fetch Config for Supabase
                 log('Fetching config...');
