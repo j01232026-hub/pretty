@@ -181,9 +181,10 @@ export default async function handler(req, res) {
 
         // 3. PUT: 修改預約 (新功能)
         if (req.method === 'PUT') {
-            const { appointment_id, new_date, new_time } = req.body;
+            const { appointment_id, new_date, new_start_time, new_end_time } = req.body;
 
-            if (!appointment_id || !new_date || !new_time) {
+            // 參數檢查 (前端如果不傳 end_time，就預設 start + 1hr，但這裡建議前端傳完整的)
+            if (!appointment_id || !new_date || !new_start_time) {
                 return res.status(400).json({ error: 'Missing required fields' });
             }
 
@@ -207,37 +208,51 @@ export default async function handler(req, res) {
             const phone = booking.phone || bookingDetails.phone || 'Unknown';
 
             // 2. 準備新的時間物件 (ISO 8601, Asia/Taipei +08:00)
-            const startDateTime = `${new_date}T${new_time}:00+08:00`;
-            const startDateObj = new Date(startDateTime);
-            const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000); // 預設加 1 小時
+            const startDateTime = `${new_date}T${new_start_time}:00+08:00`;
+            
+            // 計算結束時間：如果有傳 new_end_time 則使用，否則預設 +1 小時
+            let endDateTime = '';
+            if (new_end_time) {
+                 endDateTime = `${new_date}T${new_end_time}:00+08:00`;
+            } else {
+                 const startDateObj = new Date(startDateTime);
+                 const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000); // +1 hr
+                 // 手動建構 ISO 字串 (處理 UTC -> +08:00)
+                 const tempDate = new Date(endDateObj.getTime());
+                 tempDate.setUTCHours(tempDate.getUTCHours() + 8);
+                 endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+            }
 
-            // 手動建構 ISO 字串 (處理 UTC -> +08:00)
-            const tempDate = new Date(endDateObj.getTime());
-            tempDate.setUTCHours(tempDate.getUTCHours() + 8);
-            const endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+            // 3. 智慧防撞期檢查 (Smart Conflict Detection)
+            console.log(`Update Check (Smart): ${startDateTime} to ${endDateTime}`);
 
-            // 3. 防撞期檢查 (Google Calendar Freebusy)
-            console.log(`Update Check: ${startDateTime} to ${endDateTime}`);
-            const checkResponse = await calendar.freebusy.query({
-                resource: {
-                    timeMin: startDateTime,
-                    timeMax: endDateTime,
-                    timeZone: 'Asia/Taipei',
-                    items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
-                },
+            // 使用 events.list 列出該區間所有行程
+            const eventsList = await calendar.events.list({
+                calendarId: process.env.GOOGLE_CALENDAR_ID,
+                timeMin: startDateTime,
+                timeMax: endDateTime,
+                singleEvents: true,
+                timeZone: 'Asia/Taipei',
             });
 
-            const busySlots = checkResponse.data.calendars[process.env.GOOGLE_CALENDAR_ID].busy;
+            const conflictingEvents = eventsList.data.items || [];
 
-            // 嚴格檢查：只要有任何忙碌時段，就視為衝突
-            // (注意：這可能會擋住「原地延長」的操作，但最安全)
-            if (busySlots.length > 0) {
-                console.warn('Update Conflict: Time slot is busy.', busySlots);
+            // 關鍵過濾：排除掉「自己」
+            const realConflicts = conflictingEvents.filter(event => {
+                // 如果這個行程的 ID 等於我們正在修改的 ID，就回傳 false (把它濾掉)
+                // 注意：如果資料庫沒有 google_event_id，那就無法排除自己，會退化成一般檢查 (這也合理，因為無 ID 無法辨識)
+                return event.id !== booking.google_event_id;
+            });
+
+            if (realConflicts.length > 0) {
+                console.warn('Update Conflict: Found other events.', realConflicts.map(e => e.summary));
                 return res.status(409).json({
                     error: 'Conflict',
-                    message: `修改失敗！該時段 [${new_date} ${new_time}] 已有其他預約。`
+                    message: `修改失敗！該時段已與其他預約衝突。`
                 });
             }
+
+            console.log('Update Check Passed: No conflicts found.');
 
             // 4. 執行更新
 
@@ -255,8 +270,6 @@ export default async function handler(req, res) {
                     console.log(`Google Event ${booking.google_event_id} updated.`);
                 } catch (googleError) {
                     console.error('Failed to update Google Calendar:', googleError.message);
-                    // Google 更新失敗是否要阻擋 DB 更新？
-                    // 這裡選擇回傳 500，保持資料一致性
                     return res.status(500).json({ 
                         error: 'Calendar Update Failed', 
                         message: 'Google 日曆更新失敗，請稍後再試。' 
@@ -270,9 +283,9 @@ export default async function handler(req, res) {
             // 更新 message 欄位內的 JSON
             const newMessageObj = {
                 ...bookingDetails,
-                action: 'book', // 確保 action 存在
+                action: 'book', 
                 date: new_date,
-                time: new_time,
+                time: new_start_time,
                 phone: phone
             };
             const newMessageStr = JSON.stringify(newMessageObj);
@@ -282,8 +295,6 @@ export default async function handler(req, res) {
                 .update({ 
                     message: newMessageStr,
                     // 如果未來有獨立的 date/time 欄位，也可以在這裡更新
-                    // date: new_date,
-                    // time: new_time
                 })
                 .eq('id', appointment_id);
 
