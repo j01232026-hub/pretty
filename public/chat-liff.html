@@ -147,23 +147,37 @@
 
         // LIFF ID Configuration
         const urlParams = new URLSearchParams(window.location.search);
-        // Use the LIFF ID provided in previous context for history/status if specific one not available
-        // Or better, let user provide it. For now use a placeholder that matches pattern
-        const LIFF_ID = urlParams.get('liffId') || '2006843442-xxxxx'; 
-
+        // Default to a placeholder if not provided. User needs to replace this!
+        const LIFF_ID = urlParams.get('liffId') || '2009027968-xxxxx'; 
 
         let currentUserId = null;
         let supabase = null;
 
         // Initialize
         window.onload = async function() {
+            // Set a global timeout to avoid infinite spinning
+            const initTimeout = setTimeout(() => {
+                if (document.getElementById('loading-spinner').style.display !== 'none') {
+                    showError('初始化逾時，請檢查網路或 LIFF ID 設定');
+                }
+            }, 10000); // 10 seconds timeout
+
             try {
                 // 1. Initialize LIFF
                 log('Initializing LIFF...');
-                await liff.init({ liffId: LIFF_ID });
+                
+                // Wrap liff.init in a race with timeout
+                await Promise.race([
+                    liff.init({ liffId: LIFF_ID }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF Init Timeout')), 5000))
+                ]);
+                
+                log('LIFF Initialized');
+
                 if (!liff.isLoggedIn()) {
+                    log('User not logged in, calling login...');
                     liff.login();
-                    return;
+                    return; // Stop here, login will redirect
                 }
                 const profile = await liff.getProfile();
                 currentUserId = profile.userId;
@@ -181,11 +195,16 @@
 
                 // 4. Load Messages
                 log('Loading messages...');
-                await loadMessages();
+                await loadHistory();
 
                 // 5. Setup Realtime Subscription
                 log('Setting up realtime...');
-                setupRealtime();
+                subscribeRealtime();
+
+                // Hide loading, show content
+                document.getElementById('loading-spinner').classList.add('hidden');
+                document.getElementById('loading-spinner').style.display = 'none'; // Double assurance
+                document.getElementById('chat-container').classList.remove('hidden');
 
                 // Setup Textarea Auto-resize
                 const textarea = document.getElementById('message-input');
