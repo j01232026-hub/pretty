@@ -378,10 +378,24 @@
         }
 
         function handleBack() {
-            if (liff.isInClient()) {
-                liff.closeWindow();
-            } else {
+            // Try LIFF close first
+            try {
+                if (window.liff && liff.isInClient && liff.isInClient()) {
+                    liff.closeWindow();
+                    return;
+                }
+            } catch (e) {
+                console.error('LIFF close failed:', e);
+            }
+
+            // Browser fallback
+            if (document.referrer && window.history.length > 1) {
                 window.history.back();
+            } else {
+                // If no history, try to close window or just show message
+                window.close();
+                // In some browsers window.close() only works if opened by script.
+                // If that fails, we can't do much else in a pure static page without a home route.
             }
         }
 
