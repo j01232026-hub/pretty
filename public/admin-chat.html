@@ -140,6 +140,7 @@
     let currentChatUser = null;
     let chatSubscription = null;
     let userProfiles = {};
+    let adminAvatarUrl = null; // Store admin's avatar URL
     
     // Notification Sound
     const notificationAudio = new Audio('/notification.wav');
@@ -149,6 +150,7 @@
 
     async function init() {
         await initSupabase();
+        await fetchAdminProfile(); // Fetch admin avatar
         await fetchChatUsers();
         setupRealtime();
     }
@@ -162,6 +164,27 @@
             }
         } catch (e) {
             console.error("Supabase Init Error", e);
+        }
+    }
+
+    // Try to find the admin's profile (assuming name contains '許証傑' or '阿彬')
+    async function fetchAdminProfile() {
+        if (!supabaseClient) return;
+        try {
+            // Search for a profile that matches the admin's name
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('picture_url')
+                .or('custom_name.ilike.%許証傑%,custom_name.ilike.%阿彬%,display_name.ilike.%許証傑%,display_name.ilike.%阿彬%')
+                .limit(1)
+                .maybeSingle();
+
+            if (data && data.picture_url) {
+                adminAvatarUrl = data.picture_url;
+                console.log("Admin avatar found:", adminAvatarUrl);
+            }
+        } catch (e) {
+            console.error("Error fetching admin profile:", e);
         }
     }
 
@@ -206,7 +229,7 @@
                     time: new Date(msg.created_at),
                     displayName: null,
                     customName: null,
-                    avatarUrl: null
+                    pictureUrl: null
                 });
             }
         });
@@ -225,7 +248,7 @@
                         const u = userMap.get(p.user_id);
                         u.displayName = p.display_name;
                         u.customName = p.custom_name;
-                        u.avatarUrl = p.avatar_url; // Assuming avatar_url exists
+                        u.pictureUrl = p.picture_url; 
                         userProfiles[p.user_id] = u;
                     }
                 });
@@ -260,8 +283,8 @@
             
             // Avatar logic
             let avatarHtml = '';
-            if (u.avatarUrl) {
-                avatarHtml = `<img src="${u.avatarUrl}" class="w-14 h-14 rounded-full object-cover ${ringClass}">`;
+            if (u.pictureUrl) {
+                avatarHtml = `<img src="${u.pictureUrl}" class="w-14 h-14 rounded-full object-cover ${ringClass}">`;
             } else {
                  avatarHtml = `
                     <div class="w-14 h-14 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 font-bold ${ringClass}">
@@ -334,14 +357,27 @@
         let html = '';
         if (isMe) {
             // Sent by Admin
+            // Admin Avatar: Try to use fetched avatar, otherwise fallback to "許"
+            let adminAvatar = '';
+            if (adminAvatarUrl) {
+                adminAvatar = `<img src="${adminAvatarUrl}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover border border-blue-100 shadow-sm">`;
+            } else {
+                adminAvatar = `
+                    <div class="w-8 h-8 rounded-full bg-blue-50 flex-shrink-0 flex items-center justify-center text-blue-600 text-xs font-bold border border-blue-100 shadow-sm">
+                        許
+                    </div>
+                `;
+            }
+
             html = `
-                <div class="flex flex-col items-end space-y-1">
-                    <div class="max-w-[75%] space-y-1">
+                <div class="flex items-end justify-end gap-2">
+                    <div class="flex flex-col items-end space-y-1 max-w-[75%]">
                         <div class="bg-primary text-white px-4 py-2 rounded-2xl rounded-br-none shadow-md">
                             <p class="text-sm">${escapeHtml(msg.content)}</p>
                         </div>
                         <p class="text-[10px] text-slate-400 text-right mr-1">${timeStr}</p>
                     </div>
+                    ${adminAvatar}
                 </div>
             `;
         } else {
@@ -351,8 +387,8 @@
             const firstChar = name.charAt(0).toUpperCase();
             
             let avatarHtml = `<div class="w-8 h-8 rounded-full bg-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">${firstChar}</div>`;
-            if (u.avatarUrl) {
-                avatarHtml = `<img src="${u.avatarUrl}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">`;
+            if (u.pictureUrl) {
+                avatarHtml = `<img src="${u.pictureUrl}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">`;
             }
 
             html = `
