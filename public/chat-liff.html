@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>客服對話</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- Supabase JS Client (for Realtime) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8A2BE2",
+                        "chat-bg": "#9bb7d4", // LINE-like background
+                        "bubble-me": "#9de694", // LINE-like green bubble
+                        "bubble-other": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #9bb7d4; /* LINE Default BG Color */
+            height: 100dvh;
+            display: flex;
+            flex-col: column;
+            overflow: hidden;
+        }
+        /* Custom Scrollbar */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="font-display text-[#1b0d18]">
+    <!-- Header -->
+    <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-10 shadow-sm">
+        <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="handleBack()">
+            <span class="material-symbols-outlined">arrow_back_ios</span>
+        </div>
+        <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服</h2>
+    </div>
+
+    <!-- Chat Area -->
+    <div id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24">
+        <!-- Messages will be injected here -->
+        
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="flex justify-center py-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="fixed bottom-0 w-full bg-[#f8f6f7] p-2 border-t border-gray-200 flex items-end gap-2 z-20 safe-area-bottom">
+        <button class="p-2 text-gray-500 rounded-full hover:bg-gray-200">
+            <span class="material-symbols-outlined">add</span>
+        </button>
+        <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
+            <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..."></textarea>
+        </div>
+        <button id="send-btn" class="p-2 text-primary rounded-full hover:bg-gray-200 disabled:opacity-50" onclick="sendMessage()">
+            <span class="material-symbols-outlined text-3xl fill-1">send</span>
+        </button>
+    </div>
+
+    <script>
+        // LIFF ID Configuration
+        const urlParams = new URLSearchParams(window.location.search);
+        const LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY'; // Default or from URL
+
+        let currentUserId = null;
+        let supabase = null;
+
+        // Initialize
+        window.onload = async function() {
+            try {
+                // 1. Initialize LIFF
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                const profile = await liff.getProfile();
+                currentUserId = profile.userId;
+                console.log('User ID:', currentUserId);
+
+                // 2. Initialize Supabase (Fetch config first)
+                await initSupabase();
+
+                // 3. Load History
+                await loadHistory();
+
+                // 4. Subscribe to Realtime
+                subscribeRealtime();
+
+                // Setup Textarea Auto-resize
+                const textarea = document.getElementById('message-input');
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                    // Enable/Disable send button
+                    document.getElementById('send-btn').disabled = !this.value.trim();
+                });
+
+            } catch (err) {
+                console.error('Init Failed:', err);
+                alert('初始化失敗: ' + err.message);
+            }
+        };
+
+        // Initialize Supabase
+        async function initSupabase() {
+            try {
+                const res = await fetch('/api/config');
+                const config = await res.json();
+                
+                if (window.supabase) {
+                    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+                    console.log('Supabase Initialized');
+                } else {
+                    console.error('Supabase SDK not loaded');
+                }
+            } catch (err) {
+                console.error('Failed to load Supabase config:', err);
+            }
+        }
+
+        // Load History
+        async function loadHistory() {
+            const container = document.getElementById('chat-container');
+            const spinner = document.getElementById('loading-spinner');
+            
+            try {
+                const res = await fetch(`/api/get-messages?user_id=${currentUserId}`);
+                if (!res.ok) throw new Error('API Error');
+                const messages = await res.json();
+                
+                spinner.remove(); // Remove spinner
+
+                messages.forEach(msg => {
+                    appendMessage(msg, false); // false = don't scroll smoothly for history (jump to bottom at end)
+                });
+                
+                scrollToBottom(false);
+
+            } catch (err) {
+                console.error('Load History Error:', err);
+                spinner.innerHTML = `<p class="text-xs text-red-500">無法載入訊息</p>`;
+            }
+        }
+
+        // Subscribe Realtime
+        function subscribeRealtime() {
+            if (!supabase) return;
+
+            supabase.channel('public:messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                    const newMsg = payload.new;
+                    console.log('New Message:', newMsg);
+
+                    // Check if message is relevant to current user
+                    if (newMsg.sender_id === currentUserId || newMsg.receiver_id === currentUserId) {
+                        appendMessage(newMsg, true);
+                    }
+                })
+                .subscribe();
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (!content || !currentUserId) return;
+
+            // Clear input immediately for better UX
+            input.value = '';
+            input.style.height = 'auto';
+            document.getElementById('send-btn').disabled = true;
+
+            try {
+                const res = await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: content,
+                        sender_id: currentUserId,
+                        receiver_id: 'ADMIN' // Default to ADMIN for now
+                    })
+                });
+
+                if (!res.ok) throw new Error('Send Failed');
+                
+                // Note: We don't need to append manually here because Realtime subscription will catch it!
+                // But for faster feedback, we COULD append it optimistically.
+                // For now, let's rely on Realtime to ensure consistency.
+
+            } catch (err) {
+                console.error('Send Error:', err);
+                alert('訊息發送失敗');
+                input.value = content; // Restore content
+            }
+        }
+
+        // Append Message to UI
+        function appendMessage(msg, smoothScroll = true) {
+            const container = document.getElementById('chat-container');
+            const isMe = msg.sender_id === currentUserId;
+            
+            const div = document.createElement('div');
+            div.className = `flex w-full mb-4 ${isMe ? 'justify-end' : 'justify-start'}`;
+            
+            // Time formatting
+            const time = new Date(msg.created_at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+
+            if (isMe) {
+                // My Message (Right)
+                div.innerHTML = `
+                    <div class="flex flex-col items-end max-w-[75%]">
+                        <div class="bg-[#9de694] text-black px-4 py-2 rounded-2xl rounded-tr-none shadow-sm break-words text-sm relative">
+                            ${escapeHtml(msg.content)}
+                        </div>
+                        <span class="text-[10px] text-gray-500 mt-1 mr-1">${time}</span>
+                    </div>
+                `;
+            } else {
+                // Other Message (Left) - Assume Admin/Stylist
+                div.innerHTML = `
+                    <div class="flex items-start max-w-[85%]">
+                        <div class="w-8 h-8 rounded-full bg-white mr-2 flex items-center justify-center shrink-0 border border-gray-200">
+                            <span class="material-symbols-outlined text-gray-400 text-lg">support_agent</span>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="text-[10px] text-gray-600 mb-1 ml-1">Pretty Salon 客服</span>
+                            <div class="bg-white text-black px-4 py-2 rounded-2xl rounded-tl-none shadow-sm break-words text-sm">
+                                ${escapeHtml(msg.content)}
+                            </div>
+                            <span class="text-[10px] text-gray-500 mt-1 ml-1">${time}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.appendChild(div);
+            scrollToBottom(smoothScroll);
+        }
+
+        function scrollToBottom(smooth = true) {
+            const container = document.getElementById('chat-container');
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        }
+
+        function handleBack() {
+            if (liff.isInClient()) {
+                liff.closeWindow();
+            } else {
+                window.history.back();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>
