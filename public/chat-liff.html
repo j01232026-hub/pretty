@@ -78,11 +78,11 @@
     <!-- Main Container -->
     <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
         <!-- Header -->
-        <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-10 shadow-sm shrink-0">
-            <button class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18] border-none bg-transparent outline-none focus:outline-none" onclick="handleBack()" id="back-btn">
-                <span class="material-symbols-outlined pointer-events-none" style="font-size: 24px;">arrow_back_ios</span>
-            </button>
-            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.3)</span></h2>
+        <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0">
+            <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="handleBack()">
+                <span class="material-symbols-outlined">arrow_back_ios</span>
+            </div>
+            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.4)</span></h2>
         </div>
 
         <!-- Chat Area -->
@@ -229,13 +229,6 @@
                 }
                 if (chatContainer) {
                     chatContainer.classList.remove('hidden');
-                }
-                
-                // Explicitly bind back button here as well to ensure it works
-                const backBtn = document.getElementById('back-btn');
-                if (backBtn) {
-                    backBtn.onclick = handleBack; // Override any inline handler just in case
-                    log('Back button bound via JS');
                 }
             }
         };
@@ -385,42 +378,12 @@
         }
 
         function handleBack() {
-            log('Back button clicked', 'info');
-            
-            // Aggressive Back Strategy
-            
-            // 1. Try LIFF Close (Fire and forget)
-            if (window.liff) {
-                try {
-                    // Check if function exists before calling
-                    if (typeof liff.closeWindow === 'function') {
-                        log('Calling liff.closeWindow()');
-                        liff.closeWindow();
-                    }
-                } catch (e) {
-                    log('LIFF close failed: ' + e, 'error');
-                }
-            }
-
-            // 2. Try History Back
-            if (window.history.length > 1) {
-                log('Calling history.back()');
-                window.history.back();
+            if (liff.isInClient()) {
+                liff.closeWindow();
             } else {
-                log('No history to go back to', 'warn');
+                window.history.back();
             }
-
-            // 3. Force Redirect to Status Page
-            // If the above actions didn't close/unload the page within 300ms, force a redirect.
-            log('Scheduling fallback redirect to status-liff.html');
-            setTimeout(() => {
-                log('Executing fallback redirect...');
-                window.location.href = 'status-liff.html';
-            }, 300);
         }
-        
-        // Expose to window just in case
-        window.handleBack = handleBack;
 
         function escapeHtml(text) {
             const map = {
