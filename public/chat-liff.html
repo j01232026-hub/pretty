@@ -79,10 +79,10 @@
     <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
         <!-- Header -->
         <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0">
-            <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="window.handleBack()">
+            <div class="flex size-12 shrink-0 items-center justify-center cursor-pointer text-[#1b0d18] active:scale-90 transition-transform" onclick="handleBack()">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
             </div>
-            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.7)</span></h2>
+            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.8)</span></h2>
         </div>
 
         <!-- Chat Area -->
@@ -374,31 +374,25 @@
             });
         }
 
-        // Global Back Handler (v1.7)
-        window.handleBack = function() {
-            console.log('handleBack called');
-            log('handleBack called'); // Write to debug console
+        // Back Button Logic (v1.8 - Robust Fallback)
+        function handleBack() {
             try {
-                if (window.liff && liff.isInClient()) {
-                    log('Attempting liff.closeWindow');
+                // 1. Try LIFF Close
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
                     liff.closeWindow();
-                } else {
-                    log('Attempting history.back');
-                    window.history.back();
-                    
-                    // Fallback to window.close if history.back fails (e.g. opened in new tab)
-                    setTimeout(() => {
-                        log('Fallback to window.close');
-                        window.close();
-                    }, 500);
                 }
             } catch (e) {
-                console.error('Back Error:', e);
-                log('Back Error: ' + e.message, 'error');
-                // Last resort
-                window.history.back();
+                console.error('LIFF Close Failed', e);
             }
-        };
+
+            // 2. Try History Back (if LIFF didn't close or not in LIFF)
+            window.history.back();
+
+            // 3. Absolute Fallback: Redirect to Status Page if still here
+            setTimeout(() => {
+                window.location.href = 'status-liff.html';
+            }, 500);
+        }
 
         function escapeHtml(text) {
             const map = {
