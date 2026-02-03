@@ -146,7 +146,7 @@ export default async function handler(req, res) {
             // 3. 建立事件物件
             const event = {
                 summary: `【新預約】${phone}`,
-                description: `透過 LINE 預約系統建立 (API)`,
+                description: `透過 LINE 預約系統建立 (API)\nUser ID: ${userId}`,
                 start: {
                     dateTime: startDateTime,
                     timeZone: 'Asia/Taipei',
@@ -157,94 +157,58 @@ export default async function handler(req, res) {
                 },
             };
 
-            // 4. 寫入日曆
-            let googleEventId = null;
-            try {
-                const { data: calendarEvent } = await calendar.events.insert({
-                    calendarId: process.env.GOOGLE_CALENDAR_ID,
-                    resource: event,
-                });
-                eventUrl = calendarEvent.htmlLink;
-                googleEventId = calendarEvent.id; // 取得並儲存 Event ID
-                console.log('Google 日曆寫入成功 (API)', eventUrl);
+            // 4. 寫入 Google Calendar
+            const insertResponse = await calendar.events.insert({
+                calendarId: process.env.GOOGLE_CALENDAR_ID,
+                resource: event,
+            });
+            eventUrl = insertResponse.data.htmlLink;
+            console.log('Google Calendar 事件建立成功:', eventUrl);
 
-                // 4.5 更新 Supabase，補上 google_event_id
-                if (insertedBooking) {
-                    await supabase
-                        .from('bookings')
-                        .update({ google_event_id: googleEventId })
-                        .eq('id', insertedBooking.id);
-                    console.log('Supabase google_event_id 更新成功');
-                }
-
-            } catch (insertError) {
-                console.error('Google Calendar Insert Failed:', insertError.response?.data || insertError);
-                throw insertError; // 重新拋出錯誤，讓外層 catch 處理
-            }
-
-            // 5. 嘗試發送 Push Message 通知使用者 (替代 Reply Message) - 只有在日曆寫入成功後才執行
+            // --- 5. 發送 LINE Push Message (通知用戶預約成功) ---
             const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-            if (accessToken && userId) {
+            if (accessToken && userId && userId !== 'U_GUEST') {
                 try {
                     await axios.post(
                         'https://api.line.me/v2/bot/message/push',
                         {
                             to: userId,
-                            messages: [
-                                {
-                                    type: 'text',
-                                    text: `✅ 預約已確認！\n\n日期：${date}\n時間：${time}\n\n請準時到達，謝謝！`
-                                }
-                            ]
+                            messages: [{
+                                type: 'text',
+                                text: `✅ 預約已確認！\n\n設計師：思容Phoebe\n日期：${date}\n時間：${time}${endTime ? '-' + endTime : ''}\n手機：${phone}\n\n請準時到達，謝謝！`
+                            }]
                         },
                         {
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${accessToken}`
+                                Authorization: `Bearer ${accessToken}`,
                             },
-                            timeout: 5000 // 設定 5 秒超時，避免卡死 Vercel Function
                         }
                     );
-                    console.log('Push Message sent');
-                } catch (pushError) {
-                    console.error('Push Message 發送失敗 (可能是額度不足或使用者封鎖):', pushError.response?.data || pushError.message);
-                    // 推播失敗不影響預約成功的結果
+                    console.log('LINE Push Message sent successfully');
+                } catch (lineError) {
+                    console.error('LINE Push Message Failed:', lineError.response ? lineError.response.data : lineError.message);
+                    // 不阻擋 API 回傳成功，因為預約本身已經成功
                 }
             }
 
-        } catch (googleError) {
-            console.error('Google Calendar Error (API):', googleError);
-            
-            // 補償措施：如果日曆寫入失敗，刪除 Supabase 中的預約
-            if (insertedBooking) {
-                console.warn(`日曆寫入失敗 (API)，回滾 Supabase 預約 (${insertedBooking.id})...`);
-                await supabase.from('bookings').delete().eq('id', insertedBooking.id);
-            }
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Booking confirmed',
+                eventUrl: eventUrl
+            });
 
-            // 嘗試抓取更詳細的錯誤資訊
-            const errorDetails = googleError.response?.data || googleError.message;
-            console.error('Detailed Error:', JSON.stringify(errorDetails));
-
-            // 關鍵修改：如果 Google API 失敗，回傳 500 給前端，讓前端顯示錯誤
+        } catch (error) {
+            console.error('API Error:', error);
+            // 如果是我們自己拋出的 supabaseError，這裡會捕捉到
+            // 如果已經寫入但後續失敗 (例如 Calendar)，可能需要 Rollback (這裡簡化不處理)
             return res.status(500).json({ 
-                error: 'Calendar Error', 
-                message: `日曆連線失敗 (${googleError.message})`,
-                details: errorDetails
+                error: 'Internal Server Error', 
+                message: error.message 
             });
         }
-        // --- Google Calendar 結束 ---
-
-        return res.status(200).json({ 
-            success: true, 
-            message: 'Booking saved', 
-            eventUrl: eventUrl 
-        });
-
-    } catch (error) {
-        console.error('Submit API Error:', error);
-        return res.status(500).json({ 
-            error: 'Internal Server Error', 
-            message: `系統發生未預期的錯誤 (${error.message})` 
-        });
+    } catch (outerError) {
+        console.error('Outer Error:', outerError);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 }

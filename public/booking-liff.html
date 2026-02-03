@@ -595,19 +595,10 @@
 
                 // API Success -> Send LINE Message
                 if (liff.isInClient()) {
-                    try {
-                        await liff.sendMessages([
-                            {
-                                type: 'text',
-                                text: `預約資料：\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`
-                            }
-                        ]);
-                        liff.closeWindow();
-                    } catch (err) {
-                        console.error('Send Error:', err);
-                        alert('預約已寫入系統，但在發送 LINE 訊息時發生錯誤。請手動截圖給設計師。');
-                        liff.closeWindow();
-                    }
+                    // 只關閉視窗，讓後端發送 Push Message
+                    // 或者可以發送一個簡單的 "我已完成預約" 確認訊息，但既然使用者不想看到綠色氣泡，我們就只關閉視窗
+                    // 這樣聊天室只會出現官方帳號的 Push Message (灰色氣泡)
+                    liff.closeWindow();
                 } else {
                     alert(`預約成功！(測試模式)\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`);
                     closeModal();
