@@ -260,8 +260,10 @@
             // Initialize LIFF
             try {
                 // Use the project's LIFF ID
-                const LIFF_ID = '2009027968-7nFLpFJt';
-                await liff.init({ liffId: LIFF_ID }); 
+                // 優先從網址參數取得 LIFF ID (例如 ?liffId=xxx)，若無則使用預設值
+                const urlParams = new URLSearchParams(window.location.search);
+                const LIFF_ID = urlParams.get('liffId') || '2009027968-7nFLpFJt';
+                await liff.init({ liffId: LIFF_ID });  
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
