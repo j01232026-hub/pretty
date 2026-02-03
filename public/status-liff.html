@@ -292,22 +292,45 @@
 
                 container.appendChild(clone);
             } else {
-                // If switchTab('history') is called on this page (though we have a separate history page),
-                // we should probably redirect or render simple cards.
-                // The user seems to want two separate pages.
-                // But since the tabs are here, let's implement basic history rendering just in case.
+                // History Rendering
+                const template = document.getElementById('history-card-template');
+                if (!template) {
+                    console.error('History card template not found');
+                    return;
+                }
+
                 appointments.forEach(appt => {
-                     // Reuse active card? No, history should look different. 
-                     // Since the user asked for "status-liff" to be based on appointment_status.html
-                     // and appointment_status.html has tabs, we should support it.
-                     // But strictly speaking, the user asked for separate files.
-                     // Let's redirect to history-liff.html if history tab is clicked?
-                     // Or just render simple cards.
-                     // Let's redirect for better separation as per user request structure.
-                     // Actually, the `switchTab` function is already implemented.
-                     // I will just use a simple card for history here if needed, or redirect.
-                     // Given the instructions, I'll redirect.
+                    const clone = template.content.cloneNode(true);
+                    
+                    clone.querySelector('.stylist-name').textContent = appt.stylist || '指定設計師';
+                    
+                    // Format Date
+                    let timeDisplay = appt.time;
+                    if (appt.endTime) {
+                        timeDisplay += ` - ${appt.endTime}`;
+                    }
+                    clone.querySelector('.service-info').textContent = `一般服務 • ${appt.date} • ${timeDisplay}`;
+                    
+                    clone.querySelector('.price-info').textContent = `NT$ ${appt.price || 500}`;
+
+                    // Rebook Button
+                    const rebookBtn = clone.querySelector('.btn-rebook');
+                    rebookBtn.onclick = () => {
+                        // Redirect to booking
+                        window.location.href = 'booking-liff.html';
+                    };
+
+                    container.appendChild(clone);
                 });
+
+                // End of list indicator
+                const endIndicator = document.createElement('div');
+                endIndicator.className = 'py-8 flex flex-col items-center justify-center text-gray-400 opacity-60';
+                endIndicator.innerHTML = `
+                    <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                    <p class="text-sm">已顯示所有紀錄</p>
+                `;
+                container.appendChild(endIndicator);
             }
         }
 
