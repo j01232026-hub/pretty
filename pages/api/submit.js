@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { userId, date, time, phone } = req.body;
+        const { userId, date, time, phone, endTime } = req.body;
 
         if (!userId || !date || !time || !phone) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
             const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
             
             // 除錯日誌：檢查金鑰結構 (隱藏敏感資訊)
-            console.log('Google Credentials Keys:', Object.keys(serviceAccountKey));
+            // console.log('Google Credentials Keys:', Object.keys(serviceAccountKey));
             if (!serviceAccountKey.private_key) {
                 throw new Error('Missing private_key in GOOGLE_SERVICE_ACCOUNT_KEY');
             }
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
             
             // 取得已授權的客戶端
             const authClient = await auth.getClient();
-            console.log('Google Auth 授權成功');
+            // console.log('Google Auth 授權成功');
 
             const calendar = google.calendar({ version: 'v3', auth: authClient });
 
@@ -62,15 +62,21 @@ export default async function handler(req, res) {
             // 確保格式為 RFC3339 (含時區 +08:00)
             const startDateTime = `${date}T${time}:00+08:00`;
             
-            // 計算結束時間 (加 1 小時)
-            const startDateObj = new Date(startDateTime);
-            const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
-            
-            // 轉換為台北時間格式字串
-            // 技巧：先將時間加 8 小時，轉成 UTC ISO 字串，再把 Z 換成 +08:00
-            const tempDate = new Date(endDateObj.getTime());
-            tempDate.setUTCHours(tempDate.getUTCHours() + 8);
-            const endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+            // 計算結束時間
+            let endDateTime;
+            if (endTime) {
+                // 如果前端有傳結束時間 (HH:mm)
+                endDateTime = `${date}T${endTime}:00+08:00`;
+            } else {
+                // 預設加 1 小時
+                const startDateObj = new Date(startDateTime);
+                const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
+                
+                // 轉換為台北時間格式字串
+                const tempDate = new Date(endDateObj.getTime());
+                tempDate.setUTCHours(tempDate.getUTCHours() + 8);
+                endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+            }
 
             // --- 新增：寫入前的最後檢查 ---
             console.log(`正在進行寫入前的最後撞期檢查 (API)... Start: ${startDateTime}, End: ${endDateTime}`);
@@ -90,12 +96,13 @@ export default async function handler(req, res) {
                 console.warn('撞期偵測 (Google Calendar Check)！該時段已被佔用。');
                 return res.status(409).json({
                     error: 'Conflict',
-                    message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (日曆同步)。`
+                    message: `抱歉！您選擇的時段 [${date} ${time}${endTime ? '-' + endTime : ''}] 剛剛被搶先預約了 (日曆同步)。`
                 });
             }
 
             // 1. 寫入 Supabase (搶先佔位)
-            const messageStr = `{"action": "book", "date": "${date}", "time": "${time}", "phone": "${phone}"}`;
+            // 儲存 endTime 資訊
+            const messageStr = `{"action": "book", "date": "${date}", "time": "${time}", "startTime": "${time}", "endTime": "${endTime || ''}", "phone": "${phone}"}`;
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
                 .insert([

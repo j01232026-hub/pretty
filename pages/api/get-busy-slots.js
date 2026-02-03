@@ -86,27 +86,24 @@ export default async function handler(req, res) {
                 const dbSlots = dbBookings.map(booking => {
                     try {
                         const msg = JSON.parse(booking.message);
-                        if (msg.time) {
+                        if (msg.time || msg.startTime) {
                             // 組合時間字串，模擬 Google 的格式
                             // Start: YYYY-MM-DDTHH:mm:00+08:00
-                            const start = `${msg.date}T${msg.time}:00+08:00`;
+                            const timeStr = msg.startTime || msg.time;
+                            const start = `${msg.date}T${timeStr}:00+08:00`;
                             
-                            // 計算結束時間 (預設 +1 小時)
-                            const startDate = new Date(start);
-                            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-                            
-                            // 轉換結束時間為 ISO 字串並修正時區 (簡易處理，保持 +08:00 格式)
-                            // 這裡我們手動組字串比較保險，因為 Date.toISOString() 會轉 UTC
-                            // 取得 +1 小時後的小時數 (需處理跨日，但這裡簡化只看小時)
-                            // 為了準確，我們用 Date 物件計算後，再轉回本地時間字串
-                            // 或者直接依賴 Google 格式，前端只比對 start 字串
-                            // 前端邏輯：slot.start.includes(timeOption)
-                            // 所以 end 時間其實前端沒用到，但為了格式統一我們還是給它
-                            
-                            // 簡易計算 End Time 字串 (假設不跨日，或者跨日也沒關係只要格式對)
-                            // 為了正確轉換，我們用 UTC offset 技巧
-                            const tzOffset = 8 * 60 * 60 * 1000;
-                            const endIso = new Date(endDate.getTime() + tzOffset).toISOString().replace('Z', '+08:00');
+                            // 計算結束時間
+                            let endIso;
+                            if (msg.endTime) {
+                                // 如果有明確的 endTime
+                                endIso = `${msg.date}T${msg.endTime}:00+08:00`;
+                            } else {
+                                // 舊邏輯：預設 +1 小時
+                                const startDate = new Date(start);
+                                const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+                                const tzOffset = 8 * 60 * 60 * 1000;
+                                endIso = new Date(endDate.getTime() + tzOffset).toISOString().replace('Z', '+08:00');
+                            }
                             
                             return {
                                 start: start,

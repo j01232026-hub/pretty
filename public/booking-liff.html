@@ -539,23 +539,83 @@
             const phone = document.getElementById('phoneInput').value.trim();
             const timeString = formatSelectedTimes();
             
-            // Send via LIFF
-            if (liff.isInClient()) {
+            // Calculate Start and End Time for API
+            const times = Array.from(selectedTimes).sort();
+            if (times.length === 0) return;
+
+            const timeToMin = (t) => {
+                const [h, m] = t.split(':').map(Number);
+                return h * 60 + m;
+            };
+            const minToTime = (min) => {
+                const h = Math.floor(min / 60);
+                const m = min % 60;
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            };
+
+            const startTime = times[0];
+            const lastTimeMin = timeToMin(times[times.length - 1]);
+            const endTime = minToTime(lastTimeMin + 30); // Add 30 mins to the last slot
+
+            // Get User ID
+            let userId = 'U_GUEST';
+            if (liff.isInClient() || liff.isLoggedIn()) {
                 try {
-                    await liff.sendMessages([
-                        {
-                            type: 'text',
-                            text: `預約資料：\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`
-                        }
-                    ]);
-                    liff.closeWindow();
-                } catch (err) {
-                    console.error('Send Error:', err);
-                    alert('發送失敗，請手動截圖傳送給設計師');
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                } catch (e) {
+                    console.error('Get Profile Error:', e);
                 }
-            } else {
-                alert(`(測試模式)\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`);
-                closeModal();
+            }
+
+            // Call Backend API
+            try {
+                // Show loading state (optional)
+                const submitBtn = document.querySelector('#confirmModal button'); // Assuming there's a button in modal
+                // But current modal button calls submitBooking() directly? 
+                // Wait, I need to check how submitBooking is called. 
+                // It is called by button onclick="submitBooking()" in the modal (implied, or I need to check)
+                
+                const res = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        date: selectedDate,
+                        time: startTime,
+                        endTime: endTime,
+                        phone: phone
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.message || '預約寫入失敗');
+                }
+
+                // API Success -> Send LINE Message
+                if (liff.isInClient()) {
+                    try {
+                        await liff.sendMessages([
+                            {
+                                type: 'text',
+                                text: `預約資料：\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`
+                            }
+                        ]);
+                        liff.closeWindow();
+                    } catch (err) {
+                        console.error('Send Error:', err);
+                        alert('預約已寫入系統，但在發送 LINE 訊息時發生錯誤。請手動截圖給設計師。');
+                        liff.closeWindow();
+                    }
+                } else {
+                    alert(`預約成功！(測試模式)\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`);
+                    closeModal();
+                }
+
+            } catch (err) {
+                console.error('Submit Error:', err);
+                alert('預約失敗：' + err.message);
             }
         }
     </script>
