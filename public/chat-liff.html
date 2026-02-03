@@ -79,10 +79,10 @@
     <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
         <!-- Header -->
         <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0">
-            <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="handleBack()">
+            <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="window.handleBack()">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
             </div>
-            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.6)</span></h2>
+            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.7)</span></h2>
         </div>
 
         <!-- Chat Area -->
@@ -154,8 +154,8 @@
         let supabase = null;
 
         // Initialize
-        // Use DOMContentLoaded to ensure earlier execution than window.onload
-        document.addEventListener('DOMContentLoaded', async function() {
+        // Use window.onload to match history-liff.html behavior
+        window.onload = async function() {
             const spinner = document.getElementById('loading-spinner');
             const chatContainer = document.getElementById('chat-container');
 
@@ -167,17 +167,14 @@
                     spinner.style.setProperty('display', 'none', 'important');
                     spinner.classList.add('hidden');
                 }
-            }, 5000); // Reduce to 5 seconds for faster feedback
+            }, 5000); 
 
             try {
                 // 1. Initialize LIFF
                 log('Initializing LIFF...');
                 
-                // Wrap liff.init in a race with timeout
-                await Promise.race([
-                    liff.init({ liffId: LIFF_ID }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF Init Timeout')), 4000))
-                ]);
+                // Direct init without Promise.race to avoid premature timeout
+                await liff.init({ liffId: LIFF_ID });
                 
                 log('LIFF Initialized');
 
@@ -377,16 +374,28 @@
             });
         }
 
-        // Global Back Handler (v1.6)
+        // Global Back Handler (v1.7)
         window.handleBack = function() {
+            console.log('handleBack called');
+            log('handleBack called'); // Write to debug console
             try {
                 if (window.liff && liff.isInClient()) {
+                    log('Attempting liff.closeWindow');
                     liff.closeWindow();
                 } else {
+                    log('Attempting history.back');
                     window.history.back();
+                    
+                    // Fallback to window.close if history.back fails (e.g. opened in new tab)
+                    setTimeout(() => {
+                        log('Fallback to window.close');
+                        window.close();
+                    }, 500);
                 }
             } catch (e) {
                 console.error('Back Error:', e);
+                log('Back Error: ' + e.message, 'error');
+                // Last resort
                 window.history.back();
             }
         };
