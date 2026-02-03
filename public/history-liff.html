@@ -128,7 +128,11 @@
     </div>
 
     <script>
-        const LIFF_ID = '2009027968-7nFLpFJt';
+        // 優先從網址參數取得 LIFF ID (例如 ?liffId=xxx)，若無則使用預設值
+        const urlParams = new URLSearchParams(window.location.search);
+        // Default to the provided ID for History Page
+        const LIFF_ID = urlParams.get('liffId') || '2009027968-8FTFYHCQ';
+        console.log('Using LIFF ID:', LIFF_ID);
         // 你的預約頁面完整 LIFF URL，請替換為實際的 LIFF URL
         // 如果沒有，可以用 window.location.href 跳轉到相對路徑
         const BOOKING_LIFF_URL = 'https://liff.line.me/2009027968-7nFLpFJt'; 

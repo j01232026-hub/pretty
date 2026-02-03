@@ -95,7 +95,8 @@
         // LIFF ID (From previous context)
         // 優先從網址參數取得 LIFF ID (例如 ?liffId=xxx)，若無則使用預設值
         const urlParams = new URLSearchParams(window.location.search);
-        const LIFF_ID = urlParams.get('liffId') || '2009027968-7nFLpFJt'; 
+        // Default to the provided ID for Status Page
+        const LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY'; 
         console.log('Using LIFF ID:', LIFF_ID);
         let currentUserId = null; // Will be set after LIFF init
         let currentTab = 'upcoming';
