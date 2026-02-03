@@ -184,6 +184,7 @@
         const LIFF_ID = urlParams.get('liffId') || '2009027968-ULNTsdDd'; 
 
         let currentUserId = null;
+        let currentDisplayName = null;
         let supabaseClient = null;
 
         // Initialize
@@ -232,12 +233,14 @@
                     }
                     const profile = await liff.getProfile();
                     currentUserId = profile.userId;
+                    currentDisplayName = profile.displayName;
                     log('User ID: ' + currentUserId);
                 } catch (liffErr) {
                     console.error('LIFF Init Failed:', liffErr);
                     // Fallback to Guest Mode
                     const guestId = 'guest_' + Math.random().toString(36).substr(2, 9);
                     currentUserId = localStorage.getItem('chat_guest_id') || guestId;
+                    currentDisplayName = '訪客 ' + currentUserId.substr(-4);
                     localStorage.setItem('chat_guest_id', currentUserId);
                     
                     log('Guest Mode: ' + currentUserId);
@@ -391,7 +394,8 @@
                     body: JSON.stringify({
                         content: content,
                         sender_id: currentUserId,
-                        receiver_id: 'ADMIN'
+                        receiver_id: 'ADMIN',
+                        sender_name: currentDisplayName
                     })
                 });
 

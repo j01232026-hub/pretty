@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
-    const { content, sender_id, receiver_id } = req.body;
+    const { content, sender_id, receiver_id, sender_name } = req.body;
 
     // 2. 基本參數檢查
     if (!content || !sender_id || !receiver_id) {
@@ -23,8 +23,18 @@ export default async function handler(req, res) {
         }
     } else {
         // 如果是客人 (sender_id != 'ADMIN')
-        // TODO: 正式環境應在此驗證 LINE Login ID Token，確保 sender_id 確實是當前登入用戶
-        // 目前開發階段暫時跳過
+        // 嘗試更新 User Profile (如果有提供名字)
+        if (sender_name) {
+            try {
+                await supabase.from('profiles').upsert({
+                    user_id: sender_id,
+                    display_name: sender_name,
+                    last_seen_at: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+            } catch (profileError) {
+                console.error('Profile Update Error (Ignore if table missing):', profileError);
+            }
+        }
     }
 
     try {

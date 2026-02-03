@@ -484,17 +484,37 @@
             const userMap = new Map();
             messages.forEach(msg => {
                 const otherId = msg.sender_id === 'ADMIN' ? msg.receiver_id : msg.sender_id;
-                if (otherId === 'ADMIN') return; // Should not happen if data is correct
+                if (otherId === 'ADMIN') return; 
                 
                 if (!userMap.has(otherId)) {
                     userMap.set(otherId, {
                         userId: otherId,
                         lastMsg: msg.content,
                         time: new Date(msg.created_at),
-                        isUnread: false // TODO: Add read status later
+                        displayName: null,
+                        customName: null
                     });
                 }
             });
+
+            // Fetch Profiles
+            const userIds = Array.from(userMap.keys());
+            if (userIds.length > 0) {
+                const { data: profiles, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .in('user_id', userIds);
+                
+                if (profiles) {
+                    profiles.forEach(p => {
+                        if (userMap.has(p.user_id)) {
+                            const u = userMap.get(p.user_id);
+                            u.displayName = p.display_name;
+                            u.customName = p.custom_name;
+                        }
+                    });
+                }
+            }
 
             const users = Array.from(userMap.values());
             renderUserList(users);
@@ -503,29 +523,68 @@
         // Render User List
         function renderUserList(users) {
             const listDiv = document.getElementById('userList');
-            listDiv.innerHTML = '';
-
+            // Store previous scroll position if needed, but for now simple innerHTML
+            
             if (users.length === 0) {
                 listDiv.innerHTML = '<div class="empty">尚無對話</div>';
                 return;
             }
 
+            let html = '';
             users.forEach(u => {
-                const div = document.createElement('div');
-                div.className = `user-item ${currentChatUser === u.userId ? 'active' : ''}`;
-                div.onclick = () => selectUser(u.userId);
-                div.innerHTML = `
-                    <div class="user-id">${u.userId}</div>
-                    <div class="last-msg">${u.lastMsg}</div>
+                const name = u.customName || u.displayName || u.userId;
+                const activeClass = currentChatUser === u.userId ? 'active' : '';
+                // Truncate ID if it's showing raw ID
+                const displayId = u.userId.length > 10 ? u.userId.substr(0, 8) + '...' : u.userId;
+                
+                html += `
+                    <div class="user-item ${activeClass}" onclick="selectUser('${u.userId}')">
+                        <div class="user-id">${name}</div>
+                        ${(u.customName || u.displayName) ? `<div style="font-size:10px; opacity:0.7">${displayId}</div>` : ''}
+                        <div class="last-msg">${escapeHtml(u.lastMsg)}</div>
+                    </div>
                 `;
-                listDiv.appendChild(div);
             });
+            listDiv.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+             if (!text) return '';
+             return text.replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
         }
 
         // 3. Select User & Load Chat
         async function selectUser(userId) {
             currentChatUser = userId;
-            document.getElementById('chatHeader').textContent = `與 ${userId} 的對話`;
+            
+            // Get user info for header
+            let displayName = userId;
+            let customName = '';
+            
+            if (supabaseClient) {
+                const { data } = await supabaseClient.from('profiles').select('*').eq('user_id', userId).single();
+                if (data) {
+                    displayName = data.display_name || userId;
+                    customName = data.custom_name || '';
+                }
+            }
+
+            const showName = customName || displayName;
+
+            const header = document.getElementById('chatHeader');
+            header.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>與 <b>${escapeHtml(showName)}</b> 的對話</span>
+                    <button onclick="promptEditName('${userId}', '${escapeHtml(customName)}')" style="font-size:12px; padding:4px 8px; background:#fff; border:1px solid #ccc; border-radius:4px; cursor:pointer; color:#333;">
+                        ✏️ 修改備註
+                    </button>
+                </div>
+            `;
+
             document.getElementById('msgInput').disabled = false;
             document.getElementById('sendBtn').disabled = false;
             
@@ -536,9 +595,6 @@
             const { data: messages, error } = await supabaseClient
                 .from('messages')
                 .select('*')
-                .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`) // This filters too broadly if we have multiple users? 
-                // Wait, we want (sender=user AND receiver=ADMIN) OR (sender=ADMIN AND receiver=user)
-                // Supabase .or() syntax: .or(`and(sender_id.eq.${userId},receiver_id.eq.ADMIN),and(sender_id.eq.ADMIN,receiver_id.eq.${userId})`)
                 .or(`and(sender_id.eq.${userId},receiver_id.eq.ADMIN),and(sender_id.eq.ADMIN,receiver_id.eq.${userId})`)
                 .order('created_at', { ascending: true });
 
@@ -565,6 +621,35 @@
                     }
                 })
                 .subscribe();
+        }
+
+        async function promptEditName(userId, currentCustom) {
+            const newName = prompt('請輸入備註名稱 (留空則移除備註):', currentCustom);
+            if (newName === null) return; // Cancelled
+            
+            if (supabaseClient) {
+                // Fetch current profile first to preserve display_name
+                const { data } = await supabaseClient.from('profiles').select('*').eq('user_id', userId).single();
+                
+                const updateData = { 
+                    user_id: userId, 
+                    custom_name: newName || null,
+                    last_seen_at: new Date().toISOString()
+                };
+                
+                if (data) {
+                    updateData.display_name = data.display_name;
+                }
+                
+                const { error } = await supabaseClient.from('profiles').upsert(updateData);
+                
+                if (error) {
+                    alert('更新失敗: ' + error.message);
+                } else {
+                    fetchChatUsers(); // Refresh list
+                    selectUser(userId); // Refresh header
+                }
+            }
         }
 
         // Append Message to Chat Window
