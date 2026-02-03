@@ -32,17 +32,41 @@ export default async function handler(req, res) {
         if (req.method === 'GET') {
             const today = new Date().toISOString().split('T')[0];
             
-            // 查詢 bookings 資料表 (使用者提到的 appointments)
+            // 查詢 bookings 資料表
+            // 由於 schema 中 date/time 存於 JSON message 欄位或不確定是否存在獨立欄位
+            // 保險起見，抓取最近的預約，並在 JS 層過濾與排序
             const { data, error } = await supabase
                 .from('bookings')
                 .select('*')
-                .gte('date', today)
-                .order('date', { ascending: true })
-                .order('time', { ascending: true });
+                .order('created_at', { ascending: false }) // 先抓最新的
+                .limit(100); // 限制數量，避免爆量
 
             if (error) throw error;
 
-            return res.status(200).json(data);
+            // JS 層過濾與處理
+            const futureBookings = data
+                .map(booking => {
+                    // 嘗試解析 message 欄位
+                    let details = {};
+                    try {
+                        details = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
+                    } catch (e) { console.warn('JSON parse error', e); }
+                    
+                    return {
+                        ...booking,
+                        date: booking.date || details.date, // 優先用欄位，沒有則用 JSON
+                        time: booking.time || details.time,
+                        phone: booking.phone || details.phone
+                    };
+                })
+                .filter(b => b.date && b.date >= today) // 只留今天以後的
+                .sort((a, b) => {
+                    // 日期時間排序
+                    if (a.date !== b.date) return a.date.localeCompare(b.date);
+                    return a.time.localeCompare(b.time);
+                });
+
+            return res.status(200).json(futureBookings);
         }
 
         // 2. DELETE: 取消預約

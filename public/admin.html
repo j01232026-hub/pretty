@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>預約管理後台</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        tr:hover {
+            background-color: #fcfcfc;
+        }
+        .btn-cancel {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .btn-cancel:hover {
+            background-color: #d9363e;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 預約管理後台</h1>
+        <div class="table-responsive">
+            <table id="bookingTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>時間</th>
+                        <th>手機號碼</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingList">
+                    <!-- 預約列表將動態插入這裡 -->
+                </tbody>
+            </table>
+        </div>
+        <div id="status" class="loading">載入中...</div>
+    </div>
+
+    <script>
+        // ⚠️ 請在此處填入您在 Vercel 設定的 ADMIN_SECRET
+        const ADMIN_SECRET = 'CHANGE_ME_PLEASE'; 
+        const API_URL = '/api/admin-manage?secret=' + ADMIN_SECRET;
+
+        const bookingList = document.getElementById('bookingList');
+        const statusDiv = document.getElementById('status');
+
+        // 格式化日期 (YYYY-MM-DD)
+        function formatDate(dateStr) {
+            return dateStr; // 簡單回傳，可視需求美化
+        }
+
+        // 載入預約列表
+        async function loadBookings() {
+            statusDiv.textContent = '載入中...';
+            bookingList.innerHTML = '';
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error('密鑰錯誤 (Unauthorized)');
+                    throw new Error('無法讀取資料');
+                }
+
+                const bookings = await response.json();
+
+                if (bookings.length === 0) {
+                    statusDiv.innerHTML = '<div class="empty">目前沒有未來的預約</div>';
+                    return;
+                }
+
+                statusDiv.style.display = 'none';
+
+                bookings.forEach(booking => {
+                    // 解析 message JSON 字串
+                    let details = {};
+                    try {
+                        details = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
+                    } catch (e) {
+                        details = { phone: '解析錯誤', date: '?', time: '?' };
+                    }
+
+                    // 如果資料庫本身有 date/time 欄位，優先使用；否則使用 message 裡的
+                    const date = booking.date || details.date || '未知';
+                    const time = booking.time || details.time || '未知';
+                    const phone = booking.phone || details.phone || '未知';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${date}</td>
+                        <td>${time}</td>
+                        <td>${phone}</td>
+                        <td>
+                            <button class="btn-cancel" onclick="cancelBooking(${booking.id})">取消預約</button>
+                        </td>
+                    `;
+                    bookingList.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error('Load Error:', error);
+                statusDiv.textContent = `錯誤：${error.message}。請確認密碼是否正確。`;
+                statusDiv.style.color = 'red';
+            }
+        }
+
+        // 取消預約
+        async function cancelBooking(id) {
+            if (!confirm('確定要取消這筆預約嗎？\n這會同時刪除 Google 日曆上的行程！')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ appointment_id: id })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || result.details || '刪除失敗');
+                }
+
+                alert('✅ ' + (result.message || '預約已取消'));
+                loadBookings(); // 重新整理列表
+
+            } catch (error) {
+                console.error('Cancel Error:', error);
+                alert('❌ 取消失敗：' + error.message);
+            }
+        }
+
+        // 初始化
+        if (ADMIN_SECRET === 'CHANGE_ME_PLEASE') {
+            statusDiv.textContent = '⚠️ 請先編輯原始碼，設定 ADMIN_SECRET';
+            statusDiv.style.color = 'orange';
+        } else {
+            loadBookings();
+        }
+    </script>
+</body>
+</html>
