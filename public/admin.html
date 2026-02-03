@@ -1,758 +1,307 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html class="light" lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>預約管理後台</title>
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appointment Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3B82F6",
+              "background-light": "#F9FAFB",
+              "background-dark": "#111827",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 20px;
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .container {
-            max-width: 1200px; /* Widen for chat interface */
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            margin-top: 40px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #555;
-        }
-        tr:hover {
-            background-color: #fcfcfc;
-        }
-        .btn-cancel {
-            background-color: #ff4d4f;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
-            margin-left: 5px;
-        }
-        .btn-cancel:hover {
-            background-color: #d9363e;
-        }
-        .btn-edit {
-            background-color: #1890ff;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
-        .btn-edit:hover {
-            background-color: #096dd9;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-        .empty {
-            text-align: center;
-            padding: 30px;
-            color: #999;
-            font-style: italic;
-        }
-
-        /* Chat Interface Styles */
-        .chat-layout {
-            display: flex;
-            height: 600px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-        .user-list {
-            width: 250px;
-            background: #f8f9fa;
-            border-right: 1px solid #ddd;
-            overflow-y: auto;
-        }
-        .user-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-        }
-        .user-item:hover {
-            background: #e6f7ff;
-        }
-        .user-item.active {
-            background: #1890ff;
-            color: white;
-        }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 12px;
-            object-fit: cover;
-            background: #e0e0e0;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        .user-info {
-            flex: 1;
-            overflow: hidden;
-        }
-        .user-id {
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .last-msg {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .user-item.active .last-msg {
-            color: #e6f7ff;
-        }
-        .chat-window {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-        }
-        .chat-header {
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-        }
-        .messages-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #f5f7fa;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .message {
-            max-width: 70%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            line-height: 1.4;
-            position: relative;
-        }
-        .message.received {
-            align-self: flex-start;
-            background: white;
-            border: 1px solid #ddd;
-            border-bottom-left-radius: 2px;
-        }
-        .message.sent {
-            align-self: flex-end;
-            background: #1890ff;
-            color: white;
-            border-bottom-right-radius: 2px;
-        }
-        .msg-time {
-            font-size: 10px;
-            margin-top: 4px;
-            opacity: 0.7;
-            text-align: right;
-        }
-        .input-area {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #ddd;
-            display: flex;
-            gap: 10px;
-        }
-        .input-area textarea {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            resize: none;
-            height: 40px;
-            font-family: inherit;
-        }
-        .input-area button {
-            background: #1890ff;
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .input-area button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+        .ios-scroll-hide::-webkit-scrollbar {
+            display: none;
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>📅 預約管理後台</h1>
-        <div class="table-responsive">
-            <table id="bookingTable">
-                <thead>
-                    <tr>
-                        <th>日期</th>
-                        <th>時間</th>
-                        <th>姓名</th>
-                        <th>手機號碼</th>
-                        <th>服務項目</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="bookingList">
-                    <!-- 預約列表將動態插入這裡 -->
-                </tbody>
-            </table>
-        </div>
-        <div id="status" class="loading">載入中...</div>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-4">
+<div class="flex items-center justify-between max-w-lg mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-icons text-primary text-3xl">calendar_month</span>
+<h1 class="text-xl font-bold tracking-tight">預約管理後台</h1>
+</div>
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-icons">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-lg mx-auto p-4 pb-24">
+    <!-- Stats -->
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">今日預約</p>
+<p class="text-2xl font-bold mt-1" id="todayCount">0</p>
+</div>
+<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">總預約</p>
+<p class="text-2xl font-bold mt-1 text-primary" id="totalCount">0</p>
+</div>
+</div>
 
-        <h2>💬 客服對話管理</h2>
-        <div class="chat-layout">
-            <div class="user-list" id="userList">
-                <div class="loading">載入用戶中...</div>
-            </div>
-            <div class="chat-window">
-                <div class="chat-header" id="chatHeader">請選擇對話</div>
-                <div class="messages-area" id="messagesArea">
-                    <!-- Messages will appear here -->
-                </div>
-                <div class="input-area">
-                    <textarea id="msgInput" placeholder="輸入訊息..." disabled></textarea>
-                    <button id="sendBtn" onclick="sendAdminMessage()" disabled>傳送</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Filters -->
+<div class="flex gap-2 mb-6 overflow-x-auto ios-scroll-hide pb-2">
+<button class="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="filterBookings('all', this)">全部</button>
+<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="filterBookings('today', this)">今天</button>
+<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="filterBookings('week', this)">本週</button>
+<!-- <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">已取消</button> -->
+</div>
 
-    <script>
-        // ⚠️ 請在此處填入您在 Vercel 設定的 ADMIN_SECRET
-        const ADMIN_SECRET = 'MyBeautyShop_2026_Boss_Only!'; 
-        const API_URL = '/api/admin-manage?secret=' + ADMIN_SECRET;
-        
-        // Chat Variables
-        let supabaseClient = null;
-        let currentChatUser = null;
-        let chatSubscription = null;
-        
-        // Notification Sound
-        const notificationAudio = new Audio('/notification.wav');
-        function playNotification() {
-            notificationAudio.play().catch(e => console.log('Audio play blocked:', e));
-        }
+<!-- Booking List -->
+<div class="space-y-4" id="bookingList">
+    <div class="text-center py-10 text-gray-400">載入中...</div>
+</div>
 
-        const bookingList = document.getElementById('bookingList');
-        const statusDiv = document.getElementById('status');
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom">
+<div class="max-w-lg mx-auto flex justify-around py-3">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons">event_note</span>
+<span class="text-[10px] font-bold">預約</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors" onclick="window.location.href='/admin-chat.html'">
+<span class="material-icons">forum</span>
+<span class="text-[10px] font-medium">對話</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-icons">group</span>
+<span class="text-[10px] font-medium">客戶</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors" onclick="window.location.href='/admin-account.html'">
+<span class="material-icons">settings</span>
+<span class="text-[10px] font-medium">設定</span>
+</button>
+</div>
+</nav>
+<button class="fixed right-6 bottom-24 bg-primary text-white w-14 h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-transform" onclick="alert('新增預約功能開發中')">
+<span class="material-icons text-3xl">add</span>
+</button>
 
-        // 格式化日期 (YYYY-MM-DD)
-        function formatDate(dateStr) {
-            return dateStr; // 簡單回傳，可視需求美化
-        }
+<!-- Supabase & Logic -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const ADMIN_SECRET = 'MyBeautyShop_2026_Boss_Only!'; 
+    const API_URL = '/api/admin-manage?secret=' + ADMIN_SECRET;
+    
+    let supabaseClient = null;
+    let allBookings = [];
 
-        // 載入預約列表
-        async function loadBookings() {
-            statusDiv.textContent = '載入中...';
-            bookingList.innerHTML = '';
+    async function init() {
+        await initSupabase();
+        loadBookings();
+    }
 
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) {
-                    if (response.status === 401) throw new Error('密鑰錯誤 (Unauthorized)');
-                    throw new Error('無法讀取資料');
-                }
-
-                const bookings = await response.json();
-
-                if (bookings.length === 0) {
-                    bookingList.innerHTML = '<tr><td colspan="6" class="empty">目前無預約</td></tr>';
-                    statusDiv.style.display = 'none';
-                    return;
-                }
-
-                statusDiv.style.display = 'none';
-
-                // Fetch Profiles
-                let userProfiles = {};
-                if (supabaseClient) {
-                    const userIds = [...new Set(bookings.map(b => b.user_id))].filter(id => id);
-                    if (userIds.length > 0) {
-                        const { data: profiles } = await supabaseClient
-                            .from('profiles')
-                            .select('user_id, display_name, custom_name')
-                            .in('user_id', userIds);
-                        
-                        if (profiles) {
-                            profiles.forEach(p => {
-                                userProfiles[p.user_id] = p.custom_name || p.display_name;
-                            });
-                        }
-                    }
-                }
-
-                bookingList.innerHTML = bookings.map(booking => {
-                    // 解析 message JSON 字串
-                    let details = {};
-                    try {
-                        details = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
-                    } catch (e) {
-                        details = {};
-                    }
-
-                    const date = booking.date || details.date || '未知';
-                    const time = booking.time || details.time || '未知';
-                    const phone = booking.phone || details.phone || '未知';
-                    const service = booking.service || details.service || '一般預約';
-                    
-                    let name = userProfiles[booking.user_id] || booking.user_id || '未知用戶';
-                    if (name === booking.user_id && name.length > 10) name = name.substr(0, 8) + '...';
-
-                    return `
-                        <tr>
-                            <td>${date}</td>
-                            <td>${time}</td>
-                            <td>${escapeHtml(name)}</td>
-                            <td>${escapeHtml(phone)}</td>
-                            <td>${escapeHtml(service)}</td>
-                            <td>
-                                <button class="btn-edit" onclick="editBooking(${booking.id}, '${date}', '${time}')">編輯</button>
-                                <button class="btn-cancel" onclick="cancelBooking(${booking.id})">取消預約</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Load Error:', error);
-                statusDiv.textContent = `錯誤：${error.message}。請確認密碼是否正確。`;
-                statusDiv.style.color = 'red';
-            }
-        }
-
-        // 修改預約
-        async function editBooking(id, oldDate, oldTime) {
-            // 1. 獲取新資料
-            const newDate = prompt('請輸入新的日期 (YYYY-MM-DD):', oldDate);
-            if (!newDate) return; // 使用者按取消
-
-            const newStartTime = prompt('請輸入新的開始時間 (HH:mm):', oldTime);
-            if (!newStartTime) return; // 使用者按取消
-
-            // 計算預設結束時間 (開始時間 + 1小時)
-            let defaultEndTime = '';
-            try {
-                // 嘗試從輸入的開始時間計算預設結束時間
-                const [h, m] = newStartTime.split(':').map(Number);
-                const d = new Date();
-                d.setHours(h + 1);
-                d.setMinutes(m);
-                defaultEndTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-            } catch (e) {
-                // 計算失敗就留空
-            }
-
-            const newEndTime = prompt('請輸入新的結束時間 (HH:mm):', defaultEndTime);
-            if (!newEndTime) return; // 使用者按取消
-
-            // 簡單驗證格式 (可選)
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate) || !/^\d{2}:\d{2}$/.test(newStartTime) || !/^\d{2}:\d{2}$/.test(newEndTime)) {
-                alert('格式錯誤！日期請用 YYYY-MM-DD，時間請用 HH:mm');
-                return;
-            }
-
-            statusDiv.textContent = '處理中，請稍候... (正在檢查撞期)';
-            statusDiv.style.display = 'block';
-
-            try {
-                // 2. 發送請求
-                const response = await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        appointment_id: id, 
-                        new_date: newDate, 
-                        new_start_time: newStartTime,
-                        new_end_time: newEndTime
-                    })
-                });
-
-                const result = await response.json();
-
-                // 3. 處理回應
-                if (response.status === 200) {
-                    alert('✅ ' + (result.message || '修改成功！'));
-                    loadBookings(); // 刷新列表
-                } else if (response.status === 409) {
-                    alert('❌ 修改失敗：' + (result.message || '該時段已被佔用，請選擇其他時間。'));
-                    statusDiv.style.display = 'none';
-                } else {
-                    throw new Error(result.error || result.message || '修改失敗');
-                }
-
-            } catch (error) {
-                console.error('Edit Error:', error);
-                alert('❌ 系統錯誤：' + error.message);
-                statusDiv.style.display = 'none';
-            }
-        }
-
-        // 取消預約
-        async function cancelBooking(id) {
-            if (!confirm('確定要取消這筆預約嗎？\n這會同時刪除 Google 日曆上的行程！')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ appointment_id: id })
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || result.details || '刪除失敗');
-                }
-
-                alert('✅ ' + (result.message || '預約已取消'));
-                loadBookings(); // 重新整理列表
-
-            } catch (error) {
-                console.error('Cancel Error:', error);
-                alert('❌ 取消失敗：' + error.message);
-            }
-        }
-
-        // 初始化 Chat System
-        async function initChatSystem() {
-            try {
-                await initSupabase();
-                await fetchChatUsers();
-                
-                // Realtime subscription for User List (New users or new messages)
-                if (supabaseClient) {
-                    supabaseClient.channel('public:messages_list')
-                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                            // Play sound if message is from a user (not ADMIN)
-                            if (payload.new.sender_id !== 'ADMIN') {
-                                playNotification();
-                            }
-                            // Refresh list when any new message arrives (simple approach)
-                            fetchChatUsers(); 
-                            // If we are chatting with someone, the message will also be handled by that specific subscription
-                        })
-                        .subscribe();
-                }
-            } catch (e) {
-                console.error('Chat Init Error:', e);
-                document.getElementById('userList').innerHTML = '<div class="error">載入失敗</div>';
-            }
-        }
-
-        // 1. Initialize Supabase
-        async function initSupabase() {
+    async function initSupabase() {
+        try {
             const res = await fetch('/api/config');
             const config = await res.json();
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
             }
-        }
+        } catch(e) { console.error(e); }
+    }
 
-        // 2. Fetch Chat Users
-        async function fetchChatUsers() {
-            if (!supabaseClient) return;
+    async function loadBookings() {
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('Auth Error');
+            allBookings = await response.json();
             
-            // Fetch last 500 messages to extract users
-            const { data: messages, error } = await supabaseClient
-                .from('messages')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(500);
-
-            if (error) {
-                console.error('Fetch Users Error:', error);
-                return;
-            }
-
-            // Extract unique users
-            const userMap = new Map();
-            messages.forEach(msg => {
-                const otherId = msg.sender_id === 'ADMIN' ? msg.receiver_id : msg.sender_id;
-                if (otherId === 'ADMIN') return; 
-                
-                if (!userMap.has(otherId)) {
-                    userMap.set(otherId, {
-                        userId: otherId,
-                        lastMsg: msg.content,
-                        time: new Date(msg.created_at),
-                        displayName: null,
-                        customName: null
-                    });
-                }
-            });
-
-            // Fetch Profiles
-            const userIds = Array.from(userMap.keys());
-            if (userIds.length > 0) {
-                const { data: profiles, error: profileError } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .in('user_id', userIds);
-                
-                if (profiles) {
-                    profiles.forEach(p => {
-                        if (userMap.has(p.user_id)) {
-                            const u = userMap.get(p.user_id);
-                            u.displayName = p.display_name;
-                            u.customName = p.custom_name;
-                        }
-                    });
-                }
-            }
-
-            const users = Array.from(userMap.values());
-            renderUserList(users);
-        }
-
-        // Render User List
-        function renderUserList(users) {
-            const listDiv = document.getElementById('userList');
-            // Store previous scroll position if needed, but for now simple innerHTML
-            
-            if (users.length === 0) {
-                listDiv.innerHTML = '<div class="empty">尚無對話</div>';
-                return;
-            }
-
-            let html = '';
-            users.forEach(u => {
-                const name = u.customName || u.displayName || u.userId;
-                const activeClass = currentChatUser === u.userId ? 'active' : '';
-                // Truncate ID if it's showing raw ID
-                const displayId = u.userId.length > 10 ? u.userId.substr(0, 8) + '...' : u.userId;
-                
-                html += `
-                    <div class="user-item ${activeClass}" onclick="selectUser('${u.userId}')">
-                        <div class="user-id">${name}</div>
-                        ${(u.customName || u.displayName) ? `<div style="font-size:10px; opacity:0.7">${displayId}</div>` : ''}
-                        <div class="last-msg">${escapeHtml(u.lastMsg)}</div>
-                    </div>
-                `;
-            });
-            listDiv.innerHTML = html;
-        }
-
-        function escapeHtml(text) {
-             if (!text) return '';
-             return text.replace(/&/g, "&amp;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/'/g, "&#039;");
-        }
-
-        // 3. Select User & Load Chat
-        async function selectUser(userId) {
-            currentChatUser = userId;
-            
-            // Get user info for header
-            let displayName = userId;
-            let customName = '';
-            let pictureUrl = null;
-            
+            // Fetch profiles
             if (supabaseClient) {
-                const { data } = await supabaseClient.from('profiles').select('*').eq('user_id', userId).single();
-                if (data) {
-                    displayName = data.display_name || userId;
-                    customName = data.custom_name || '';
-                    pictureUrl = data.picture_url;
-                }
-            }
-
-            const showName = customName || displayName;
-            const avatar = pictureUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(showName) + '&background=random';
-
-            const header = document.getElementById('chatHeader');
-            header.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; align-items:center;">
-                        <img src="${avatar}" style="width:32px; height:32px; border-radius:50%; margin-right:10px; border:1px solid #ddd;" onerror="this.src='https://ui-avatars.com/api/?name=User'">
-                        <span>與 <b>${escapeHtml(showName)}</b> 的對話</span>
-                    </div>
-                    <button onclick="promptEditName('${userId}', '${escapeHtml(customName)}')" style="font-size:12px; padding:4px 8px; background:#fff; border:1px solid #ccc; border-radius:4px; cursor:pointer; color:#333;">
-                        ✏️ 修改備註
-                    </button>
-                </div>
-            `;
-
-            document.getElementById('msgInput').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
-            
-            // Highlight active user
-            fetchChatUsers(); // Re-render to update active class
-
-            // Load History
-            const { data: messages, error } = await supabaseClient
-                .from('messages')
-                .select('*')
-                .or(`and(sender_id.eq.${userId},receiver_id.eq.ADMIN),and(sender_id.eq.ADMIN,receiver_id.eq.${userId})`)
-                .order('created_at', { ascending: true });
-
-            const msgArea = document.getElementById('messagesArea');
-            msgArea.innerHTML = '';
-
-            if (messages) {
-                messages.forEach(msg => appendAdminMessage(msg));
-                msgArea.scrollTop = msgArea.scrollHeight;
-            }
-
-            // Subscribe to this specific chat
-            if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
-            
-            chatSubscription = supabaseClient.channel(`chat:${userId}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                    const newMsg = payload.new;
-                    if (
-                        (newMsg.sender_id === userId && newMsg.receiver_id === 'ADMIN') ||
-                        (newMsg.sender_id === 'ADMIN' && newMsg.receiver_id === userId)
-                    ) {
-                        appendAdminMessage(newMsg);
-                        msgArea.scrollTop = msgArea.scrollHeight;
+                const userIds = [...new Set(allBookings.map(b => b.user_id))].filter(id => id);
+                if (userIds.length > 0) {
+                    const { data: profiles } = await supabaseClient
+                        .from('profiles')
+                        .select('user_id, display_name, custom_name')
+                        .in('user_id', userIds);
+                    
+                    if (profiles) {
+                        const profileMap = {};
+                        profiles.forEach(p => profileMap[p.user_id] = p.custom_name || p.display_name);
+                        
+                        allBookings = allBookings.map(b => {
+                            b.displayName = profileMap[b.user_id] || b.user_id;
+                            return b;
+                        });
                     }
-                })
-                .subscribe();
-        }
-
-        async function promptEditName(userId, currentCustom) {
-            const newName = prompt('請輸入備註名稱 (留空則移除備註):', currentCustom);
-            if (newName === null) return; // Cancelled
-            
-            if (supabaseClient) {
-                // Fetch current profile first to preserve display_name
-                const { data } = await supabaseClient.from('profiles').select('*').eq('user_id', userId).single();
-                
-                const updateData = { 
-                    user_id: userId, 
-                    custom_name: newName || null,
-                    last_seen_at: new Date().toISOString()
-                };
-                
-                if (data) {
-                    updateData.display_name = data.display_name;
-                }
-                
-                const { error } = await supabaseClient.from('profiles').upsert(updateData);
-                
-                if (error) {
-                    alert('更新失敗: ' + error.message);
-                } else {
-                    fetchChatUsers(); // Refresh list
-                    selectUser(userId); // Refresh header
                 }
             }
+
+            renderBookings(allBookings);
+            updateStats(allBookings);
+
+        } catch (e) {
+            document.getElementById('bookingList').innerHTML = '<div class="text-center text-red-500 py-10">載入失敗</div>';
+        }
+    }
+
+    function renderBookings(bookings) {
+        const listDiv = document.getElementById('bookingList');
+        if (bookings.length === 0) {
+            listDiv.innerHTML = '<div class="text-center py-10 text-gray-400">目前無預約</div>';
+            return;
         }
 
-        // Append Message to Chat Window
-        function appendAdminMessage(msg) {
-            const area = document.getElementById('messagesArea');
-            const div = document.createElement('div');
-            const isMe = msg.sender_id === 'ADMIN';
+        // Sort by date/time
+        bookings.sort((a, b) => {
+             const da = (a.date || '') + (a.time || '');
+             const db = (b.date || '') + (b.time || '');
+             return da.localeCompare(db);
+        });
+
+        listDiv.innerHTML = bookings.map(b => {
+            let details = {};
+            try { details = typeof b.message === 'string' ? JSON.parse(b.message) : b.message; } catch(e) {}
             
-            div.className = `message ${isMe ? 'sent' : 'received'}`;
-            div.innerHTML = `
-                ${msg.content}
-                <div class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            const date = b.date || details.date || '未知';
+            const time = b.time || details.time || '未知';
+            const phone = b.phone || details.phone || '未知';
+            const service = b.service || details.service || '一般預約';
+            let name = b.displayName || b.user_id || '未知用戶';
+            if (name === b.user_id && name.length > 8) name = name.substr(0, 8) + '...';
+
+            return `
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-start mb-4">
+                <div>
+                <span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">${time}</span>
+                <h3 class="text-lg font-bold mt-2">${escapeHtml(name)}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">${escapeHtml(phone)}</p>
+                </div>
+                <div class="text-right">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">${date}</p>
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">${escapeHtml(service)}</p>
+                </div>
+                </div>
+                <div class="flex gap-3">
+                <button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform" onclick="editBooking(${b.id}, '${date}', '${time}')">
+                <span class="material-icons text-sm">edit</span> 編輯
+                </button>
+                <button class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform" onclick="cancelBooking(${b.id})">
+                <span class="material-icons text-sm">cancel</span> 取消預約
+                </button>
+                </div>
+            </div>
             `;
-            area.appendChild(div);
+        }).join('');
+    }
+
+    function updateStats(bookings) {
+        document.getElementById('totalCount').innerText = bookings.length;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayCount = bookings.filter(b => b.date === todayStr).length;
+        document.getElementById('todayCount').innerText = todayCount;
+    }
+
+    function filterBookings(type, btn) {
+        // Reset buttons
+        const btns = btn.parentElement.querySelectorAll('button');
+        btns.forEach(b => {
+            b.className = "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap";
+        });
+        btn.className = "bg-primary text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap";
+
+        let filtered = allBookings;
+        if (type === 'today') {
+            const todayStr = new Date().toISOString().split('T')[0];
+            filtered = allBookings.filter(b => b.date === todayStr);
+        } else if (type === 'week') {
+            // Simple logic for this week
+            const now = new Date();
+            const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+            const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+            filtered = allBookings.filter(b => {
+                const d = new Date(b.date);
+                return d >= startOfWeek && d <= endOfWeek;
+            });
         }
+        renderBookings(filtered);
+    }
 
-        // 4. Send Message
-        async function sendAdminMessage() {
-            if (!currentChatUser) return;
-            const input = document.getElementById('msgInput');
-            const content = input.value.trim();
-            if (!content) return;
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
-            input.value = '';
-            
-            try {
-                const res = await fetch('/api/send-message', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-admin-secret': ADMIN_SECRET // Authenticate as Admin
-                    },
-                    body: JSON.stringify({
-                        content: content,
-                        sender_id: 'ADMIN',
-                        receiver_id: currentChatUser
-                    })
-                });
+    // Logic from old admin.html for Edit/Cancel
+    async function editBooking(id, oldDate, oldTime) {
+        const newDate = prompt('請輸入新的日期 (YYYY-MM-DD):', oldDate);
+        if (!newDate) return;
+        const newStartTime = prompt('請輸入新的開始時間 (HH:mm):', oldTime);
+        if (!newStartTime) return;
+        
+        let defaultEndTime = '';
+        try {
+            const [h, m] = newStartTime.split(':').map(Number);
+            const d = new Date(); d.setHours(h + 1); d.setMinutes(m);
+            defaultEndTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        } catch (e) {}
+        
+        const newEndTime = prompt('請輸入新的結束時間 (HH:mm):', defaultEndTime);
+        if (!newEndTime) return;
 
-                if (!res.ok) throw new Error('Send Failed');
-                // Message will appear via Realtime subscription
-
-            } catch (e) {
-                alert('發送失敗: ' + e.message);
-                input.value = content;
+        try {
+            const response = await fetch(API_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appointment_id: id, new_date: newDate, new_start_time: newStartTime, new_end_time: newEndTime })
+            });
+            if (response.ok) {
+                alert('修改成功！');
+                loadBookings();
+            } else {
+                alert('修改失敗');
             }
-        }
+        } catch (e) { alert('錯誤: ' + e.message); }
+    }
 
-        // 初始化
-        if (ADMIN_SECRET === 'CHANGE_ME_PLEASE') {
-            statusDiv.textContent = '⚠️ 請先編輯原始碼，設定 ADMIN_SECRET';
-            statusDiv.style.color = 'orange';
-        } else {
-            loadBookings();
-            initChatSystem();
-        }
-    </script>
-</body>
-</html>
+    async function cancelBooking(id) {
+        if (!confirm('確定要取消嗎？')) return;
+        try {
+            const response = await fetch(API_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appointment_id: id })
+            });
+            if (response.ok) {
+                alert('預約已取消');
+                loadBookings();
+            } else {
+                alert('取消失敗');
+            }
+        } catch (e) { alert('錯誤: ' + e.message); }
+    }
+
+    init();
+</script>
+
+</body></html>

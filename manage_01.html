@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appointment Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3B82F6",
+              "background-light": "#F9FAFB",
+              "background-dark": "#111827",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ios-scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-4">
+<div class="flex items-center justify-between max-w-lg mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-icons text-primary text-3xl">calendar_month</span>
+<h1 class="text-xl font-bold tracking-tight">預約管理後台</h1>
+</div>
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-icons">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-lg mx-auto p-4 pb-24">
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">今日預約</p>
+<p class="text-2xl font-bold mt-1">12</p>
+</div>
+<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">待處理</p>
+<p class="text-2xl font-bold mt-1 text-primary">3</p>
+</div>
+</div>
+<div class="flex gap-2 mb-6 overflow-x-auto ios-scroll-hide pb-2">
+<button class="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">全部</button>
+<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">今天</button>
+<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">本週</button>
+<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">已取消</button>
+</div>
+<div class="space-y-4">
+<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">15:30</span>
+<h3 class="text-lg font-bold mt-2">許証傑(阿彬)</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">0935676871</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">2026-02-04</p>
+<p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">一般預約</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">edit</span> 編輯
+                    </button>
+<button class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">cancel</span> 取消預約
+                    </button>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">16:30</span>
+<h3 class="text-lg font-bold mt-2">許証傑(阿彬)</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">0935676871</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">2026-02-04</p>
+<p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">一般預約</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">edit</span> 編輯
+                    </button>
+<button class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">cancel</span> 取消預約
+                    </button>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">17:30</span>
+<h3 class="text-lg font-bold mt-2">許証傑(阿彬)</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">0935676871</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">2026-02-04</p>
+<p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">一般預約</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">edit</span> 編輯
+                    </button>
+<button class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">cancel</span> 取消預約
+                    </button>
+</div>
+</div>
+<div class="py-4">
+<div class="flex items-center gap-4">
+<span class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></span>
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">2026-02-05</span>
+<span class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></span>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">10:00</span>
+<h3 class="text-lg font-bold mt-2">許証傑(阿彬)</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">0935676871</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">2026-02-05</p>
+<p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">一般預約</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">edit</span> 編輯
+                    </button>
+<button class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-icons text-sm">cancel</span> 取消預約
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom">
+<div class="max-w-lg mx-auto flex justify-around py-3">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons">event_note</span>
+<span class="text-[10px] font-bold">預約</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-icons">forum</span>
+<span class="text-[10px] font-medium">對話</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-icons">group</span>
+<span class="text-[10px] font-medium">客戶</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-icons">settings</span>
+<span class="text-[10px] font-medium">設定</span>
+</button>
+</div>
+</nav>
+<button class="fixed right-6 bottom-24 bg-primary text-white w-14 h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-icons text-3xl">add</span>
+</button>
+
+</body></html>

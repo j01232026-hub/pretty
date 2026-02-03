@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>客服對話管理 - Beauty Salon Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6",
+                        "background-light": "#F9FAFB",
+                        "background-dark": "#111827",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#1F2937",
+                        "border-light": "#E5E7EB",
+                        "border-dark": "#374151",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "Noto Sans TC", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "12px",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .chat-container {
+            height: calc(100vh - 120px);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<header class="sticky top-0 z-10 bg-card-light dark:bg-card-dark border-b border-border-light dark:border-border-dark px-4 py-3 flex items-center justify-between shadow-sm">
+    <div class="flex items-center gap-2">
+        <span class="material-icons text-primary">chat</span>
+        <h1 class="text-lg font-bold">客服對話管理</h1>
+    </div>
+    <button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-icons text-slate-500 dark:text-slate-400">more_vert</span>
+    </button>
+</header>
+<main class="max-w-md mx-auto chat-container flex flex-col">
+    <!-- User List (Horizontal) -->
+    <div class="flex overflow-x-auto gap-3 p-4 scrollbar-hide border-b border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark" id="userList">
+        <div class="loading p-2 text-sm text-gray-500">載入用戶中...</div>
+    </div>
+
+    <!-- Active Chat Info -->
+    <div class="px-4 py-2 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 border-b border-border-light dark:border-border-dark">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-slate-600 dark:text-slate-300" id="chatHeader">請選擇對話</span>
+        </div>
+        <button class="flex items-center gap-1 px-3 py-1 bg-white dark:bg-card-dark border border-border-light dark:border-border-dark rounded-full text-xs font-medium text-slate-600 dark:text-slate-300 hover:shadow-sm" onclick="editUserName()">
+            <span class="material-icons text-xs">edit</span> 修改備註
+        </button>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-4" id="messagesArea">
+        <!-- Messages will be injected here -->
+    </div>
+
+    <!-- Input Area -->
+    <div class="p-4 bg-card-light dark:bg-card-dark border-t border-border-light dark:border-border-dark">
+        <div class="flex items-end gap-2">
+            <div class="flex-1 min-h-[44px] bg-slate-50 dark:bg-slate-900 border border-border-light dark:border-border-dark rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                <textarea id="msgInput" class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm resize-none overflow-hidden" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' placeholder="輸入訊息..." rows="1" disabled></textarea>
+            </div>
+            <button id="sendBtn" class="w-12 h-12 flex items-center justify-center bg-primary text-white rounded-2xl shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed" onclick="sendAdminMessage()" disabled>
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+        <div class="mt-3 flex gap-2 overflow-x-auto scrollbar-hide">
+            <button class="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400" onclick="quickReply('預約查詢')">
+                預約查詢
+            </button>
+            <button class="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400" onclick="quickReply('課程介紹')">
+                課程介紹
+            </button>
+            <button class="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400" onclick="quickReply('門市據點')">
+                門市據點
+            </button>
+        </div>
+    </div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-card-light dark:bg-card-dark border-t border-border-light dark:border-border-dark flex justify-around items-center py-2 px-6 safe-area-pb">
+    <button class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" onclick="window.location.href='/admin.html'">
+        <span class="material-icons">dashboard</span>
+        <span class="text-[10px]">總覽</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" onclick="window.location.href='/admin.html'">
+        <span class="material-icons">calendar_today</span>
+        <span class="text-[10px]">預約</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 text-primary">
+        <span class="material-icons">chat</span>
+        <span class="text-[10px]">對話</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" onclick="window.location.href='/admin-account.html'">
+        <span class="material-icons">person</span>
+        <span class="text-[10px]">設定</span>
+    </button>
+</nav>
+<script>
+    // Simple dark mode toggle logic for preview (can be triggered by system pref)
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+    }
+
+    // --- JS Logic ported from admin.html and adapted ---
+    
+    // ⚠️ Secret from admin.html
+    const ADMIN_SECRET = 'MyBeautyShop_2026_Boss_Only!'; 
+    
+    // Chat Variables
+    let supabaseClient = null;
+    let currentChatUser = null;
+    let chatSubscription = null;
+    let userProfiles = {};
+    
+    // Notification Sound
+    const notificationAudio = new Audio('/notification.wav');
+    function playNotification() {
+        notificationAudio.play().catch(e => console.log('Audio play blocked:', e));
+    }
+
+    async function init() {
+        await initSupabase();
+        await fetchChatUsers();
+        setupRealtime();
+    }
+
+    async function initSupabase() {
+        try {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+            }
+        } catch (e) {
+            console.error("Supabase Init Error", e);
+        }
+    }
+
+    function setupRealtime() {
+        if (!supabaseClient) return;
+        supabaseClient.channel('public:messages_list_chat_page')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                if (payload.new.sender_id !== 'ADMIN') {
+                    playNotification();
+                }
+                fetchChatUsers(); 
+                if (currentChatUser && (payload.new.sender_id === currentChatUser || payload.new.receiver_id === currentChatUser)) {
+                    appendMessage(payload.new);
+                }
+            })
+            .subscribe();
+    }
+
+    async function fetchChatUsers() {
+        if (!supabaseClient) return;
+        
+        const { data: messages, error } = await supabaseClient
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+        if (error) {
+            console.error('Fetch Users Error:', error);
+            return;
+        }
+
+        const userMap = new Map();
+        messages.forEach(msg => {
+            const otherId = msg.sender_id === 'ADMIN' ? msg.receiver_id : msg.sender_id;
+            if (otherId === 'ADMIN') return; 
+            
+            if (!userMap.has(otherId)) {
+                userMap.set(otherId, {
+                    userId: otherId,
+                    lastMsg: msg.content,
+                    time: new Date(msg.created_at),
+                    displayName: null,
+                    customName: null,
+                    avatarUrl: null
+                });
+            }
+        });
+
+        // Fetch Profiles
+        const userIds = Array.from(userMap.keys());
+        if (userIds.length > 0) {
+            const { data: profiles } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .in('user_id', userIds);
+            
+            if (profiles) {
+                profiles.forEach(p => {
+                    if (userMap.has(p.user_id)) {
+                        const u = userMap.get(p.user_id);
+                        u.displayName = p.display_name;
+                        u.customName = p.custom_name;
+                        u.avatarUrl = p.avatar_url; // Assuming avatar_url exists
+                        userProfiles[p.user_id] = u;
+                    }
+                });
+            }
+        }
+
+        const users = Array.from(userMap.values());
+        renderUserList(users);
+    }
+
+    function renderUserList(users) {
+        const listDiv = document.getElementById('userList');
+        if (users.length === 0) {
+            listDiv.innerHTML = '<div class="p-2 text-sm text-gray-500">尚無對話</div>';
+            return;
+        }
+
+        let html = '';
+        users.forEach(u => {
+            const name = u.customName || u.displayName || 'Guest';
+            const displayId = u.userId.length > 6 ? u.userId.substring(0, 6) + '...' : u.userId;
+            const displayName = name === 'Guest' ? displayId : name;
+            const firstChar = displayName.charAt(0).toUpperCase();
+            
+            // Random-ish color based on char code
+            // const colors = ['bg-primary', 'bg-purple-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'];
+            // const color = colors[displayName.charCodeAt(0) % colors.length];
+            
+            const isActive = currentChatUser === u.userId;
+            const opacityClass = isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100';
+            const ringClass = isActive ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-card-dark' : '';
+            
+            // Avatar logic
+            let avatarHtml = '';
+            if (u.avatarUrl) {
+                avatarHtml = `<img src="${u.avatarUrl}" class="w-14 h-14 rounded-full object-cover ${ringClass}">`;
+            } else {
+                 avatarHtml = `
+                    <div class="w-14 h-14 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 font-bold ${ringClass}">
+                        ${firstChar}
+                    </div>
+                 `;
+                 if (isActive) {
+                     // Active style for default avatar
+                     avatarHtml = `
+                        <div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white font-bold ${ringClass}">
+                            ${firstChar}
+                        </div>
+                     `;
+                 }
+            }
+
+            html += `
+                <div class="flex-shrink-0 flex flex-col items-center gap-1 ${opacityClass} cursor-pointer transition-opacity" onclick="selectUser('${u.userId}')">
+                    <div class="relative">
+                        ${avatarHtml}
+                        <!-- <span class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-card-dark rounded-full"></span> -->
+                    </div>
+                    <span class="text-xs font-medium truncate max-w-[60px]">${displayName}</span>
+                </div>
+            `;
+        });
+        listDiv.innerHTML = html;
+    }
+
+    async function selectUser(userId) {
+        currentChatUser = userId;
+        fetchChatUsers(); // Re-render to update active state
+        
+        const u = userProfiles[userId] || { userId };
+        const name = u.customName || u.displayName || (userId.length > 8 ? userId.substring(0, 8)+'...' : userId);
+        document.getElementById('chatHeader').textContent = `與 ${name} 的對話`;
+        
+        document.getElementById('msgInput').disabled = false;
+        document.getElementById('sendBtn').disabled = false;
+        
+        loadMessages(userId);
+    }
+
+    async function loadMessages(userId) {
+        const msgsDiv = document.getElementById('messagesArea');
+        msgsDiv.innerHTML = '<div class="text-center text-sm text-gray-400 mt-4">載入訊息中...</div>';
+        
+        const { data: messages, error } = await supabaseClient
+            .from('messages')
+            .select('*')
+            .or(`and(sender_id.eq.ADMIN,receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.ADMIN)`)
+            .order('created_at', { ascending: true });
+            
+        if (error) {
+            msgsDiv.innerHTML = '<div class="text-center text-red-500 mt-4">載入失敗</div>';
+            return;
+        }
+
+        msgsDiv.innerHTML = '';
+        messages.forEach(msg => appendMessage(msg));
+        scrollToBottom();
+    }
+
+    function appendMessage(msg) {
+        const msgsDiv = document.getElementById('messagesArea');
+        const isMe = msg.sender_id === 'ADMIN';
+        const date = new Date(msg.created_at);
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        let html = '';
+        if (isMe) {
+            // Sent by Admin
+            html = `
+                <div class="flex flex-col items-end space-y-1">
+                    <div class="max-w-[75%] space-y-1">
+                        <div class="bg-primary text-white px-4 py-2 rounded-2xl rounded-br-none shadow-md">
+                            <p class="text-sm">${escapeHtml(msg.content)}</p>
+                        </div>
+                        <p class="text-[10px] text-slate-400 text-right mr-1">${timeStr}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Received from User
+            const u = userProfiles[msg.sender_id] || { userId: msg.sender_id };
+            const name = u.customName || u.displayName || 'G';
+            const firstChar = name.charAt(0).toUpperCase();
+            
+            let avatarHtml = `<div class="w-8 h-8 rounded-full bg-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">${firstChar}</div>`;
+            if (u.avatarUrl) {
+                avatarHtml = `<img src="${u.avatarUrl}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">`;
+            }
+
+            html = `
+                <div class="flex items-end gap-2">
+                    ${avatarHtml}
+                    <div class="max-w-[75%] space-y-1">
+                        <div class="bg-white dark:bg-card-dark border border-border-light dark:border-border-dark px-4 py-2 rounded-2xl rounded-bl-none shadow-sm">
+                            <p class="text-sm">${escapeHtml(msg.content)}</p>
+                        </div>
+                        <p class="text-[10px] text-slate-400 ml-1">${timeStr}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        msgsDiv.appendChild(div.firstElementChild); // Append the first child of the wrapper
+        scrollToBottom();
+    }
+
+    async function sendAdminMessage() {
+        if (!currentChatUser) return;
+        const input = document.getElementById('msgInput');
+        const content = input.value.trim();
+        if (!content) return;
+
+        input.value = '';
+        input.style.height = 'auto'; // Reset height
+
+        try {
+            await supabaseClient.from('messages').insert([{
+                sender_id: 'ADMIN',
+                receiver_id: currentChatUser,
+                content: content
+            }]);
+            // appendMessage will be called by realtime subscription
+        } catch (e) {
+            alert('發送失敗');
+        }
+    }
+    
+    function quickReply(text) {
+        if (!currentChatUser) return;
+        const input = document.getElementById('msgInput');
+        input.value = text;
+        sendAdminMessage();
+    }
+
+    function scrollToBottom() {
+        const msgsDiv = document.getElementById('messagesArea');
+        msgsDiv.scrollTop = msgsDiv.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#039;");
+    }
+    
+    async function editUserName() {
+        if (!currentChatUser) return;
+        const u = userProfiles[currentChatUser] || {};
+        const oldName = u.customName || u.displayName || '';
+        const newName = prompt("請輸入用戶備註名稱:", oldName);
+        if (newName !== null) {
+            const { error } = await supabaseClient
+                .from('profiles')
+                .upsert({ user_id: currentChatUser, custom_name: newName }, { onConflict: 'user_id' });
+                
+            if (!error) {
+                // Refresh
+                fetchChatUsers();
+                if (currentChatUser) selectUser(currentChatUser); // Update header
+            } else {
+                alert("修改失敗");
+            }
+        }
+    }
+
+    // Start
+    init();
+
+</script>
+</body>
+</html>
