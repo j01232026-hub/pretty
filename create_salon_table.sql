@@ -4,7 +4,8 @@ create table public.salon_info (
   address text,
   email text,
   image_url text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
 -- Insert default row
