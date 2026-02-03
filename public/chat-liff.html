@@ -30,6 +30,23 @@
             },
         }
     </script>
+    <script>
+        // Global Back Handler (Defined in Head for Safety)
+        function handleBack() {
+            try {
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    liff.closeWindow();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            // Fallback
+            window.history.back();
+            setTimeout(function() {
+                window.location.href = 'status-liff.html';
+            }, 300);
+        }
+    </script>
     <style>
         /* Fallback colors if Tailwind fails */
         :root {
@@ -79,10 +96,10 @@
     <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
         <!-- Header -->
         <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0">
-            <div class="flex size-12 shrink-0 items-center justify-center cursor-pointer text-[#1b0d18] active:scale-90 transition-transform" onclick="handleBack()">
+            <button id="back-btn" class="flex size-12 shrink-0 items-center justify-center cursor-pointer text-[#1b0d18] z-[100] relative bg-transparent border-none outline-none" onclick="handleBack()" ontouchstart="handleBack()">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
-            </div>
-            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.8)</span></h2>
+            </button>
+            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.9)</span></h2>
         </div>
 
         <!-- Chat Area -->
@@ -372,26 +389,6 @@
                 top: container.scrollHeight,
                 behavior: smooth ? 'smooth' : 'auto'
             });
-        }
-
-        // Back Button Logic (v1.8 - Robust Fallback)
-        function handleBack() {
-            try {
-                // 1. Try LIFF Close
-                if (typeof liff !== 'undefined' && liff.isInClient()) {
-                    liff.closeWindow();
-                }
-            } catch (e) {
-                console.error('LIFF Close Failed', e);
-            }
-
-            // 2. Try History Back (if LIFF didn't close or not in LIFF)
-            window.history.back();
-
-            // 3. Absolute Fallback: Redirect to Status Page if still here
-            setTimeout(() => {
-                window.location.href = 'status-liff.html';
-            }, 500);
         }
 
         function escapeHtml(text) {
