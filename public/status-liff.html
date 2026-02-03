@@ -17,6 +17,9 @@
                         "primary": "#8A2BE2",
                         "background-light": "#f8f6f7",
                         "background-dark": "#22101d",
+                        "accent-soft": "#f0e6fa", // Purple tint
+                        "text-main": "#1b0d18",
+                        "text-muted": "#6b7280"
                     },
                     fontFamily: {
                         "display": ["Manrope", "sans-serif"]
@@ -67,24 +70,98 @@
             <!-- Dynamic content will be injected here -->
         </div>
         
-        <!-- Template for Appointment Card (Hidden) -->
-        <template id="appointment-card-template">
-            <div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 mb-4 appointment-card">
-                <div class="flex justify-between items-start mb-3">
-                    <div class="flex flex-col gap-1">
-                        <p class="text-[#1b0d18] dark:text-white font-bold stylist-name">設計師名稱</p>
-                        <p class="text-sm text-gray-500 service-info">一般服務 • 60m</p>
+        <!-- Template for Active Appointment (Hero Card) -->
+        <template id="active-card-template">
+            <div class="@container">
+                <!-- Status Hero Card -->
+                <div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden mb-6">
+                    <!-- Gradient Status Header -->
+                    <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #e0c3fc 0%, #8A2BE2 100%);">
+                        <div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
+                            <span class="material-symbols-outlined text-5xl mb-2">check_circle</span>
+                            <p class="text-3xl font-bold">已確認</p>
+                        </div>
                     </div>
-                    <div class="status-badge px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
-                        狀態
+                    
+                    <!-- Content Body -->
+                    <div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-6">
+                        <p class="text-primary text-sm font-semibold uppercase tracking-wider">即將到來</p>
+                        <p class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">您的預約已準備就緒！</p>
+                        
+                        <div class="mt-4">
+                            <div class="flex gap-6 justify-between mb-2">
+                                <p class="text-[#1b0d18] dark:text-white text-base font-medium leading-normal">距離開始還有</p>
+                                <p class="text-[#1b0d18] dark:text-white text-sm font-normal leading-normal countdown-text">計算中...</p>
+                            </div>
+                            <div class="rounded-full bg-primary/20"><div class="h-2 rounded-full bg-primary" style="width: 100%;"></div></div>
+                            <p class="text-primary text-xs font-medium mt-2">期待您的光臨！</p>
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
-                    <span class="material-symbols-outlined text-sm">calendar_today</span>
-                    <span class="datetime-info">YYYY-MM-DD • HH:MM</span>
+
+                <!-- Salon Details Section (Location) -->
+                <div>
+                    <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">沙龍資訊</h3>
+                    <div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
+                            <div class="flex flex-col justify-center">
+                                <p class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Pretty Salon</p>
+                                <p class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">台北市信義區時尚大道123號</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <button class="flex min-w-[48px] h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined">directions</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex gap-2 action-buttons">
-                    <!-- Buttons will be injected here -->
+
+                <!-- Booking Information Section -->
+                <div>
+                    <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">預約詳情</h3>
+                    <div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm flex flex-col gap-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <p class="text-xs text-primary font-bold uppercase">服務項目</p>
+                                <p class="text-[#1b0d18] dark:text-white font-medium">一般服務</p>
+                                <p class="text-sm text-gray-500">30 分鐘</p>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <p class="text-xs text-primary font-bold uppercase text-right">時間</p>
+                                <p class="text-[#1b0d18] dark:text-white font-medium text-right date-text">YYYY-MM-DD</p>
+                                <p class="text-sm text-gray-500 text-right time-text">HH:MM</p>
+                            </div>
+                        </div>
+                        <div class="h-px bg-gray-100 dark:bg-gray-700 w-full"></div>
+                        
+                        <!-- Assigned Professional (Stylist) -->
+                        <div class="flex items-center gap-4">
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
+                            <div class="flex flex-col">
+                                <p class="text-xs text-primary font-bold uppercase">指定設計師</p>
+                                <p class="text-[#1b0d18] dark:text-white font-medium stylist-name">設計師名稱</p>
+                                <div class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-yellow-500 text-sm fill-current">star</span>
+                                    <p class="text-xs text-gray-500">5.0 專業設計師</p>
+                                </div>
+                            </div>
+                            <button class="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined text-base">chat</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Buttons -->
+                <div class="flex flex-col gap-3 mt-4 mb-4">
+                    <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 bg-primary text-white text-base font-bold transition-all hover:bg-opacity-90 active:scale-[0.98] btn-reschedule">
+                        <span class="truncate">更改預約</span>
+                    </button>
+                    <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-base font-medium transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98] btn-cancel">
+                        <span class="truncate">取消預約</span>
+                    </button>
                 </div>
             </div>
         </template>
@@ -134,52 +211,6 @@
             }
         }
 
-        // Switch Tab
-        function switchTab(tab) {
-            if (currentTab === tab) return;
-            currentTab = tab;
-
-            // Update UI classes
-            const upcomingBtn = document.getElementById('tab-upcoming');
-            const historyBtn = document.getElementById('tab-history');
-            
-            if (tab === 'upcoming') {
-                upcomingBtn.classList.replace('tab-inactive', 'tab-active');
-                historyBtn.classList.replace('tab-active', 'tab-inactive');
-            } else {
-                historyBtn.classList.replace('tab-inactive', 'tab-active');
-                upcomingBtn.classList.replace('tab-active', 'tab-inactive');
-            }
-
-            // Fetch data
-            if (currentUserId) {
-                fetchAppointments(tab);
-            }
-        }
-
-        // Fetch Appointments API
-        async function fetchAppointments(type) {
-            const container = document.getElementById('appointments-container');
-            container.innerHTML = `
-                <div id="loading-spinner" class="flex flex-col items-center justify-center py-10">
-                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-                    <p class="mt-4 text-gray-500 text-sm">載入預約中...</p>
-                </div>
-            `;
-
-            try {
-                const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}`);
-                if (!res.ok) throw new Error('API Error');
-                const data = await res.json();
-                
-                renderAppointments(data, type);
-
-            } catch (err) {
-                console.error('Fetch Error:', err);
-                container.innerHTML = `<p class="text-center text-gray-500 mt-10">無法載入預約資料</p>`;
-            }
-        }
-
         // Render Appointments
         function renderAppointments(appointments, type) {
             const container = document.getElementById('appointments-container');
@@ -196,52 +227,74 @@
                 return;
             }
 
-            const template = document.getElementById('appointment-card-template');
-
-            appointments.forEach(appt => {
+            // For Status Page (Upcoming), we use the "Active Hero Card" style for the first one
+            if (type === 'upcoming') {
+                const appt = appointments[0]; // Take the first one as active
+                const template = document.getElementById('active-card-template');
                 const clone = template.content.cloneNode(true);
                 
-                // Fill Data
+                // Fill Stylist in the new "Assigned Professional" section
                 clone.querySelector('.stylist-name').textContent = appt.stylist || '指定設計師';
                 
-                // Calculate Duration / Service Info
+                // Fill Date/Time
+                clone.querySelector('.date-text').textContent = appt.date;
                 let timeDisplay = appt.time;
-                if (appt.endTime) {
-                    timeDisplay += ` - ${appt.endTime}`;
-                }
-                clone.querySelector('.datetime-info').textContent = `${appt.date} • ${timeDisplay}`;
+                if (appt.endTime) timeDisplay += ` - ${appt.endTime}`;
+                clone.querySelector('.time-text').textContent = timeDisplay;
                 
-                // Status Badge & Buttons
-                const statusBadge = clone.querySelector('.status-badge');
-                const actionBtns = clone.querySelector('.action-buttons');
+                // Countdown logic (Simple approximation)
+                const apptDate = new Date(`${appt.date}T${appt.time}`);
+                const now = new Date();
+                const diffMs = apptDate - now;
+                const diffHrs = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffHrs / 24);
+                
+                let countdownText = "";
+                if (diffDays > 0) countdownText = `${diffDays} 天`;
+                else if (diffHrs > 0) countdownText = `${diffHrs} 小時`;
+                else countdownText = "即將開始";
+                
+                clone.querySelector('.countdown-text').textContent = countdownText;
 
-                if (type === 'upcoming') {
-                    // Status: Confirmed (Green/Primary)
-                    statusBadge.textContent = '已確認';
-                    statusBadge.className = 'status-badge px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-primary/10 text-primary';
-                    
-                    // Action: Cancel
-                    actionBtns.innerHTML = `
-                        <button onclick="handleCancel('${appt.id}')" class="w-full h-10 rounded-full border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-xs font-bold transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98]">
-                            取消預約
-                        </button>
-                    `;
-                } else {
-                    // History (Assume Completed for now, logic can be complex)
-                    // For simplicity, past appointments are marked 'Completed'
-                    statusBadge.textContent = '已完成';
-                    statusBadge.className = 'status-badge px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-gray-100 dark:bg-gray-800 text-gray-500';
-                    
-                    // Action: Book Again
-                    actionBtns.innerHTML = `
-                         <button onclick="window.location.href='booking-liff.html'" class="w-full h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
-                            再次預約
-                        </button>
-                    `;
-                }
+                // Buttons
+                const cancelBtn = clone.querySelector('.btn-cancel');
+                cancelBtn.onclick = () => handleCancel(appt.id);
+                
+                const rescheduleBtn = clone.querySelector('.btn-reschedule');
+                rescheduleBtn.onclick = () => alert('請聯繫設計師進行更改'); // Placeholder
 
                 container.appendChild(clone);
-            });
+            } else {
+                // If switchTab('history') is called on this page (though we have a separate history page),
+                // we should probably redirect or render simple cards.
+                // The user seems to want two separate pages.
+                // But since the tabs are here, let's implement basic history rendering just in case.
+                appointments.forEach(appt => {
+                     // Reuse active card? No, history should look different. 
+                     // Since the user asked for "status-liff" to be based on appointment_status.html
+                     // and appointment_status.html has tabs, we should support it.
+                     // But strictly speaking, the user asked for separate files.
+                     // Let's redirect to history-liff.html if history tab is clicked?
+                     // Or just render simple cards.
+                     // Let's redirect for better separation as per user request structure.
+                     // Actually, the `switchTab` function is already implemented.
+                     // I will just use a simple card for history here if needed, or redirect.
+                     // Given the instructions, I'll redirect.
+                });
+            }
+        }
+
+        // Overwrite switchTab to redirect for history
+        function switchTab(tab) {
+             if (tab === 'history') {
+                 window.location.href = `history-liff.html?liffId=${new URLSearchParams(window.location.search).get('liffId') || '2009027968-8FTFYHCQ'}`;
+                 return;
+             }
+             // ... existing logic for upcoming ...
+             currentTab = tab;
+             document.getElementById('tab-upcoming').classList.replace('tab-inactive', 'tab-active');
+             document.getElementById('tab-history').classList.replace('tab-active', 'tab-inactive');
+             if (currentUserId) fetchAppointments(tab);
         }
 
         // Handle Cancel (Placeholder)

@@ -15,11 +15,11 @@
                 extend: {
                     colors: {
                         "primary": "#8A2BE2",
-                        "background-light": "#f8f6f7",
+                        "background-light": "#fcf8fb", // Updated to match reference
                         "background-dark": "#22101d",
-                        "accent-soft": "#f3e7f0",
+                        "accent-soft": "#f0e6fa", // Purple tint
                         "text-main": "#1b0d18",
-                        "text-muted": "#6b7280"
+                        "text-muted": "#9a4c86" // Updated to match reference
                     },
                     fontFamily: {
                         "display": ["Manrope", "sans-serif"]
@@ -34,14 +34,21 @@
             },
         }
     </script>
-    <style type="text/tailwindcss">
+    <style>
         body {
             min-height: max(884px, 100dvh);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-text-main">
-    <div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+    <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden">
         <!-- TopAppBar -->
         <div class="sticky top-0 z-10 bg-background-light dark:bg-background-dark/95 backdrop-blur-md">
             <div class="flex items-center p-4 pb-2 justify-between">
@@ -54,18 +61,18 @@
                 </div>
             </div>
             
-            <!-- SearchBar & Filters (UI only, logic not implemented) -->
+            <!-- SearchBar & Filters -->
             <div class="px-4 py-2">
                 <div class="flex gap-2">
                     <label class="flex flex-col flex-1 h-12">
                         <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
-                            <div class="text-gray-400 flex border-none bg-white dark:bg-white/10 items-center justify-center pl-4 rounded-l-xl">
+                            <div class="text-text-muted flex border-none bg-accent-soft dark:bg-white/10 items-center justify-center pl-4 rounded-l-xl">
                                 <span class="material-symbols-outlined">search</span>
                             </div>
-                            <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-0 border-none bg-white dark:bg-white/10 placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="搜尋預約" value=""/>
+                            <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-0 border-none bg-accent-soft dark:bg-white/10 placeholder:text-text-muted px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="搜尋預約" value=""/>
                         </div>
                     </label>
-                    <button class="flex size-12 items-center justify-center bg-white dark:bg-white/10 rounded-xl text-gray-500">
+                    <button class="flex size-12 items-center justify-center bg-accent-soft dark:bg-white/10 rounded-xl text-text-muted">
                         <span class="material-symbols-outlined">tune</span>
                     </button>
                 </div>
@@ -76,11 +83,11 @@
                 <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4">
                     <p class="text-sm font-medium">全部紀錄</p>
                 </button>
-                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-white/10 px-4">
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
                     <p class="text-text-main dark:text-white text-sm font-medium">最近30天</p>
                     <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
                 </button>
-                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-white/10 px-4">
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
                     <p class="text-text-main dark:text-white text-sm font-medium">服務項目</p>
                     <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
                 </button>
@@ -102,7 +109,7 @@
 
         <!-- Template for History Card -->
         <template id="history-card-template">
-            <div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-gray-100 dark:border-white/5 mb-4 history-card">
+            <div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-accent-soft/50 dark:border-white/5 mb-4 history-card">
                 <div class="flex p-4 gap-4">
                     <div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0 bg-gray-200" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
                     <div class="flex flex-1 flex-col justify-between">
@@ -110,16 +117,14 @@
                             <p class="text-text-main dark:text-white text-lg font-bold leading-tight stylist-name">設計師名稱</p>
                             <p class="text-text-muted text-sm font-normal mt-1 service-info">一般服務 • YYYY-MM-DD</p>
                         </div>
-                        <div class="flex justify-between items-end">
-                            <p class="text-primary text-base font-bold">已完成</p>
-                        </div>
+                        <p class="text-primary text-base font-bold price-info">NT$ 500</p>
                     </div>
                 </div>
                 <div class="flex px-4 pb-4 gap-3">
                     <button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/20 btn-rebook">
                         <span>再次預約</span>
                     </button>
-                    <button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-text-main dark:text-white text-sm font-bold">
+                    <button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-accent-soft dark:bg-white/10 text-text-main dark:text-white text-sm font-bold">
                         <span>評分與評論</span>
                     </button>
                 </div>
@@ -210,6 +215,8 @@
                 }
                 clone.querySelector('.service-info').textContent = `一般服務 • ${appt.date} • ${timeDisplay}`;
                 
+                clone.querySelector('.price-info').textContent = `NT$ ${appt.price || 500}`;
+
                 // Rebook Button
                 const rebookBtn = clone.querySelector('.btn-rebook');
                 rebookBtn.onclick = () => {
