@@ -136,7 +136,7 @@
             <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
                 <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 outline-none p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..." style="outline: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent;"></textarea>
             </div>
-            <button id="send-btn" class="p-2 text-[#9d2bee] rounded-full hover:bg-gray-200 disabled:opacity-50 focus:outline-none flex items-center justify-center" onclick="sendMessage()">
+            <button id="send-btn" class="p-2 text-[#9d2bee] rounded-full hover:bg-gray-200 disabled:opacity-50 focus:outline-none flex items-center justify-center">
                 <span class="material-symbols-outlined text-2xl fill-1">send</span>
             </button>
         </div>
@@ -183,6 +183,17 @@
         // Initialize
         // Use window.onload to match history-liff.html behavior
         window.onload = async function() {
+            // Bind Send Button Event
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+                // Also bind Enter key on textarea (if desired, optional but good for UX)
+                // document.getElementById('message-input').addEventListener('keydown', (e) => { ... });
+            } else {
+                console.error('Send button not found!');
+                alert('System Error: Send button missing');
+            }
+
             const spinner = document.getElementById('loading-spinner');
             const chatContainer = document.getElementById('chat-container');
 
@@ -333,7 +344,11 @@
                     return;
                 }
                 
-                if (!content) return;
+                if (!content) {
+                    // Ideally button is disabled, but if not:
+                    alert('請輸入訊息內容');
+                    return;
+                }
 
                 // Clear input immediately for better UX
                 input.value = '';
