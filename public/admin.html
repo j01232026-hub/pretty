@@ -6,7 +6,10 @@
 <title>Appointment Management Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin-style.css">
 <script>
       tailwind.config = {
         darkMode: "class",
@@ -43,36 +46,36 @@
   </style>
   </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
-<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-4">
+<header class="admin-header sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-4">
 <div class="flex items-center justify-between max-w-lg mx-auto">
 <div class="flex items-center gap-3">
-<span class="material-icons text-primary text-3xl">calendar_month</span>
+<span class="material-icons text-3xl">calendar_month</span>
 <h1 class="text-xl font-bold tracking-tight">預約管理後台</h1>
 </div>
 <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-<span class="material-icons">notifications</span>
+<span class="material-icons" style="color: var(--accent-color)">notifications</span>
 </button>
 </div>
 </header>
 <main class="max-w-lg mx-auto p-4 pb-24">
     <!-- Stats -->
 <div class="grid grid-cols-2 gap-4 mb-6">
-<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">今日預約</p>
-<p class="text-2xl font-bold mt-1" id="todayCount">0</p>
+<div class="stat-card">
+<p class="label">今日預約</p>
+<p class="value" id="todayCount">0</p>
 </div>
-<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">總預約</p>
-<p class="text-2xl font-bold mt-1 text-primary" id="totalCount">0</p>
+<div class="stat-card">
+<p class="label">總預約</p>
+<p class="value" id="totalCount">0</p>
 </div>
 </div>
 
 <!-- Filters -->
 <div class="flex gap-2 mb-6 overflow-x-auto ios-scroll-hide pb-2">
-<button class="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="filterBookings('all', this)">全部</button>
-<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="filterBookings('today', this)">今天</button>
-<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap" onclick="filterBookings('week', this)">本週</button>
-<!-- <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">已取消</button> -->
+<button class="filter-btn active" onclick="filterBookings('all', this)">全部</button>
+<button class="filter-btn" onclick="filterBookings('today', this)">今天</button>
+<button class="filter-btn" onclick="filterBookings('week', this)">本週</button>
+<!-- <button class="filter-btn">已取消</button> -->
 </div>
 
 <!-- Booking List -->
@@ -81,23 +84,21 @@
 </div>
 
 </main>
-<nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom">
-<div class="max-w-lg mx-auto flex justify-around py-3">
-<button class="flex flex-col items-center gap-1 text-primary">
+<nav class="bottom-nav">
+<a href="/admin.html" class="bottom-nav-item active">
 <span class="material-icons">calendar_month</span>
-<span class="text-[10px] font-bold">預約管理</span>
-</button>
-<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors" onclick="window.location.href='/admin-chat.html'">
+<span>預約管理</span>
+</a>
+<a href="/admin-chat.html" class="bottom-nav-item">
 <span class="material-icons">forum</span>
-<span class="text-[10px] font-medium">訊息框</span>
-</button>
-<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors" onclick="window.location.href='/admin-account.html'">
+<span>訊息框</span>
+</a>
+<a href="/admin-account.html" class="bottom-nav-item">
 <span class="material-icons">manage_accounts</span>
-<span class="text-[10px] font-medium">帳號管理</span>
-</button>
-</div>
+<span>帳號管理</span>
+</a>
 </nav>
-<button class="fixed right-6 bottom-24 bg-primary text-white w-14 h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-transform" onclick="alert('新增預約功能開發中')">
+<button class="fab-add fixed right-6 bottom-24 text-white w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-transform" onclick="alert('新增預約功能開發中')">
 <span class="material-icons text-3xl">add</span>
 </button>
 
@@ -186,24 +187,24 @@
             if (name === b.user_id && name.length > 8) name = name.substr(0, 8) + '...';
 
             return `
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="booking-card mb-4">
                 <div class="flex justify-between items-start mb-4">
                 <div>
                 <span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">${time}</span>
-                <h3 class="text-lg font-bold mt-2">${escapeHtml(name)}</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">${escapeHtml(phone)}</p>
+                <h3 class="text-lg font-bold mt-2 text-[var(--text-primary)]">${escapeHtml(name)}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">${escapeHtml(phone)}</p>
                 </div>
                 <div class="text-right">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">${date}</p>
-                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">${escapeHtml(service)}</p>
+                <p class="text-sm font-medium text-[var(--text-secondary)]">${date}</p>
+                <p class="text-sm font-semibold text-[var(--brand-color)] mt-1">${escapeHtml(service)}</p>
                 </div>
                 </div>
                 <div class="flex gap-3">
-                <button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform" onclick="editBooking(${b.id}, '${date}', '${time}')">
+                <button class="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="editBooking(${b.id}, '${date}', '${time}')">
                 <span class="material-icons text-sm">edit</span> 編輯
                 </button>
-                <button class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform" onclick="cancelBooking(${b.id})">
-                <span class="material-icons text-sm">cancel</span> 取消預約
+                <button class="flex-1 btn-danger py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="cancelBooking(${b.id})">
+                <span class="material-icons text-sm">cancel</span> 取消
                 </button>
                 </div>
             </div>
@@ -222,9 +223,9 @@
         // Reset buttons
         const btns = btn.parentElement.querySelectorAll('button');
         btns.forEach(b => {
-            b.className = "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap";
+            b.className = "filter-btn";
         });
-        btn.className = "bg-primary text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap";
+        btn.className = "filter-btn active";
 
         let filtered = allBookings;
         if (type === 'today') {

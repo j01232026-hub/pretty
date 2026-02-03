@@ -7,170 +7,165 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin-style.css">
     <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        primary: "#3b82f6",
-                        "background-light": "#f8fafc",
+                        primary: "var(--brand-color)",
+                        "background-light": "var(--bg-main)",
                         "background-dark": "#0f172a",
                         "card-light": "#ffffff",
                         "card-dark": "#1e293b",
                     },
                     fontFamily: {
-                        display: ["Inter", "system-ui", "sans-serif"],
-                    },
-                    borderRadius: {
-                        DEFAULT: "0.75rem",
+                        display: ["Noto Sans TC", "Inter", "system-ui", "sans-serif"],
+                        sans: ["Noto Sans TC", "Inter", "system-ui", "sans-serif"],
                     },
                 },
             },
         };
     </script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-    </style>
-    <style>
-        body {
-            min-height: max(884px, 100dvh);
-        }
-    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-20">
-<header class="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-        <button class="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onclick="history.back()">
-            <span class="material-icons text-slate-600 dark:text-slate-400">arrow_back</span>
-        </button>
+<body class="bg-background-light text-slate-900 min-h-screen pb-24">
+
+<header class="admin-header sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+        <span class="material-icons">manage_accounts</span>
         <h1 class="text-lg font-bold">帳號管理</h1>
     </div>
-    <button class="p-2 rounded-full bg-slate-100 dark:bg-slate-800" onclick="document.documentElement.classList.toggle('dark')">
-        <span class="material-icons text-slate-600 dark:text-slate-400 text-sm">dark_mode</span>
+    <button class="p-2 rounded-full hover:bg-slate-100 transition-colors">
+        <span class="material-icons text-slate-500">notifications</span>
     </button>
 </header>
+
 <main class="max-w-md mx-auto p-4 space-y-6">
-    <section class="space-y-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">公司基本資料</h2>
-            <button class="text-sm font-medium text-primary hover:opacity-80">
-                <span class="material-icons text-base align-middle mr-1">edit</span>編輯
+    <!-- Company Info -->
+    <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">公司基本資料</h2>
+            <button class="text-sm font-medium text-primary hover:opacity-80 flex items-center gap-1">
+                <i class="fas fa-edit"></i> 編輯
             </button>
         </div>
-        <div class="bg-card-light dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div class="p-4 space-y-4">
-                <div class="space-y-1">
-                    <label class="text-xs text-slate-500 dark:text-slate-400">公司名稱</label>
-                    <p class="font-medium">極致美學沙龍會館 (Central Plaza)</p>
-                </div>
-                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
-                <div class="space-y-1">
-                    <label class="text-xs text-slate-500 dark:text-slate-400">通訊地址</label>
-                    <p class="font-medium">台北市信義區忠孝東路五段 123 號 4 樓</p>
-                </div>
-                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
-                <div class="space-y-1">
-                    <label class="text-xs text-slate-500 dark:text-slate-400">聯絡信箱</label>
-                    <p class="font-medium">contact@beauty-salon-pro.com</p>
-                </div>
+        <div class="admin-card space-y-4">
+            <div class="space-y-1">
+                <label class="text-xs text-slate-500">公司名稱</label>
+                <p class="font-medium text-gray-800">極致美學沙龍會館 (Central Plaza)</p>
+            </div>
+            <div class="h-px bg-slate-100"></div>
+            <div class="space-y-1">
+                <label class="text-xs text-slate-500">通訊地址</label>
+                <p class="font-medium text-gray-800">台北市信義區忠孝東路五段 123 號 4 樓</p>
+            </div>
+            <div class="h-px bg-slate-100"></div>
+            <div class="space-y-1">
+                <label class="text-xs text-slate-500">聯絡信箱</label>
+                <p class="font-medium text-gray-800">contact@beauty-salon-pro.com</p>
             </div>
         </div>
     </section>
-    <section class="space-y-4">
+
+    <!-- Staff Management -->
+    <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">員工及門市管理</h2>
-            <button class="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">員工及門市管理</h2>
+            <button class="btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1">
                 <span class="material-icons text-sm">add</span>新增成員
             </button>
         </div>
         <div class="space-y-3">
-            <div class="bg-card-light dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 flex items-center justify-between">
+            <!-- Member 1 -->
+            <div class="list-item-card flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary font-bold text-lg">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-lg avatar-circle">
                         許
                     </div>
                     <div>
-                        <h3 class="font-semibold">許証傑 (阿彬)</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">資深美髮師 · 0935676871</p>
+                        <h3 class="font-semibold text-gray-800">許証傑 (阿彬)</h3>
+                        <p class="text-xs text-slate-500">資深美髮師 · 0935676871</p>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                        <span class="material-icons text-lg">edit</span>
+                <div class="flex gap-1">
+                    <button class="icon-btn" title="編輯">
+                        <span class="material-icons">edit</span>
                     </button>
-                    <button class="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500">
-                        <span class="material-icons text-lg">delete_outline</span>
+                    <button class="icon-btn danger" title="刪除">
+                        <span class="material-icons">delete_outline</span>
                     </button>
                 </div>
             </div>
-            <div class="bg-card-light dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 flex items-center justify-between">
+
+            <!-- Member 2 -->
+            <div class="list-item-card flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 font-bold text-lg">
+                    <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-lg avatar-circle">
                         王
                     </div>
                     <div>
-                        <h3 class="font-semibold">王小美</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">接待專員 · 0912345678</p>
+                        <h3 class="font-semibold text-gray-800">王小美</h3>
+                        <p class="text-xs text-slate-500">接待專員 · 0912345678</p>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                        <span class="material-icons text-lg">edit</span>
+                <div class="flex gap-1">
+                    <button class="icon-btn" title="編輯">
+                        <span class="material-icons">edit</span>
                     </button>
-                    <button class="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500">
-                        <span class="material-icons text-lg">delete_outline</span>
+                    <button class="icon-btn danger" title="刪除">
+                        <span class="material-icons">delete_outline</span>
                     </button>
                 </div>
             </div>
         </div>
     </section>
-    <section class="space-y-4">
-        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">帳號安全</h2>
-        <div class="bg-card-light dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm divide-y divide-slate-100 dark:divide-slate-800">
-            <button class="w-full p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+
+    <!-- Account Security -->
+    <section class="space-y-3">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 px-1">帳號安全</h2>
+        <div class="admin-card p-0 overflow-hidden divide-y divide-slate-100">
+            <button class="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                 <div class="flex items-center gap-3">
                     <span class="material-icons text-slate-400">lock_outline</span>
-                    <span class="font-medium">修改密碼</span>
+                    <span class="font-medium text-gray-700">修改密碼</span>
                 </div>
-                <span class="material-icons text-slate-400">chevron_right</span>
+                <span class="material-icons text-slate-300">chevron_right</span>
             </button>
-            <button class="w-full p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+            <button class="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                 <div class="flex items-center gap-3">
                     <span class="material-icons text-slate-400">notifications_none</span>
-                    <span class="font-medium">通知設定</span>
+                    <span class="font-medium text-gray-700">通知設定</span>
                 </div>
-                <span class="material-icons text-slate-400">chevron_right</span>
+                <span class="material-icons text-slate-300">chevron_right</span>
             </button>
-            <button class="w-full p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-red-500">
+            <button class="w-full p-4 flex items-center justify-between hover:bg-red-50 transition-colors group">
                 <div class="flex items-center gap-3">
-                    <span class="material-icons">logout</span>
-                    <span class="font-medium">登出帳號</span>
+                    <span class="material-icons text-slate-400 group-hover:text-red-500 transition-colors">logout</span>
+                    <span class="font-medium text-gray-700 group-hover:text-red-600 transition-colors">登出帳號</span>
                 </div>
             </button>
         </div>
     </section>
 </main>
-<nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-6 py-2 flex justify-around items-center z-20">
-    <button class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-primary transition-colors" onclick="window.location.href='/admin.html'">
+
+<nav class="bottom-nav">
+    <a href="/admin.html" class="bottom-nav-item">
         <span class="material-icons">calendar_month</span>
-        <span class="text-[10px] font-medium">預約管理</span>
-    </button>
-    <button class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-primary transition-colors" onclick="window.location.href='/admin-chat.html'">
+        <span>預約管理</span>
+    </a>
+    <a href="/admin-chat.html" class="bottom-nav-item">
         <span class="material-icons">forum</span>
-        <span class="text-[10px] font-medium">訊息框</span>
-    </button>
-    <button class="flex flex-col items-center gap-0.5 text-primary">
+        <span>訊息框</span>
+    </a>
+    <a href="/admin-account.html" class="bottom-nav-item active">
         <span class="material-icons">manage_accounts</span>
-        <span class="text-[10px] font-medium">帳號管理</span>
-    </button>
+        <span>帳號管理</span>
+    </a>
 </nav>
-<div class="fixed bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-300 dark:bg-slate-700 rounded-full z-30"></div>
 
 </body>
 </html>
