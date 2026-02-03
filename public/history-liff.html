@@ -150,7 +150,7 @@
                 console.error('LIFF Init Failed:', err);
                 // 測試模式 fallback
                 // fetchHistory('U_TEST_USER');
-                document.getElementById('history-container').innerHTML = `<p class="text-center text-red-500 mt-10">LIFF 初始化失敗，請在 LINE 中開啟。</p>`;
+                document.getElementById('history-container').innerHTML = `<div class="px-4 text-center"><p class="text-red-500 font-bold mb-2">LIFF 初始化失敗</p><p class="text-xs text-gray-500 bg-gray-100 p-2 rounded text-left break-all">${err.message || JSON.stringify(err)}</p><p class="text-xs text-gray-400 mt-2">請確認此頁面網址是否已在 LINE Developers Console 註冊為 LIFF 應用程式，或者 Endpoint URL 是否正確。</p></div>`;
             }
         };
 
