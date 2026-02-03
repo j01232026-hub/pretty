@@ -60,7 +60,7 @@
 <body class="bg-background-light dark:bg-background-dark text-[#160d1b] dark:text-white min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 flex items-center justify-between">
-        <button class="flex items-center justify-center size-10 rounded-full bg-white dark:bg-zinc-800 shadow-sm" onclick="window.history.back()">
+        <button class="flex items-center justify-center size-10 rounded-full bg-white dark:bg-zinc-800 shadow-sm" onclick="handleBack()">
             <span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
         </button>
         <h1 class="text-lg font-bold tracking-tight">預約服務</h1>
@@ -179,6 +179,19 @@
         let selectedDate = null;
         let selectedTime = null;
         let selectedStylist = '思容Phoebe'; // Default stylist
+
+        function handleBack() {
+            try {
+                if (liff && liff.isInClient()) {
+                    liff.closeWindow();
+                } else {
+                    window.history.back();
+                }
+            } catch (e) {
+                console.error('Back button error:', e);
+                window.history.back();
+            }
+        }
 
         // Initialization
         document.addEventListener('DOMContentLoaded', async () => {
