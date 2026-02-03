@@ -187,6 +187,7 @@
 
         let currentUserId = null;
         let currentDisplayName = null;
+        let currentPictureUrl = null;
         let supabaseClient = null;
 
         // Initialize
@@ -236,6 +237,7 @@
                     const profile = await liff.getProfile();
                     currentUserId = profile.userId;
                     currentDisplayName = profile.displayName;
+                    currentPictureUrl = profile.pictureUrl;
                     log('User ID: ' + currentUserId);
                 } catch (liffErr) {
                     console.error('LIFF Init Failed:', liffErr);
@@ -397,7 +399,8 @@
                         content: content,
                         sender_id: currentUserId,
                         receiver_id: 'ADMIN',
-                        sender_name: currentDisplayName
+                        sender_name: currentDisplayName,
+                        sender_avatar: currentPictureUrl
                     })
                 });
 

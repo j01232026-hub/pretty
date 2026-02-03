@@ -3,12 +3,14 @@
 create table if not exists public.profiles (
   user_id text primary key,
   display_name text,       -- LINE 暱稱
+  picture_url text,        -- LINE 頭像
   custom_name text,        -- 管理員設定的備註
   last_seen_at timestamp with time zone default timezone('utc'::text, now())
 );
 
 -- 2. 確保欄位存在 (如果表已存在但缺欄位，會自動補上)
 alter table public.profiles add column if not exists display_name text;
+alter table public.profiles add column if not exists picture_url text;
 alter table public.profiles add column if not exists custom_name text;
 alter table public.profiles add column if not exists last_seen_at timestamp with time zone default timezone('utc'::text, now());
 

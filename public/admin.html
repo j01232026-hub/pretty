@@ -113,6 +113,8 @@
             border-bottom: 1px solid #eee;
             cursor: pointer;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
         }
         .user-item:hover {
             background: #e6f7ff;
@@ -120,6 +122,19 @@
         .user-item.active {
             background: #1890ff;
             color: white;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+            background: #e0e0e0;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .user-info {
+            flex: 1;
+            overflow: hidden;
         }
         .user-id {
             font-weight: bold;
@@ -564,21 +579,27 @@
             // Get user info for header
             let displayName = userId;
             let customName = '';
+            let pictureUrl = null;
             
             if (supabaseClient) {
                 const { data } = await supabaseClient.from('profiles').select('*').eq('user_id', userId).single();
                 if (data) {
                     displayName = data.display_name || userId;
                     customName = data.custom_name || '';
+                    pictureUrl = data.picture_url;
                 }
             }
 
             const showName = customName || displayName;
+            const avatar = pictureUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(showName) + '&background=random';
 
             const header = document.getElementById('chatHeader');
             header.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>與 <b>${escapeHtml(showName)}</b> 的對話</span>
+                    <div style="display:flex; align-items:center;">
+                        <img src="${avatar}" style="width:32px; height:32px; border-radius:50%; margin-right:10px; border:1px solid #ddd;" onerror="this.src='https://ui-avatars.com/api/?name=User'">
+                        <span>與 <b>${escapeHtml(showName)}</b> 的對話</span>
+                    </div>
                     <button onclick="promptEditName('${userId}', '${escapeHtml(customName)}')" style="font-size:12px; padding:4px 8px; background:#fff; border:1px solid #ccc; border-radius:4px; cursor:pointer; color:#333;">
                         ✏️ 修改備註
                     </button>
