@@ -211,6 +211,33 @@
             }
         }
 
+        // Fetch Appointments
+        async function fetchAppointments(type) {
+            const container = document.getElementById('appointments-container');
+            
+            try {
+                if (!currentUserId) {
+                    // Try to get from URL for testing if not set
+                    const urlParams = new URLSearchParams(window.location.search);
+                    // For testing purposes allow user_id override or fallback
+                    // But in prod strict LIFF flow is better. 
+                    // Let's assume currentUserId is set by init.
+                    console.warn('User ID not set yet');
+                    return; 
+                }
+
+                const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}`);
+                if (!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                renderAppointments(data, type);
+
+            } catch (err) {
+                console.error('Fetch Error:', err);
+                container.innerHTML = `<p class="text-center text-gray-500 mt-10">無法載入預約資訊</p><p class="text-xs text-center text-gray-400">${err.message}</p>`;
+            }
+        }
+
         // Render Appointments
         function renderAppointments(appointments, type) {
             const container = document.getElementById('appointments-container');
