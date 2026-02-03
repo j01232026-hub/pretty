@@ -164,8 +164,16 @@ export default async function handler(req, res) {
                 }
             }
 
-            const summaryName = name || '';
-            const summaryDisplay = nickname ? `${summaryName}(${nickname})` : summaryName;
+            const summaryName = (name || '').trim();
+            const summaryNickname = (nickname || '').trim();
+            
+            // 邏輯：只有當「姓名」與「暱稱」不相似時，才將暱稱附加上去
+            // 如果姓名已經包含暱稱，或兩者完全相同，就只顯示姓名
+            let summaryDisplay = summaryName;
+            
+            if (summaryNickname && summaryName !== summaryNickname && !summaryName.includes(summaryNickname)) {
+                 summaryDisplay = `${summaryName}(${summaryNickname})`;
+            }
 
             // 3. 建立事件物件
             const event = {
