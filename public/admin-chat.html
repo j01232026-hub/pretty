@@ -174,13 +174,13 @@
             // Search for a profile that matches the admin's name
             const { data, error } = await supabaseClient
                 .from('profiles')
-                .select('picture_url')
+                .select('avatar_url')
                 .or('custom_name.ilike.%許証傑%,custom_name.ilike.%阿彬%,display_name.ilike.%許証傑%,display_name.ilike.%阿彬%')
                 .limit(1)
                 .maybeSingle();
 
-            if (data && data.picture_url) {
-                adminAvatarUrl = data.picture_url;
+            if (data && data.avatar_url) {
+                adminAvatarUrl = data.avatar_url;
                 console.log("Admin avatar found:", adminAvatarUrl);
             }
         } catch (e) {
@@ -229,7 +229,7 @@
                     time: new Date(msg.created_at),
                     displayName: null,
                     customName: null,
-                    pictureUrl: null
+                    avatarUrl: null
                 });
             }
         });
@@ -248,7 +248,7 @@
                         const u = userMap.get(p.user_id);
                         u.displayName = p.display_name;
                         u.customName = p.custom_name;
-                        u.pictureUrl = p.picture_url; 
+                        u.avatarUrl = p.avatar_url; // Assuming avatar_url exists
                         userProfiles[p.user_id] = u;
                     }
                 });
@@ -283,8 +283,8 @@
             
             // Avatar logic
             let avatarHtml = '';
-            if (u.pictureUrl) {
-                avatarHtml = `<img src="${u.pictureUrl}" class="w-14 h-14 rounded-full object-cover ${ringClass}">`;
+            if (u.avatarUrl) {
+                avatarHtml = `<img src="${u.avatarUrl}" class="w-14 h-14 rounded-full object-cover ${ringClass}">`;
             } else {
                  avatarHtml = `
                     <div class="w-14 h-14 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 font-bold ${ringClass}">
@@ -387,8 +387,8 @@
             const firstChar = name.charAt(0).toUpperCase();
             
             let avatarHtml = `<div class="w-8 h-8 rounded-full bg-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">${firstChar}</div>`;
-            if (u.pictureUrl) {
-                avatarHtml = `<img src="${u.pictureUrl}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">`;
+            if (u.avatarUrl) {
+                avatarHtml = `<img src="${u.avatarUrl}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">`;
             }
 
             html = `
