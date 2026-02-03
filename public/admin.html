@@ -55,9 +55,23 @@
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.2s;
+            margin-left: 5px;
         }
         .btn-cancel:hover {
             background-color: #d9363e;
+        }
+        .btn-edit {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .btn-edit:hover {
+            background-color: #096dd9;
         }
         .loading {
             text-align: center;
@@ -147,6 +161,7 @@
                         <td>${time}</td>
                         <td>${phone}</td>
                         <td>
+                            <button class="btn-edit" onclick="editBooking(${booking.id}, '${date}', '${time}')">編輯</button>
                             <button class="btn-cancel" onclick="cancelBooking(${booking.id})">取消預約</button>
                         </td>
                     `;
@@ -157,6 +172,56 @@
                 console.error('Load Error:', error);
                 statusDiv.textContent = `錯誤：${error.message}。請確認密碼是否正確。`;
                 statusDiv.style.color = 'red';
+            }
+        }
+
+        // 修改預約
+        async function editBooking(id, oldDate, oldTime) {
+            // 1. 獲取新資料
+            const newDate = prompt('請輸入新的日期 (YYYY-MM-DD):', oldDate);
+            if (!newDate) return; // 使用者按取消
+
+            const newTime = prompt('請輸入新的時間 (HH:mm):', oldTime);
+            if (!newTime) return; // 使用者按取消
+
+            // 簡單驗證格式 (可選)
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate) || !/^\d{2}:\d{2}$/.test(newTime)) {
+                alert('格式錯誤！日期請用 YYYY-MM-DD，時間請用 HH:mm');
+                return;
+            }
+
+            statusDiv.textContent = '處理中，請稍候... (正在檢查撞期)';
+            statusDiv.style.display = 'block';
+
+            try {
+                // 2. 發送請求
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        appointment_id: id, 
+                        new_date: newDate, 
+                        new_time: newTime 
+                    })
+                });
+
+                const result = await response.json();
+
+                // 3. 處理回應
+                if (response.status === 200) {
+                    alert('✅ ' + (result.message || '修改成功！'));
+                    loadBookings(); // 刷新列表
+                } else if (response.status === 409) {
+                    alert('❌ 修改失敗：' + (result.message || '該時段已被佔用，請選擇其他時間。'));
+                    statusDiv.style.display = 'none';
+                } else {
+                    throw new Error(result.error || result.message || '修改失敗');
+                }
+
+            } catch (error) {
+                console.error('Edit Error:', error);
+                alert('❌ 系統錯誤：' + error.message);
+                statusDiv.style.display = 'none';
             }
         }
 
