@@ -378,30 +378,30 @@
         }
 
         function handleBack() {
-            // 1. Try LIFF close first (for LINE App)
-            try {
-                if (window.liff && liff.isInClient && liff.isInClient()) {
-                    liff.closeWindow();
-                    return;
+            // Aggressive Back Strategy
+            
+            // 1. Try LIFF Close (Fire and forget)
+            if (window.liff) {
+                try {
+                    // Check if function exists before calling
+                    if (typeof liff.closeWindow === 'function') {
+                        liff.closeWindow();
+                    }
+                } catch (e) {
+                    console.error('LIFF close failed:', e);
                 }
-            } catch (e) {
-                console.error('LIFF close failed:', e);
             }
 
-            // 2. Browser fallback: History Back
-            if (document.referrer && window.history.length > 1) {
+            // 2. Try History Back
+            if (window.history.length > 1) {
                 window.history.back();
-                
-                // If history.back() doesn't work (e.g. single page app state), 
-                // fallback to redirect after a short delay
-                setTimeout(() => {
-                    window.location.href = 'status-liff.html';
-                }, 500);
-            } else {
-                // 3. Ultimate Fallback: Redirect to Home/Status page
-                // This handles cases where opened in new tab/window with no history
-                window.location.href = 'status-liff.html';
             }
+
+            // 3. Force Redirect to Status Page
+            // If the above actions didn't close/unload the page within 300ms, force a redirect.
+            setTimeout(() => {
+                window.location.href = 'status-liff.html';
+            }, 300);
         }
 
         function escapeHtml(text) {
