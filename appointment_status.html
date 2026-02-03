@@ -82,10 +82,10 @@
 <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Salon Details</h3>
 <div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between">
 <div class="flex items-center gap-4">
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
+<div id="salonImage" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
 <div class="flex flex-col justify-center">
-<p class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Serenity Spa &amp; Salon</p>
-<p class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">123 Wellness Way, Bloom District</p>
+<p id="salonName" class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Serenity Spa &amp; Salon</p>
+<p id="salonAddress" class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">123 Wellness Way, Bloom District</p>
 </div>
 </div>
 <div class="shrink-0">
@@ -206,5 +206,39 @@
 </div>
 <div class="h-10"></div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    async function loadSalonInfo() {
+        try {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            if (window.supabase) {
+                const supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+                
+                const { data } = await supabase
+                    .from('salon_info')
+                    .select('*')
+                    .limit(1)
+                    .maybeSingle();
+                
+                if (data) {
+                    if (data.image_url) {
+                        document.getElementById('salonImage').style.backgroundImage = `url("${data.image_url}")`;
+                    }
+                    if (data.name) {
+                        document.getElementById('salonName').textContent = data.name;
+                    }
+                    if (data.address) {
+                        document.getElementById('salonAddress').textContent = data.address;
+                    }
+                }
+            }
+        } catch(e) {
+            console.error('Error loading salon info:', e);
+        }
+    }
+    loadSalonInfo();
+</script>
 
 </body></html>

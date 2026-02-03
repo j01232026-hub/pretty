@@ -49,27 +49,62 @@
     <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">公司基本資料</h2>
-            <button class="text-sm font-medium text-primary hover:opacity-80 flex items-center gap-1">
+            <button onclick="openEditCompanyModal()" class="text-sm font-medium text-primary hover:opacity-80 flex items-center gap-1">
                 <i class="fas fa-edit"></i> 編輯
             </button>
         </div>
         <div class="admin-card space-y-4">
             <div class="space-y-1">
                 <label class="text-xs text-slate-500">公司名稱</label>
-                <p class="font-medium text-gray-800">極致美學沙龍會館 (Central Plaza)</p>
+                <p id="companyNameDisplay" class="font-medium text-gray-800">載入中...</p>
             </div>
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
                 <label class="text-xs text-slate-500">通訊地址</label>
-                <p class="font-medium text-gray-800">台北市信義區忠孝東路五段 123 號 4 樓</p>
+                <p id="companyAddressDisplay" class="font-medium text-gray-800">載入中...</p>
             </div>
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
                 <label class="text-xs text-slate-500">聯絡信箱</label>
-                <p class="font-medium text-gray-800">contact@beauty-salon-pro.com</p>
+                <p id="companyEmailDisplay" class="font-medium text-gray-800">載入中...</p>
+            </div>
+            <div class="h-px bg-slate-100"></div>
+            <div class="space-y-1">
+                <label class="text-xs text-slate-500">圖片連結</label>
+                <p id="companyImageDisplay" class="font-medium text-gray-800 truncate">載入中...</p>
             </div>
         </div>
     </section>
+
+    <!-- Modal -->
+    <div id="editCompanyModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeEditCompanyModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 space-y-4">
+            <h3 class="text-lg font-bold text-gray-900">編輯公司資料</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">公司名稱</label>
+                    <input type="text" id="editCompanyName" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">通訊地址</label>
+                    <input type="text" id="editCompanyAddress" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡信箱</label>
+                    <input type="email" id="editCompanyEmail" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">圖片連結</label>
+                    <input type="text" id="editCompanyImage" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeEditCompanyModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 font-semibold text-gray-600">取消</button>
+                <button onclick="saveCompanyInfo()" class="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold">儲存</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Staff Management -->
     <section class="space-y-3">
@@ -166,6 +201,93 @@
         <span>帳號管理</span>
     </a>
 </nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    let supabaseClient = null;
+    let companyInfo = {};
+
+    async function initSupabase() {
+        try {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+                fetchCompanyInfo();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function fetchCompanyInfo() {
+        if (!supabaseClient) return;
+        const { data, error } = await supabaseClient
+            .from('salon_info')
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+        
+        if (data) {
+            companyInfo = data;
+            document.getElementById('companyNameDisplay').textContent = data.name;
+            document.getElementById('companyAddressDisplay').textContent = data.address;
+            document.getElementById('companyEmailDisplay').textContent = data.email;
+            document.getElementById('companyImageDisplay').textContent = data.image_url || '無';
+        }
+    }
+
+    function openEditCompanyModal() {
+        document.getElementById('editCompanyName').value = companyInfo.name || '';
+        document.getElementById('editCompanyAddress').value = companyInfo.address || '';
+        document.getElementById('editCompanyEmail').value = companyInfo.email || '';
+        document.getElementById('editCompanyImage').value = companyInfo.image_url || '';
+        document.getElementById('editCompanyModal').classList.remove('hidden');
+    }
+
+    function closeEditCompanyModal() {
+        document.getElementById('editCompanyModal').classList.add('hidden');
+    }
+
+    async function saveCompanyInfo() {
+        const name = document.getElementById('editCompanyName').value;
+        const address = document.getElementById('editCompanyAddress').value;
+        const email = document.getElementById('editCompanyEmail').value;
+        const image_url = document.getElementById('editCompanyImage').value;
+
+        if (!supabaseClient) return;
+
+        const updates = {
+            name,
+            address,
+            email,
+            image_url,
+            updated_at: new Date()
+        };
+
+        let error;
+        if (companyInfo.id) {
+            const { error: updateError } = await supabaseClient
+                .from('salon_info')
+                .update(updates)
+                .eq('id', companyInfo.id);
+            error = updateError;
+        } else {
+            const { error: insertError } = await supabaseClient
+                .from('salon_info')
+                .insert([updates]);
+            error = insertError;
+        }
+
+        if (error) {
+            alert('儲存失敗: ' + error.message);
+        } else {
+            alert('儲存成功');
+            closeEditCompanyModal();
+            fetchCompanyInfo();
+        }
+    }
+
+    initSupabase();
+</script>
 
 </body>
 </html>
