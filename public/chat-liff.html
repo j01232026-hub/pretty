@@ -339,8 +339,10 @@
                     const newMsg = payload.new;
                     console.log('New Message:', newMsg);
 
-                    // Check if message is relevant to current user
-                    if (newMsg.sender_id === currentUserId || newMsg.receiver_id === currentUserId) {
+                    // Only append incoming messages (receiver_id === currentUserId)
+                    // Outgoing messages (sender_id === currentUserId) are handled locally by sendMessage()
+                    // This prevents double-display of sent messages
+                    if (newMsg.receiver_id === currentUserId) {
                         appendMessage(newMsg, true);
                     }
                 })
