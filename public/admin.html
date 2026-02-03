@@ -241,7 +241,9 @@
                     <tr>
                         <th>日期</th>
                         <th>時間</th>
+                        <th>姓名</th>
                         <th>手機號碼</th>
+                        <th>服務項目</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -309,38 +311,62 @@
                 const bookings = await response.json();
 
                 if (bookings.length === 0) {
-                    statusDiv.innerHTML = '<div class="empty">目前沒有未來的預約</div>';
+                    bookingList.innerHTML = '<tr><td colspan="6" class="empty">目前無預約</td></tr>';
+                    statusDiv.style.display = 'none';
                     return;
                 }
 
                 statusDiv.style.display = 'none';
 
-                bookings.forEach(booking => {
+                // Fetch Profiles
+                let userProfiles = {};
+                if (supabaseClient) {
+                    const userIds = [...new Set(bookings.map(b => b.user_id))].filter(id => id);
+                    if (userIds.length > 0) {
+                        const { data: profiles } = await supabaseClient
+                            .from('profiles')
+                            .select('user_id, display_name, custom_name')
+                            .in('user_id', userIds);
+                        
+                        if (profiles) {
+                            profiles.forEach(p => {
+                                userProfiles[p.user_id] = p.custom_name || p.display_name;
+                            });
+                        }
+                    }
+                }
+
+                bookingList.innerHTML = bookings.map(booking => {
                     // 解析 message JSON 字串
                     let details = {};
                     try {
                         details = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
                     } catch (e) {
-                        details = { phone: '解析錯誤', date: '?', time: '?' };
+                        details = {};
                     }
 
-                    // 如果資料庫本身有 date/time 欄位，優先使用；否則使用 message 裡的
                     const date = booking.date || details.date || '未知';
                     const time = booking.time || details.time || '未知';
                     const phone = booking.phone || details.phone || '未知';
+                    const service = booking.service || details.service || '一般預約';
+                    
+                    let name = userProfiles[booking.user_id] || booking.user_id || '未知用戶';
+                    if (name === booking.user_id && name.length > 10) name = name.substr(0, 8) + '...';
 
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${date}</td>
-                        <td>${time}</td>
-                        <td>${phone}</td>
-                        <td>
-                            <button class="btn-edit" onclick="editBooking(${booking.id}, '${date}', '${time}')">編輯</button>
-                            <button class="btn-cancel" onclick="cancelBooking(${booking.id})">取消預約</button>
-                        </td>
+                    return `
+                        <tr>
+                            <td>${date}</td>
+                            <td>${time}</td>
+                            <td>${escapeHtml(name)}</td>
+                            <td>${escapeHtml(phone)}</td>
+                            <td>${escapeHtml(service)}</td>
+                            <td>
+                                <button class="btn-edit" onclick="editBooking(${booking.id}, '${date}', '${time}')">編輯</button>
+                                <button class="btn-cancel" onclick="cancelBooking(${booking.id})">取消預約</button>
+                            </td>
+                        </tr>
                     `;
-                    bookingList.appendChild(tr);
-                });
+                }).join('');
 
             } catch (error) {
                 console.error('Load Error:', error);

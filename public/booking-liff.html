@@ -579,16 +579,14 @@
             // Call Backend API
             try {
                 // Show loading state (optional)
-                const submitBtn = document.querySelector('#confirmModal button'); // Assuming there's a button in modal
-                // But current modal button calls submitBooking() directly? 
-                // Wait, I need to check how submitBooking is called. 
-                // It is called by button onclick="submitBooking()" in the modal (implied, or I need to check)
+                const submitBtn = document.querySelector('#confirmModal button'); 
                 
                 const res = await fetch('/api/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         userId,
+                        name,
                         date: selectedDate,
                         time: startTime,
                         endTime: endTime,

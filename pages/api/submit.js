@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { userId, date, time, phone, endTime } = req.body;
+        const { userId, date, time, phone, endTime, name } = req.body;
 
         if (!userId || !date || !time || !phone) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -102,7 +102,15 @@ export default async function handler(req, res) {
 
             // 1. 寫入 Supabase (搶先佔位)
             // 儲存 endTime 資訊
-            const messageStr = `{"action": "book", "date": "${date}", "time": "${time}", "startTime": "${time}", "endTime": "${endTime || ''}", "phone": "${phone}"}`;
+            const messageStr = JSON.stringify({
+                action: "book",
+                date: date,
+                time: time,
+                startTime: time,
+                endTime: endTime || '',
+                phone: phone,
+                name: name || ''
+            });
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
                 .insert([
@@ -143,10 +151,26 @@ export default async function handler(req, res) {
                 }
             }
 
+            // 2.5 取得用戶暱稱 (For Google Calendar)
+            let nickname = '';
+            if (userId && userId !== 'U_GUEST') {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('display_name')
+                    .eq('user_id', userId)
+                    .single();
+                if (profile) {
+                    nickname = profile.display_name || '';
+                }
+            }
+
+            const summaryName = name || '';
+            const summaryDisplay = nickname ? `${summaryName}(${nickname})` : summaryName;
+
             // 3. 建立事件物件
             const event = {
-                summary: `【新預約】${phone}`,
-                description: `透過 LINE 預約系統建立 (API)\nUser ID: ${userId}`,
+                summary: `【新預約】${summaryDisplay} ${phone}`,
+                description: `透過 LINE 預約系統建立 (API)\nUser ID: ${userId}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}`,
                 start: {
                     dateTime: startDateTime,
                     timeZone: 'Asia/Taipei',

@@ -56,7 +56,9 @@ export default async function handler(req, res) {
                         ...booking,
                         date: booking.date || details.date, // 優先用欄位，沒有則用 JSON
                         time: booking.time || details.time,
-                        phone: booking.phone || details.phone
+                        phone: booking.phone || details.phone,
+                        name: details.name, // Try to extract name from JSON
+                        service: details.service // Try to extract service from JSON
                     };
                 })
                 .filter(b => b.date && b.date >= today) // 只留今天以後的
