@@ -354,7 +354,9 @@
                 timeBtns.forEach(btn => {
                     const time = btn.dataset.time; // HH:mm
                     const slotStart = new Date(`${date}T${time}:00+08:00`);
-                    const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000); // Assume 1 hour duration
+                    // Modify: Change default duration check to 30 minutes to match slot interval
+                    // This allows booking at 15:00 even if there is a booking at 15:30 (assuming 30min service)
+                    const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000); 
 
                     const isBusy = busySlots.some(busy => {
                         const busyStart = new Date(busy.start);
