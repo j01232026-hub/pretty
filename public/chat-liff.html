@@ -154,7 +154,8 @@
         let supabase = null;
 
         // Initialize
-        window.onload = async function() {
+        // Use DOMContentLoaded to ensure earlier execution than window.onload
+        document.addEventListener('DOMContentLoaded', async function() {
             const spinner = document.getElementById('loading-spinner');
             const chatContainer = document.getElementById('chat-container');
 
@@ -394,6 +395,18 @@
             };
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
+    </script>
+    <script>
+        // Force remove spinner after 5 seconds globally to prevent infinite hanging
+        setTimeout(() => {
+            const s = document.getElementById('loading-spinner');
+            if (s && s.style.display !== 'none') {
+                console.warn('Force removing spinner due to timeout');
+                s.style.setProperty('display', 'none', 'important');
+                s.classList.add('hidden');
+                document.getElementById('chat-container')?.classList.remove('hidden');
+            }
+        }, 5000);
     </script>
 </body>
 </html>
