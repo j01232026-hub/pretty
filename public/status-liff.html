@@ -311,17 +311,35 @@
             }
         }
 
-        // Overwrite switchTab to redirect for history
         function switchTab(tab) {
-             if (tab === 'history') {
-                 window.location.href = `history-liff.html?liffId=${new URLSearchParams(window.location.search).get('liffId') || '2009027968-8FTFYHCQ'}`;
-                 return;
-             }
-             // ... existing logic for upcoming ...
-             currentTab = tab;
-             document.getElementById('tab-upcoming').classList.replace('tab-inactive', 'tab-active');
-             document.getElementById('tab-history').classList.replace('tab-active', 'tab-inactive');
-             if (currentUserId) fetchAppointments(tab);
+            if (currentTab === tab) return;
+            currentTab = tab;
+            
+            // Update Tabs UI
+            const tabs = ['upcoming', 'history'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    el.classList.remove('tab-inactive');
+                    el.classList.add('tab-active');
+                } else {
+                    el.classList.remove('tab-active');
+                    el.classList.add('tab-inactive');
+                }
+            });
+
+            // Toggle History Controls
+            const historyControls = document.getElementById('history-controls');
+            if (historyControls) {
+                if (tab === 'history') {
+                    historyControls.classList.remove('hidden');
+                } else {
+                    historyControls.classList.add('hidden');
+                }
+            }
+
+            // Fetch Data
+            fetchAppointments(tab);
         }
 
         // Handle Cancel (Placeholder)
