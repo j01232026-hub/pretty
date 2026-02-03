@@ -31,12 +31,18 @@
         }
     </script>
     <style>
+        /* Fallback colors if Tailwind fails */
+        :root {
+            --chat-bg: #9bb7d4;
+            --primary: #f042c4;
+        }
         body {
-            background-color: #9bb7d4; /* LINE Default BG Color */
+            background-color: var(--chat-bg);
             height: 100dvh;
             display: flex;
-            flex-col: column;
+            flex-direction: column;
             overflow: hidden;
+            margin: 0;
         }
         /* Custom Scrollbar */
         .hide-scrollbar::-webkit-scrollbar {
@@ -46,44 +52,105 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        /* Debug Console */
+        #debug-console {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: rgba(0,0,0,0.8);
+            color: lime;
+            font-family: monospace;
+            font-size: 10px;
+            overflow-y: auto;
+            z-index: 9999;
+            padding: 5px;
+            display: none; /* Hidden by default */
+            pointer-events: none;
+        }
     </style>
 </head>
-<body class="font-display text-[#1b0d18]">
-    <!-- Header -->
-    <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-10 shadow-sm">
-        <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="handleBack()">
-            <span class="material-symbols-outlined">arrow_back_ios</span>
-        </div>
-        <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服</h2>
-    </div>
+<body class="font-display text-[#1b0d18] bg-[#9bb7d4]">
+    <div id="debug-console"></div>
 
-    <!-- Chat Area -->
-    <div id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24">
-        <!-- Messages will be injected here -->
-        
-        <!-- Loading Spinner -->
-        <div id="loading-spinner" class="flex justify-center py-4">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+    <!-- Main Container -->
+    <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-10 shadow-sm shrink-0">
+            <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="handleBack()">
+                <span class="material-symbols-outlined">arrow_back_ios</span>
+            </div>
+            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服</h2>
         </div>
-    </div>
 
-    <!-- Input Area -->
-    <div class="fixed bottom-0 w-full bg-[#f8f6f7] p-2 border-t border-gray-200 flex items-end gap-2 z-20 safe-area-bottom">
-        <button class="p-2 text-gray-500 rounded-full hover:bg-gray-200">
-            <span class="material-symbols-outlined">add</span>
-        </button>
-        <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
-            <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..."></textarea>
+        <!-- Chat Area -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24 w-full">
+            <!-- Messages will be injected here -->
+            
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="flex justify-center py-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+            
+            <!-- Error Message Container -->
+            <div id="error-container" class="hidden flex-col items-center justify-center py-4 bg-red-100 rounded-lg p-4 mx-4 mt-4">
+                <p class="text-red-600 font-bold mb-1">發生錯誤</p>
+                <p class="text-xs text-red-500 break-all" id="error-text"></p>
+            </div>
         </div>
-        <button id="send-btn" class="p-2 text-primary rounded-full hover:bg-gray-200 disabled:opacity-50" onclick="sendMessage()">
-            <span class="material-symbols-outlined text-3xl fill-1">send</span>
-        </button>
+
+        <!-- Input Area -->
+        <div class="absolute bottom-0 left-0 w-full bg-[#f8f6f7] p-2 border-t border-gray-200 flex items-end gap-2 z-20 safe-area-bottom shrink-0">
+            <button class="p-2 text-gray-500 rounded-full hover:bg-gray-200">
+                <span class="material-symbols-outlined">add</span>
+            </button>
+            <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
+                <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..."></textarea>
+            </div>
+            <button id="send-btn" class="p-2 text-[#f042c4] rounded-full hover:bg-gray-200 disabled:opacity-50" onclick="sendMessage()">
+                <span class="material-symbols-outlined text-3xl fill-1">send</span>
+            </button>
+        </div>
     </div>
 
     <script>
+        // Custom Logger for Mobile Debugging
+        function log(msg, type = 'info') {
+            console.log(msg);
+            const debugConsole = document.getElementById('debug-console');
+            if (debugConsole && debugConsole.style.display !== 'none') {
+                const line = document.createElement('div');
+                line.textContent = `[${type}] ${typeof msg === 'object' ? JSON.stringify(msg) : msg}`;
+                line.style.color = type === 'error' ? 'red' : 'lime';
+                debugConsole.appendChild(line);
+                debugConsole.scrollTop = debugConsole.scrollHeight;
+            }
+        }
+        
+        // Show debug console if ?debug=true
+        if (new URLSearchParams(window.location.search).get('debug') === 'true') {
+            document.getElementById('debug-console').style.display = 'block';
+        }
+
+        // Error Display Helper
+        function showError(msg) {
+            document.getElementById('loading-spinner').style.display = 'none';
+            const errContainer = document.getElementById('error-container');
+            const errText = document.getElementById('error-text');
+            errContainer.classList.remove('hidden');
+            errContainer.classList.add('flex');
+            errText.textContent = msg;
+            log(msg, 'error');
+        }
+
         // LIFF ID Configuration
         const urlParams = new URLSearchParams(window.location.search);
-        const LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY'; // Default or from URL
+        // Use the LIFF ID provided in previous context for history/status if specific one not available
+        // Or better, let user provide it. For now use a placeholder that matches pattern
+        const LIFF_ID = urlParams.get('liffId') || '2006843442-xxxxx'; 
+
 
         let currentUserId = null;
         let supabase = null;
@@ -92,6 +159,7 @@
         window.onload = async function() {
             try {
                 // 1. Initialize LIFF
+                log('Initializing LIFF...');
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -99,16 +167,25 @@
                 }
                 const profile = await liff.getProfile();
                 currentUserId = profile.userId;
-                console.log('User ID:', currentUserId);
+                log('User ID: ' + currentUserId);
 
-                // 2. Initialize Supabase (Fetch config first)
-                await initSupabase();
+                // 2. Fetch Config for Supabase
+                log('Fetching config...');
+                const configRes = await fetch('/api/config');
+                if (!configRes.ok) throw new Error('Config API Failed: ' + configRes.status);
+                const config = await configRes.json();
+                
+                // 3. Init Supabase
+                log('Initializing Supabase...');
+                supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
 
-                // 3. Load History
-                await loadHistory();
+                // 4. Load Messages
+                log('Loading messages...');
+                await loadMessages();
 
-                // 4. Subscribe to Realtime
-                subscribeRealtime();
+                // 5. Setup Realtime Subscription
+                log('Setting up realtime...');
+                setupRealtime();
 
                 // Setup Textarea Auto-resize
                 const textarea = document.getElementById('message-input');
@@ -120,8 +197,8 @@
                 });
 
             } catch (err) {
-                console.error('Init Failed:', err);
-                alert('初始化失敗: ' + err.message);
+                console.error('Init Error:', err);
+                showError(err.message || '初始化失敗，請稍後再試');
             }
         };
 
