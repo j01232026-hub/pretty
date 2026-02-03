@@ -151,13 +151,25 @@ export default async function handler(req, res) {
             };
 
             // 4. 寫入日曆
+            let googleEventId = null;
             try {
                 const { data: calendarEvent } = await calendar.events.insert({
                     calendarId: process.env.GOOGLE_CALENDAR_ID,
                     resource: event,
                 });
                 eventUrl = calendarEvent.htmlLink;
+                googleEventId = calendarEvent.id; // 取得並儲存 Event ID
                 console.log('Google 日曆寫入成功 (API)', eventUrl);
+
+                // 4.5 更新 Supabase，補上 google_event_id
+                if (insertedBooking) {
+                    await supabase
+                        .from('bookings')
+                        .update({ google_event_id: googleEventId })
+                        .eq('id', insertedBooking.id);
+                    console.log('Supabase google_event_id 更新成功');
+                }
+
             } catch (insertError) {
                 console.error('Google Calendar Insert Failed:', insertError.response?.data || insertError);
                 throw insertError; // 重新拋出錯誤，讓外層 catch 處理
