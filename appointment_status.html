@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f042c4",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#22101d",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Appointment Status and History</title>
+<style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+        }
+        .tab-active {
+            @apply bg-white dark:bg-[#3d2a39] shadow-sm text-primary font-bold;
+        }
+        .tab-inactive {
+            @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0d18] dark:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="text-[#1b0d18] dark:text-white flex size-12 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">My Appointments</h2>
+</div>
+<div class="px-4 py-2 sticky top-14 z-10 bg-background-light dark:bg-background-dark">
+<div class="flex p-1 bg-gray-200/50 dark:bg-[#1b0d18] rounded-xl">
+<button class="flex-1 py-2 text-sm rounded-lg transition-all tab-active">Active</button>
+<button class="flex-1 py-2 text-sm rounded-lg transition-all tab-inactive">History</button>
+</div>
+</div>
+<div class="flex flex-col gap-6 p-4" id="active-content">
+<div class="@container">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #fce7f3 0%, #f042c4 100%);">
+<div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
+<span class="material-symbols-outlined text-5xl mb-2">check_circle</span>
+<p class="text-3xl font-bold">Confirmed</p>
+</div>
+</div>
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-6">
+<p class="text-primary text-sm font-semibold uppercase tracking-wider">Upcoming Status</p>
+<p class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Your appointment is all set!</p>
+<div class="mt-4">
+<div class="flex gap-6 justify-between mb-2">
+<p class="text-[#1b0d18] dark:text-white text-base font-medium leading-normal">Arrival in</p>
+<p class="text-[#1b0d18] dark:text-white text-sm font-normal leading-normal">45 mins</p>
+</div>
+<div class="rounded-full bg-primary/20"><div class="h-2 rounded-full bg-primary" style="width: 65%;"></div></div>
+<p class="text-primary text-xs font-medium mt-2">Almost time for your glow up!</p>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Salon Details</h3>
+<div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Serenity Spa &amp; Salon</p>
+<p class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">123 Wellness Way, Bloom District</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex min-w-[48px] h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">directions</span>
+</button>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Booking Information</h3>
+<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<p class="text-xs text-primary font-bold uppercase">Service</p>
+<p class="text-[#1b0d18] dark:text-white font-medium">Hydrating Glow Facial</p>
+<p class="text-sm text-gray-500">60 Minutes</p>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-xs text-primary font-bold uppercase text-right">Schedule</p>
+<p class="text-[#1b0d18] dark:text-white font-medium text-right">Oct 24, 2023</p>
+<p class="text-sm text-gray-500 text-right">2:30 PM - 3:30 PM</p>
+</div>
+</div>
+<div class="h-px bg-gray-100 dark:bg-gray-700 w-full"></div>
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRMOJ1Fm6b3CFngPFXZK63GsfrinpyiB4Rabuz8uwoMuScWogVH7IBcH5-3L7nH4tj9v2hdt3Z50Z2xcxV7brA-FHN_yMWmJwt0763oYoaRpLYjp0PaCy4fHk2ULzTgP-x-5B-mAqVm8S0Aec4Ja0saZWOTKbT6eCaV765tWqx2kk6rSROaJ21Y13NMRsfG83nA2HlpQnNEBr0Sn9jMZQFgkUkPuysDO8vBremNHNUKQcIJ2VzvIZn-UlVsisIZ3fKoCAr05bAXXYj");'></div>
+<div class="flex flex-col">
+<p class="text-xs text-primary font-bold uppercase">Assigned Professional</p>
+<p class="text-[#1b0d18] dark:text-white font-medium">Elena Richardson</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-500 text-sm fill-current">star</span>
+<p class="text-xs text-gray-500">4.9 Senior Esthetician</p>
+</div>
+</div>
+<button class="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-base">chat</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 mt-4 mb-4">
+<button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 bg-primary text-white text-base font-bold transition-all hover:bg-opacity-90 active:scale-[0.98]">
+<span class="truncate">Reschedule Appointment</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-base font-medium transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98]">
+<span class="truncate">Cancel Booking</span>
+</button>
+</div>
+</div>
+<div class="hidden flex flex-col gap-4 p-4" id="history-content">
+<h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Past Appointments</h3>
+<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col gap-1">
+<p class="text-[#1b0d18] dark:text-white font-bold">Serenity Spa &amp; Salon</p>
+<p class="text-sm text-gray-500">Deep Tissue Massage • 90m</p>
+</div>
+<div class="bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
+                    Completed
+                </div>
+</div>
+<div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span>Sep 15, 2023 • 11:00 AM</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
+                    Book Again
+                </button>
+<button class="flex-1 h-10 rounded-full bg-primary/10 text-primary text-xs font-bold transition-all active:scale-[0.98]">
+                    Leave Review
+                </button>
+</div>
+</div>
+<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col gap-1">
+<p class="text-[#1b0d18] dark:text-white font-bold">The Glow Bar</p>
+<p class="text-sm text-gray-500">Lash Extensions • 120m</p>
+</div>
+<div class="bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
+                    Completed
+                </div>
+</div>
+<div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span>Aug 28, 2023 • 2:00 PM</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
+                    Book Again
+                </button>
+<div class="flex-1 flex items-center justify-center gap-1 text-primary text-xs font-bold">
+<span class="material-symbols-outlined text-sm fill-current">star</span>
+<span>5.0 Reviewed</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 opacity-80">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col gap-1">
+<p class="text-[#1b0d18] dark:text-white font-bold">Bloom Hair Studio</p>
+<p class="text-sm text-gray-500">Balayage &amp; Cut • 180m</p>
+</div>
+<div class="bg-red-50 dark:bg-red-900/20 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
+                    Cancelled
+                </div>
+</div>
+<div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span>Aug 05, 2023 • 10:30 AM</span>
+</div>
+<button class="w-full h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
+                Book Again
+            </button>
+</div>
+</div>
+<div class="h-10"></div>
+</div>
+
+</body></html>

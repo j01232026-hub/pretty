@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>歷史預約紀錄</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8A2BE2",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#22101d",
+                        "accent-soft": "#f3e7f0",
+                        "text-main": "#1b0d18",
+                        "text-muted": "#6b7280"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main">
+    <div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+        <!-- TopAppBar -->
+        <div class="sticky top-0 z-10 bg-background-light dark:bg-background-dark/95 backdrop-blur-md">
+            <div class="flex items-center p-4 pb-2 justify-between">
+                <div class="text-text-main dark:text-white flex size-12 shrink-0 items-center cursor-pointer" onclick="handleBack()">
+                    <span class="material-symbols-outlined">arrow_back_ios</span>
+                </div>
+                <h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">歷史預約紀錄</h2>
+                <div class="flex size-12 shrink-0 items-center justify-end">
+                    <span class="material-symbols-outlined text-text-main dark:text-white cursor-pointer">more_horiz</span>
+                </div>
+            </div>
+            
+            <!-- SearchBar & Filters (UI only, logic not implemented) -->
+            <div class="px-4 py-2">
+                <div class="flex gap-2">
+                    <label class="flex flex-col flex-1 h-12">
+                        <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+                            <div class="text-gray-400 flex border-none bg-white dark:bg-white/10 items-center justify-center pl-4 rounded-l-xl">
+                                <span class="material-symbols-outlined">search</span>
+                            </div>
+                            <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-0 border-none bg-white dark:bg-white/10 placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="搜尋預約" value=""/>
+                        </div>
+                    </label>
+                    <button class="flex size-12 items-center justify-center bg-white dark:bg-white/10 rounded-xl text-gray-500">
+                        <span class="material-symbols-outlined">tune</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chips -->
+            <div class="flex gap-3 px-4 py-3 overflow-x-auto hide-scrollbar">
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4">
+                    <p class="text-sm font-medium">全部紀錄</p>
+                </button>
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-white/10 px-4">
+                    <p class="text-text-main dark:text-white text-sm font-medium">最近30天</p>
+                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                </button>
+                <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-white/10 px-4">
+                    <p class="text-text-main dark:text-white text-sm font-medium">服務項目</p>
+                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Appointment List Content -->
+        <div class="flex-1 flex flex-col gap-4 p-4" id="history-container">
+            <!-- Loading State -->
+            <div id="loading-spinner" class="flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                <p class="mt-4 text-gray-500 text-sm">載入歷史紀錄中...</p>
+            </div>
+            <!-- Dynamic Content -->
+        </div>
+        
+        <!-- Bottom Navigation Spacer -->
+        <div class="h-20"></div>
+
+        <!-- Template for History Card -->
+        <template id="history-card-template">
+            <div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-gray-100 dark:border-white/5 mb-4 history-card">
+                <div class="flex p-4 gap-4">
+                    <div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0 bg-gray-200" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
+                    <div class="flex flex-1 flex-col justify-between">
+                        <div>
+                            <p class="text-text-main dark:text-white text-lg font-bold leading-tight stylist-name">設計師名稱</p>
+                            <p class="text-text-muted text-sm font-normal mt-1 service-info">一般服務 • YYYY-MM-DD</p>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <p class="text-primary text-base font-bold">已完成</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex px-4 pb-4 gap-3">
+                    <button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/20 btn-rebook">
+                        <span>再次預約</span>
+                    </button>
+                    <button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-text-main dark:text-white text-sm font-bold">
+                        <span>評分與評論</span>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <script>
+        const LIFF_ID = '2009027968-7nFLpFJt';
+        // 你的預約頁面完整 LIFF URL，請替換為實際的 LIFF URL
+        // 如果沒有，可以用 window.location.href 跳轉到相對路徑
+        const BOOKING_LIFF_URL = 'https://liff.line.me/2009027968-7nFLpFJt'; 
+
+        window.onload = async function() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                const profile = await liff.getProfile();
+                const userId = profile.userId;
+                console.log('User ID:', userId);
+                
+                fetchHistory(userId);
+
+            } catch (err) {
+                console.error('LIFF Init Failed:', err);
+                // 測試模式 fallback
+                // fetchHistory('U_TEST_USER');
+                document.getElementById('history-container').innerHTML = `<p class="text-center text-red-500 mt-10">LIFF 初始化失敗，請在 LINE 中開啟。</p>`;
+            }
+        };
+
+        function handleBack() {
+            if (liff.isInClient()) {
+                liff.closeWindow();
+            } else {
+                window.history.back();
+            }
+        }
+
+        async function fetchHistory(userId) {
+            const container = document.getElementById('history-container');
+            
+            try {
+                const res = await fetch(`/api/get-appointments?user_id=${userId}&type=history`);
+                if (!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                renderHistory(data);
+
+            } catch (err) {
+                console.error('Fetch Error:', err);
+                container.innerHTML = `<p class="text-center text-gray-500 mt-10">無法載入歷史紀錄</p>`;
+            }
+        }
+
+        function renderHistory(appointments) {
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+
+            if (appointments.length === 0) {
+                container.innerHTML = `
+                    <div class="py-12 flex flex-col items-center justify-center text-gray-400 opacity-60">
+                        <span class="material-symbols-outlined text-6xl mb-4">history</span>
+                        <p class="text-sm">目前沒有歷史預約紀錄</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const template = document.getElementById('history-card-template');
+
+            appointments.forEach(appt => {
+                const clone = template.content.cloneNode(true);
+                
+                clone.querySelector('.stylist-name').textContent = appt.stylist || '指定設計師';
+                
+                // Format Date
+                let timeDisplay = appt.time;
+                if (appt.endTime) {
+                    timeDisplay += ` - ${appt.endTime}`;
+                }
+                clone.querySelector('.service-info').textContent = `一般服務 • ${appt.date} • ${timeDisplay}`;
+                
+                // Rebook Button
+                const rebookBtn = clone.querySelector('.btn-rebook');
+                rebookBtn.onclick = () => {
+                    // 使用 liff.openWindow 跳轉
+                    if (liff.isInClient()) {
+                        liff.openWindow({
+                            url: BOOKING_LIFF_URL,
+                            external: false // 在 LINE 內部瀏覽器開啟
+                        });
+                    } else {
+                        // 瀏覽器 fallback
+                        window.location.href = 'booking-liff.html';
+                    }
+                };
+
+                container.appendChild(clone);
+            });
+            
+            // End of list indicator
+            const endIndicator = document.createElement('div');
+            endIndicator.className = 'py-8 flex flex-col items-center justify-center text-gray-400 opacity-60';
+            endIndicator.innerHTML = `
+                <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                <p class="text-sm">已顯示所有紀錄</p>
+            `;
+            container.appendChild(endIndicator);
+        }
+    </script>
+</body>
+</html>

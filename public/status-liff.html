@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>我的預約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8A2BE2",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#22101d",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+        }
+        .tab-active {
+            @apply bg-white dark:bg-[#3d2a39] shadow-sm text-primary font-bold;
+        }
+        .tab-inactive {
+            @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0d18] dark:text-white">
+    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+        <!-- Header -->
+        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+            <div class="text-[#1b0d18] dark:text-white flex size-12 shrink-0 items-center cursor-pointer" onclick="handleBack()">
+                <span class="material-symbols-outlined">arrow_back_ios</span>
+            </div>
+            <h2 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">我的預約</h2>
+        </div>
+
+        <!-- Tabs -->
+        <div class="px-4 py-2 sticky top-14 z-10 bg-background-light dark:bg-background-dark">
+            <div class="flex p-1 bg-gray-200/50 dark:bg-[#1b0d18] rounded-xl">
+                <button id="tab-upcoming" class="flex-1 py-2 text-sm rounded-lg transition-all tab-active" onclick="switchTab('upcoming')">即將到來</button>
+                <button id="tab-history" class="flex-1 py-2 text-sm rounded-lg transition-all tab-inactive" onclick="switchTab('history')">歷史紀錄</button>
+            </div>
+        </div>
+
+        <!-- Content Container -->
+        <div class="flex flex-col gap-6 p-4 pb-20 min-h-[500px]" id="appointments-container">
+            <!-- Loading State -->
+            <div id="loading-spinner" class="flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                <p class="mt-4 text-gray-500 text-sm">載入預約中...</p>
+            </div>
+            
+            <!-- Dynamic content will be injected here -->
+        </div>
+        
+        <!-- Template for Appointment Card (Hidden) -->
+        <template id="appointment-card-template">
+            <div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 mb-4 appointment-card">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[#1b0d18] dark:text-white font-bold stylist-name">設計師名稱</p>
+                        <p class="text-sm text-gray-500 service-info">一般服務 • 60m</p>
+                    </div>
+                    <div class="status-badge px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
+                        狀態
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
+                    <span class="material-symbols-outlined text-sm">calendar_today</span>
+                    <span class="datetime-info">YYYY-MM-DD • HH:MM</span>
+                </div>
+                <div class="flex gap-2 action-buttons">
+                    <!-- Buttons will be injected here -->
+                </div>
+            </div>
+        </template>
+
+    </div>
+
+    <script>
+        // LIFF ID (From previous context)
+        const LIFF_ID = '2009027968-7nFLpFJt'; 
+        let currentUserId = null; // Will be set after LIFF init
+        let currentTab = 'upcoming';
+
+        // Initialize LIFF
+        window.onload = async function() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                const profile = await liff.getProfile();
+                currentUserId = profile.userId;
+                console.log('User ID:', currentUserId);
+                
+                // Fetch appointments
+                fetchAppointments(currentTab);
+
+            } catch (err) {
+                console.error('LIFF Init Failed:', err);
+                // Fallback for testing in browser without LIFF (optional)
+                // currentUserId = 'U_TEST_USER'; 
+                // fetchAppointments(currentTab);
+                document.getElementById('loading-spinner').innerHTML = `<p class="text-red-500">LIFF 初始化失敗，請在 LINE 中開啟。</p>`;
+            }
+        };
+
+        // Handle Back Button
+        function handleBack() {
+            if (liff.isInClient()) {
+                liff.closeWindow();
+            } else {
+                window.history.back();
+            }
+        }
+
+        // Switch Tab
+        function switchTab(tab) {
+            if (currentTab === tab) return;
+            currentTab = tab;
+
+            // Update UI classes
+            const upcomingBtn = document.getElementById('tab-upcoming');
+            const historyBtn = document.getElementById('tab-history');
+            
+            if (tab === 'upcoming') {
+                upcomingBtn.classList.replace('tab-inactive', 'tab-active');
+                historyBtn.classList.replace('tab-active', 'tab-inactive');
+            } else {
+                historyBtn.classList.replace('tab-inactive', 'tab-active');
+                upcomingBtn.classList.replace('tab-active', 'tab-inactive');
+            }
+
+            // Fetch data
+            if (currentUserId) {
+                fetchAppointments(tab);
+            }
+        }
+
+        // Fetch Appointments API
+        async function fetchAppointments(type) {
+            const container = document.getElementById('appointments-container');
+            container.innerHTML = `
+                <div id="loading-spinner" class="flex flex-col items-center justify-center py-10">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                    <p class="mt-4 text-gray-500 text-sm">載入預約中...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}`);
+                if (!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                renderAppointments(data, type);
+
+            } catch (err) {
+                console.error('Fetch Error:', err);
+                container.innerHTML = `<p class="text-center text-gray-500 mt-10">無法載入預約資料</p>`;
+            }
+        }
+
+        // Render Appointments
+        function renderAppointments(appointments, type) {
+            const container = document.getElementById('appointments-container');
+            container.innerHTML = ''; // Clear loading spinner
+
+            if (appointments.length === 0) {
+                const emptyMsg = type === 'upcoming' ? '目前沒有即將到來的預約' : '目前沒有歷史預約紀錄';
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-10 opacity-60">
+                        <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">event_busy</span>
+                        <p class="text-gray-500 text-sm">${emptyMsg}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const template = document.getElementById('appointment-card-template');
+
+            appointments.forEach(appt => {
+                const clone = template.content.cloneNode(true);
+                
+                // Fill Data
+                clone.querySelector('.stylist-name').textContent = appt.stylist || '指定設計師';
+                
+                // Calculate Duration / Service Info
+                let timeDisplay = appt.time;
+                if (appt.endTime) {
+                    timeDisplay += ` - ${appt.endTime}`;
+                }
+                clone.querySelector('.datetime-info').textContent = `${appt.date} • ${timeDisplay}`;
+                
+                // Status Badge & Buttons
+                const statusBadge = clone.querySelector('.status-badge');
+                const actionBtns = clone.querySelector('.action-buttons');
+
+                if (type === 'upcoming') {
+                    // Status: Confirmed (Green/Primary)
+                    statusBadge.textContent = '已確認';
+                    statusBadge.className = 'status-badge px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-primary/10 text-primary';
+                    
+                    // Action: Cancel
+                    actionBtns.innerHTML = `
+                        <button onclick="handleCancel('${appt.id}')" class="w-full h-10 rounded-full border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-xs font-bold transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98]">
+                            取消預約
+                        </button>
+                    `;
+                } else {
+                    // History (Assume Completed for now, logic can be complex)
+                    // For simplicity, past appointments are marked 'Completed'
+                    statusBadge.textContent = '已完成';
+                    statusBadge.className = 'status-badge px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-gray-100 dark:bg-gray-800 text-gray-500';
+                    
+                    // Action: Book Again
+                    actionBtns.innerHTML = `
+                         <button onclick="window.location.href='booking-liff.html'" class="w-full h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
+                            再次預約
+                        </button>
+                    `;
+                }
+
+                container.appendChild(clone);
+            });
+        }
+
+        // Handle Cancel (Placeholder)
+        function handleCancel(bookingId) {
+            // Future: Call Cancel API
+            if (confirm('確定要取消此預約嗎？\n(目前請直接聯繫店家取消)')) {
+                // alert('請聯繫官方帳號進行取消。');
+                // Or implement API call here
+            }
+        }
+    </script>
+</body>
+</html>

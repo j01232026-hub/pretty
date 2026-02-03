@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appointment History List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f042c4",
+                        "background-light": "#fcf8fb",
+                        "background-dark": "#22101d",
+                        "accent-soft": "#f3e7f0",
+                        "text-main": "#1b0d18",
+                        "text-muted": "#9a4c86"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main">
+<div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-10 bg-background-light dark:bg-background-dark/95 backdrop-blur-md">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-text-main dark:text-white flex size-12 shrink-0 items-center">
+<span class="material-symbols-outlined cursor-pointer">arrow_back_ios</span>
+</div>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Appointment History</h2>
+<div class="flex size-12 shrink-0 items-center justify-end">
+<span class="material-symbols-outlined text-text-main dark:text-white cursor-pointer">more_horiz</span>
+</div>
+</div>
+<!-- SearchBar & Filters -->
+<div class="px-4 py-2">
+<div class="flex gap-2">
+<label class="flex flex-col flex-1 h-12">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+<div class="text-muted flex border-none bg-accent-soft dark:bg-white/10 items-center justify-center pl-4 rounded-l-xl" data-icon="MagnifyingGlass">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-0 border-none bg-accent-soft dark:bg-white/10 placeholder:text-text-muted px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="Search appointments" value=""/>
+</div>
+</label>
+<button class="flex size-12 items-center justify-center bg-accent-soft dark:bg-white/10 rounded-xl text-text-muted">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<!-- Chips -->
+<div class="flex gap-3 px-4 py-3 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4">
+<p class="text-sm font-medium">All History</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
+<p class="text-text-main dark:text-white text-sm font-medium">Last 30 Days</p>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
+<p class="text-text-main dark:text-white text-sm font-medium">Services</p>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+</div>
+</div>
+<!-- Appointment List Content -->
+<div class="flex-1 flex flex-col gap-4 p-4">
+<!-- Appointment Card 1 -->
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-accent-soft/50 dark:border-white/5">
+<div class="flex p-4 gap-4">
+<div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0" data-alt="Modern spa interior with soft lighting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMkStRV5clh0STCcvx_LWc9Vpp_VBOkSH_dWLFtqa_sDAyQmRXubyOk5l8Vr9e18QjvMAaGqZ3ete56yz2J5TaYDSUDg4KoVadJig1m9hZX9mtZ_Tz7BD4Qay9WaQ1SDOEQq7BWAt7zynSJ10s6c7SUeQHXA735GkRYttcb9hRiJw9MIkUMhNSGZP5mVphsrJmc82Hx5j-FDHlUzqU1I4UUEiSY488Pc0O_ES_tGYwo9q8VIcT7CFDgwb0dKscUUwvh3PxL2rhDn3O");'></div>
+<div class="flex flex-1 flex-col justify-between">
+<div>
+<p class="text-text-main dark:text-white text-lg font-bold leading-tight">Luxe Beauty Spa</p>
+<p class="text-text-muted text-sm font-normal mt-1">HydraFacial • Oct 12, 2023</p>
+</div>
+<p class="text-primary text-base font-bold">Total: $120.00</p>
+</div>
+</div>
+<div class="flex px-4 pb-4 gap-3">
+<button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/20">
+<span>Rebook</span>
+</button>
+<button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-accent-soft dark:bg-white/10 text-text-main dark:text-white text-sm font-bold">
+<span>Rate &amp; Review</span>
+</button>
+</div>
+</div>
+<!-- Appointment Card 2 -->
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-accent-soft/50 dark:border-white/5">
+<div class="flex p-4 gap-4">
+<div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0" data-alt="Close up of professional manicure tools" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDt3dIioGasuObximqqIHIN2m-33z3q5Y6aHwIEDNxWL_VCpaT9H3Ak667zbWa5thCAjRqWYkqY2bWzsFw9uqUdK-sMJDzCnRCmgU_tIU-_94r67Y_5xkiaOiGSQXKZLKzqKR0jRvHv9wTOyhrdPacDjC0RWTCF42387bVCbEn-60nerv3s6nOCIldg-kv6lZC9qjt7O2r_BuzZCI8TuOrzgbQVTRVJuhrQ5CiRXzq5sVs6-5C0CCjaQua2j85b6Ie6aCmiJX1ZTMhp");'></div>
+<div class="flex flex-1 flex-col justify-between">
+<div>
+<p class="text-text-main dark:text-white text-lg font-bold leading-tight">Bloom Nail Lounge</p>
+<p class="text-text-muted text-sm font-normal mt-1">Gel Manicure • Sep 28, 2023</p>
+</div>
+<p class="text-primary text-base font-bold">Total: $55.00</p>
+</div>
+</div>
+<div class="flex px-4 pb-4 gap-3">
+<button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/20">
+<span>Rebook</span>
+</button>
+<button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-accent-soft dark:bg-white/10 text-text-main dark:text-white text-sm font-bold">
+<span>Rate &amp; Review</span>
+</button>
+</div>
+</div>
+<!-- Appointment Card 3 -->
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-accent-soft/50 dark:border-white/5">
+<div class="flex p-4 gap-4">
+<div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0" data-alt="Elegant hair salon station" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDK-DMs3S4_lYmivAy4tJR7jmA0eY4e1lYR5qeDqvL5VeNmlGaVV9qjKWUduIqZIgqWdPUr6vxGKbNzl1e1YUwdqmZEkzHsp5lzKYIiKDL5TeymShUMmG1x2uTmKXb_9gYYQ9RyvoIY6EukggwA06YjEsUd3vRX94Rp_je2MPm54XmmvJskOG08csbX0qbvzYhFYHONGs3oCBhMbAHJBcOghsj9NF3KZcf9tyxTJEYhCZ-asEGR9HK1PClV5Bphia5XDeyK2u7sgv07");'></div>
+<div class="flex flex-1 flex-col justify-between">
+<div>
+<p class="text-text-main dark:text-white text-lg font-bold leading-tight">Serenity Coiffure</p>
+<p class="text-text-muted text-sm font-normal mt-1">Full Highlights • Aug 15, 2023</p>
+</div>
+<p class="text-primary text-base font-bold">Total: $240.00</p>
+</div>
+</div>
+<div class="flex px-4 pb-4 gap-3">
+<button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/20">
+<span>Rebook</span>
+</button>
+<button class="flex-1 h-10 cursor-pointer items-center justify-center rounded-full bg-accent-soft dark:bg-white/10 text-text-main dark:text-white text-sm font-bold">
+<span>Rate &amp; Review</span>
+</button>
+</div>
+</div>
+<!-- Empty State / End of List -->
+<div class="py-12 flex flex-col items-center justify-center text-text-muted opacity-60">
+<span class="material-symbols-outlined text-4xl mb-2">history</span>
+<p class="text-sm">No more appointments to show</p>
+</div>
+</div>
+<!-- Bottom Navigation Spacer -->
+<div class="h-20"></div>
+</div>
+</body></html>
