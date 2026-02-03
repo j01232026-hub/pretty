@@ -107,9 +107,9 @@
                 <span class="material-symbols-outlined">add</span>
             </button>
             <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
-                <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..."></textarea>
+                <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 outline-none p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..."></textarea>
             </div>
-            <button id="send-btn" class="p-2 text-[#f042c4] rounded-full hover:bg-gray-200 disabled:opacity-50" onclick="sendMessage()">
+            <button id="send-btn" class="p-2 text-[#f042c4] rounded-full hover:bg-gray-200 disabled:opacity-50 focus:outline-none" onclick="sendMessage()">
                 <span class="material-symbols-outlined text-3xl fill-1">send</span>
             </button>
         </div>
@@ -155,12 +155,18 @@
 
         // Initialize
         window.onload = async function() {
+            const spinner = document.getElementById('loading-spinner');
+            const chatContainer = document.getElementById('chat-container');
+
             // Set a global timeout to avoid infinite spinning
             const initTimeout = setTimeout(() => {
-                if (document.getElementById('loading-spinner').style.display !== 'none') {
-                    showError('初始化逾時，請檢查網路或 LIFF ID 設定');
+                if (spinner.style.display !== 'none') {
+                    showError('初始化逾時 (5s)，請檢查網路或 LIFF ID');
+                    // Force remove spinner even if showError fails
+                    spinner.style.setProperty('display', 'none', 'important');
+                    spinner.classList.add('hidden');
                 }
-            }, 10000); // 10 seconds timeout
+            }, 5000); // Reduce to 5 seconds for faster feedback
 
             try {
                 // 1. Initialize LIFF
@@ -169,7 +175,7 @@
                 // Wrap liff.init in a race with timeout
                 await Promise.race([
                     liff.init({ liffId: LIFF_ID }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF Init Timeout')), 5000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF Init Timeout')), 4000))
                 ]);
                 
                 log('LIFF Initialized');
@@ -201,11 +207,6 @@
                 log('Setting up realtime...');
                 subscribeRealtime();
 
-                // Hide loading, show content
-                document.getElementById('loading-spinner').classList.add('hidden');
-                document.getElementById('loading-spinner').style.display = 'none'; // Double assurance
-                document.getElementById('chat-container').classList.remove('hidden');
-
                 // Setup Textarea Auto-resize
                 const textarea = document.getElementById('message-input');
                 textarea.addEventListener('input', function() {
@@ -218,6 +219,16 @@
             } catch (err) {
                 console.error('Init Error:', err);
                 showError(err.message || '初始化失敗，請稍後再試');
+            } finally {
+                // Ensure spinner is removed in ANY case (success or error)
+                clearTimeout(initTimeout);
+                if (spinner) {
+                    spinner.style.setProperty('display', 'none', 'important');
+                    spinner.classList.add('hidden');
+                }
+                if (chatContainer) {
+                    chatContainer.classList.remove('hidden');
+                }
             }
         };
 
