@@ -79,10 +79,10 @@
     <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
         <!-- Header -->
         <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0">
-            <div class="flex size-12 shrink-0 items-center cursor-pointer text-[#1b0d18]" onclick="handleBack()">
-                <span class="material-symbols-outlined">arrow_back_ios</span>
-            </div>
-            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.4)</span></h2>
+            <button id="back-btn" class="flex size-12 shrink-0 items-center justify-center cursor-pointer text-[#1b0d18] border-none bg-transparent outline-none focus:outline-none" style="cursor: pointer;">
+                <span class="material-symbols-outlined" style="pointer-events: none;">arrow_back_ios</span>
+            </button>
+            <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.5)</span></h2>
         </div>
 
         <!-- Chat Area -->
@@ -377,13 +377,41 @@
             });
         }
 
+        // Robust Back Button Logic (Adapted from booking-liff.html)
         function handleBack() {
-            if (liff.isInClient()) {
-                liff.closeWindow();
-            } else {
+            console.log('Back button clicked');
+            try {
+                if (window.liff && window.liff.isInClient && window.liff.isInClient()) {
+                    console.log('Closing LIFF window...');
+                    window.liff.closeWindow();
+                } else {
+                    console.log('History back...');
+                    window.history.back();
+                    
+                    // Fallback if history back fails (e.g. new tab)
+                    setTimeout(() => {
+                        if (document.referrer === "") {
+                             window.close(); // Try closing tab
+                        }
+                    }, 300);
+                }
+            } catch (e) {
+                console.error('Back button error:', e);
+                // Fallback to history back even if LIFF errors
                 window.history.back();
             }
         }
+        
+        // Bind event listener when DOM is ready to avoid HTML attribute issues
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('back-btn');
+            if (btn) {
+                btn.addEventListener('click', handleBack);
+                console.log('Back button event listener bound');
+            } else {
+                console.error('Back button element not found');
+            }
+        });
 
         function escapeHtml(text) {
             const map = {
