@@ -265,6 +265,12 @@
         let currentChatUser = null;
         let chatSubscription = null;
         
+        // Notification Sound
+        const notificationAudio = new Audio('/notification.wav');
+        function playNotification() {
+            notificationAudio.play().catch(e => console.log('Audio play blocked:', e));
+        }
+
         const bookingList = document.getElementById('bookingList');
         const statusDiv = document.getElementById('status');
 
@@ -432,7 +438,11 @@
                 // Realtime subscription for User List (New users or new messages)
                 if (supabaseClient) {
                     supabaseClient.channel('public:messages_list')
-                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                            // Play sound if message is from a user (not ADMIN)
+                            if (payload.new.sender_id !== 'ADMIN') {
+                                playNotification();
+                            }
                             // Refresh list when any new message arrives (simple approach)
                             fetchChatUsers(); 
                             // If we are chatting with someone, the message will also be handled by that specific subscription

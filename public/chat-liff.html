@@ -56,6 +56,12 @@
                 window.location.href = 'status-liff.html';
             }, 300);
         }
+
+        // Notification Sound
+        const notificationAudio = new Audio('/notification.wav');
+        function playNotification() {
+            notificationAudio.play().catch(e => console.log('Audio play blocked:', e));
+        }
     </script>
     <style>
         /* Fallback colors if Tailwind fails */
@@ -344,6 +350,7 @@
                     // This prevents double-display of sent messages
                     if (newMsg.receiver_id === currentUserId) {
                         appendMessage(newMsg, true);
+                        playNotification();
                     }
                 })
                 .subscribe();
