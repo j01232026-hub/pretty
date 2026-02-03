@@ -77,10 +77,10 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'Missing appointment_id' });
             }
 
-            // 第一步：查 ID，取得 google_event_id
+            // 第一步：查 ID 與詳細資料 (以備 Fallback 使用)
             const { data: booking, error: fetchError } = await supabase
                 .from('bookings')
-                .select('google_event_id')
+                .select('*')
                 .eq('id', appointment_id)
                 .single();
 
@@ -90,24 +90,82 @@ export default async function handler(req, res) {
                 return res.status(404).json({ error: 'Booking not found' });
             }
 
-            // 第二步：刪 Google 日曆行程
+            // 解析 booking 資料，準備 Fallback 參數
+            let bookingDetails = {};
+            try {
+                bookingDetails = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
+            } catch (e) { console.warn('JSON parse error during delete:', e); }
+
+            const targetDate = booking.date || bookingDetails.date;
+            const targetTime = booking.time || bookingDetails.time;
+            const targetPhone = booking.phone || bookingDetails.phone;
+
+            // 第二步：嘗試刪除 Google 日曆行程
+            let googleDeleted = false;
+
+            // 優先策略：使用 google_event_id 直接刪除
             if (booking?.google_event_id) {
                 try {
                     await calendar.events.delete({
                         calendarId: process.env.GOOGLE_CALENDAR_ID,
                         eventId: booking.google_event_id
                     });
-                    console.log(`Google Event ${booking.google_event_id} deleted.`);
-                } catch (googleError) {
-                    console.error('Failed to delete Google Event:', googleError.message);
-                    // 即使 Google 刪除失敗 (例如已不存在)，我們通常還是繼續刪除資料庫
-                    // 除非是權限錯誤等嚴重問題。這裡選擇繼續執行。
+                    console.log(`Google Event ${booking.google_event_id} deleted (By ID).`);
+                    googleDeleted = true;
+                } catch (err) {
+                    console.warn(`Failed to delete by ID ${booking.google_event_id}, trying fallback...`, err.message);
                 }
-            } else {
-                console.log('No google_event_id found for this booking.');
             }
 
-            // 第三步：刪資料庫
+            // 後備策略 (Fallback)：如果 ID 無效或不存在，改用「時間+電話」搜尋並刪除
+            // 這是為了處理舊資料 (沒有存 google_event_id 的預約)
+            if (!googleDeleted && targetDate && targetTime && targetPhone) {
+                try {
+                    console.log(`Starting fallback delete search for ${targetDate} ${targetTime} ${targetPhone}`);
+                    
+                    // 設定搜尋範圍：預約時間前後 10 分鐘
+                    // 必須轉成 ISO 格式
+                    const startDateTime = `${targetDate}T${targetTime}:00+08:00`;
+                    const startObj = new Date(startDateTime);
+                    
+                    // 搜尋區間 (寬鬆一點，前後 20 分鐘，避免時區微小差異)
+                    const timeMin = new Date(startObj.getTime() - 20 * 60 * 1000).toISOString();
+                    const timeMax = new Date(startObj.getTime() + 20 * 60 * 1000).toISOString();
+
+                    const listRes = await calendar.events.list({
+                        calendarId: process.env.GOOGLE_CALENDAR_ID,
+                        timeMin: timeMin,
+                        timeMax: timeMax,
+                        singleEvents: true, // 展開循環事件 (雖然這裡應該不是)
+                    });
+
+                    const events = listRes.data.items || [];
+                    
+                    // 尋找特徵吻合的事件 (電話號碼在標題或描述中)
+                    const targetEvent = events.find(ev => {
+                        const summaryMatch = ev.summary && ev.summary.includes(targetPhone);
+                        const descMatch = ev.description && ev.description.includes(targetPhone);
+                        return summaryMatch || descMatch;
+                    });
+
+                    if (targetEvent) {
+                        await calendar.events.delete({
+                            calendarId: process.env.GOOGLE_CALENDAR_ID,
+                            eventId: targetEvent.id
+                        });
+                        console.log(`Google Event ${targetEvent.id} deleted (By Fallback Search).`);
+                        googleDeleted = true;
+                    } else {
+                        console.log('Fallback search found no matching event.');
+                    }
+
+                } catch (fallbackError) {
+                    console.error('Fallback delete error:', fallbackError);
+                    // 不拋出錯誤，確保至少能刪除資料庫紀錄
+                }
+            }
+
+            // 第三步：刪除資料庫紀錄
             const { error: deleteError } = await supabase
                 .from('bookings')
                 .delete()
