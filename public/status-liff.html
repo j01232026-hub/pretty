@@ -5,7 +5,9 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>我的預約</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script id="tailwind-config">
@@ -22,7 +24,7 @@
                         "text-muted": "#7e22ce"
                     },
                     fontFamily: {
-                        "display": ["Manrope", "sans-serif"]
+                        "display": ["'Noto Sans TC'", "Manrope", "sans-serif"]
                     },
                     borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
                 },
@@ -34,26 +36,26 @@
             min-height: max(884px, 100dvh);
         }
         .tab-active {
-            @apply bg-white dark:bg-[#3d2a39] shadow-sm text-primary font-bold;
+            @apply bg-white/80 dark:bg-black/60 shadow-sm text-primary font-bold backdrop-blur-sm;
         }
         .tab-inactive {
             @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0d18] dark:text-white">
-    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 bg-fixed font-display text-[#1b0d18] dark:text-white">
+    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-white/30 dark:bg-black/30 backdrop-blur-3xl border-x border-white/20">
         <!-- Header -->
-        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
-            <div class="text-[#1b0d18] dark:text-white flex size-12 shrink-0 items-center cursor-pointer" onclick="handleBack()">
-                <span class="material-symbols-outlined">arrow_back_ios</span>
+        <div class="flex items-center bg-white/30 dark:bg-black/30 backdrop-blur-md p-4 pb-2 justify-between sticky top-0 z-10 border-b border-white/20">
+            <div class="text-[#1b0d18] dark:text-white flex size-12 shrink-0 items-center justify-center cursor-pointer hover:bg-white/20 rounded-full transition-colors" onclick="handleBack()">
+                <i class="fa-solid fa-chevron-left text-xl"></i>
             </div>
-            <h2 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">我的預約</h2>
+            <h2 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12 drop-shadow-sm">我的預約</h2>
         </div>
 
         <!-- Tabs -->
-        <div class="px-4 py-2 sticky top-14 z-10 bg-background-light dark:bg-background-dark">
-            <div class="flex p-1 bg-gray-200/50 dark:bg-[#1b0d18] rounded-xl">
+        <div class="px-4 py-2 sticky top-14 z-10 bg-white/30 dark:bg-black/30 backdrop-blur-md border-b border-white/10">
+            <div class="flex p-1 bg-white/40 dark:bg-black/40 rounded-xl border border-white/20">
                 <button id="tab-upcoming" class="flex-1 py-2 text-sm rounded-lg transition-all tab-active" onclick="switchTab('upcoming')">即將到來</button>
                 <button id="tab-history" class="flex-1 py-2 text-sm rounded-lg transition-all tab-inactive" onclick="switchTab('history')">歷史紀錄</button>
             </div>
@@ -67,13 +69,13 @@
                     <label class="flex flex-col flex-1 h-12">
                         <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
                             <div class="text-text-muted flex border-none bg-accent-soft dark:bg-white/10 items-center justify-center pl-4 rounded-l-xl">
-                                <span class="material-symbols-outlined text-gray-500">search</span>
+                                <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
                             </div>
                             <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-0 border-none bg-accent-soft dark:bg-white/10 placeholder:text-gray-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="搜尋預約" value=""/>
                         </div>
                     </label>
                     <button class="flex size-12 items-center justify-center bg-accent-soft dark:bg-white/10 rounded-xl text-gray-500">
-                        <span class="material-symbols-outlined">tune</span>
+                        <i class="fa-solid fa-sliders"></i>
                     </button>
                 </div>
             </div>
@@ -85,11 +87,11 @@
                 </button>
                 <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
                     <p class="text-[#1b0d18] dark:text-white text-sm font-medium">最近30天</p>
-                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                    <i class="fa-solid fa-chevron-down text-sm"></i>
                 </button>
                 <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-accent-soft dark:bg-white/10 px-4">
                     <p class="text-[#1b0d18] dark:text-white text-sm font-medium">服務項目</p>
-                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                    <i class="fa-solid fa-chevron-down text-sm"></i>
                 </button>
             </div>
         </div>
@@ -168,7 +170,7 @@
                     <!-- Gradient Status Header -->
                     <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #e9d5ff 0%, #9d2bee 100%);">
                         <div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
-                            <span class="material-symbols-outlined text-5xl mb-2">check_circle</span>
+                            <i class="fa-solid fa-circle-check text-5xl mb-2"></i>
                             <p class="text-3xl font-bold">已確認</p>
                         </div>
                     </div>
@@ -202,7 +204,7 @@
                         </div>
                         <div class="shrink-0">
                             <button class="flex min-w-[48px] h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary/10 text-primary">
-                                <span class="material-symbols-outlined">directions</span>
+                                <i class="fa-solid fa-location-arrow"></i>
                             </button>
                         </div>
                     </div>
@@ -233,13 +235,13 @@
                                 <p class="text-xs text-primary font-bold uppercase">指定設計師</p>
                                 <p class="text-[#1b0d18] dark:text-white font-medium stylist-name">設計師名稱</p>
                                 <div class="flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-yellow-500 text-sm fill-current">star</span>
-                                    <p class="text-xs text-gray-500">5.0 專業設計師</p>
-                                </div>
+                                <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
+                                <p class="text-xs text-gray-500">5.0 專業設計師</p>
                             </div>
-                            <button class="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                <span class="material-symbols-outlined text-base">chat</span>
-                            </button>
+                        </div>
+                        <button class="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <i class="fa-regular fa-comment text-base"></i>
+                        </button>
                         </div>
                     </div>
                 </div>
@@ -364,7 +366,7 @@
                 const emptyMsg = type === 'upcoming' ? '目前沒有即將到來的預約' : '目前沒有歷史預約紀錄';
                 container.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-10 opacity-60">
-                        <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">event_busy</span>
+                        <i class="fa-solid fa-calendar-xmark text-6xl text-gray-300 mb-4"></i>
                         <p class="text-gray-500 text-sm">${emptyMsg}</p>
                     </div>
                 `;
@@ -444,7 +446,7 @@
                 const endIndicator = document.createElement('div');
                 endIndicator.className = 'py-8 flex flex-col items-center justify-center text-gray-400 opacity-60';
                 endIndicator.innerHTML = `
-                    <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                    <i class="fa-solid fa-clock-rotate-left text-4xl mb-2"></i>
                     <p class="text-sm">已顯示所有紀錄</p>
                 `;
                 container.appendChild(endIndicator);

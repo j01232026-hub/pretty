@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -19,7 +21,7 @@
                         "background-dark": "#1a1022",
                     },
                     fontFamily: {
-                        "display": ["Manrope", "sans-serif"]
+                        "display": ["'Noto Sans TC'", "Manrope", "sans-serif"]
                     },
                     borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
                 },
@@ -57,13 +59,14 @@
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-[#160d1b] dark:text-white min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 bg-fixed font-display text-[#1b0d18] dark:text-white min-h-screen flex flex-col">
+    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-white/30 dark:bg-black/30 backdrop-blur-3xl border-x border-white/20">
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 flex items-center justify-between">
-        <button class="flex items-center justify-center size-10 rounded-full bg-white dark:bg-zinc-800 shadow-sm" onclick="handleBack()">
-            <span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+    <header class="sticky top-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-white/20">
+        <button class="flex items-center justify-center size-10 rounded-full bg-white/50 dark:bg-zinc-800/50 hover:bg-white/80 transition-colors shadow-sm text-gray-700 dark:text-gray-200" onclick="handleBack()">
+            <i class="fa-solid fa-chevron-left text-xl"></i>
         </button>
-        <h1 class="text-lg font-bold tracking-tight">預約服務</h1>
+        <h1 class="text-lg font-bold tracking-tight text-[#1b0d18] dark:text-white">預約服務</h1>
         <div class="size-10"></div> <!-- Spacer for symmetry -->
     </header>
 
@@ -95,11 +98,11 @@
         <!-- Calendar Picker Section -->
         <section class="mt-6 px-4">
             <h3 class="text-lg font-bold tracking-tight mb-4">選擇日期</h3>
-            <div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-black/5 dark:border-white/5">
+            <div class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-white/20">
                 <div class="flex items-center justify-between mb-6">
-                    <button class="p-2" onclick="changeMonth(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
-                    <p class="text-base font-bold" id="currentMonthDisplay">Loading...</p>
-                    <button class="p-2" onclick="changeMonth(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                    <button class="p-2 hover:bg-white/20 rounded-full transition-colors" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <p class="text-base font-bold text-[#1b0d18] dark:text-white" id="currentMonthDisplay">Loading...</p>
+                    <button class="p-2 hover:bg-white/20 rounded-full transition-colors" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 <div class="grid grid-cols-7 text-center text-[12px] font-bold opacity-40 mb-2">
                     <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
@@ -159,25 +162,28 @@
 
         <!-- Contact Info Section -->
         <section class="mt-8 px-4 mb-4">
-            <div class="flex gap-4">
-                <div class="flex-1">
-                    <h3 class="text-lg font-bold tracking-tight mb-2">姓名</h3>
-                    <input type="text" id="nameInput" placeholder="您的姓名" class="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-lg focus:ring-primary focus:border-primary outline-none">
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-lg font-bold tracking-tight mb-2">手機號碼</h3>
-                    <input type="tel" id="phoneInput" placeholder="0912345678" class="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-lg focus:ring-primary focus:border-primary outline-none">
+            <div class="bg-white/40 dark:bg-black/40 backdrop-blur-md rounded-3xl p-5 shadow-lg border border-white/20">
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold tracking-tight mb-2 drop-shadow-sm">姓名</h3>
+                        <input type="text" id="nameInput" placeholder="您的姓名" class="w-full rounded-2xl border border-white/30 bg-white/50 dark:bg-black/50 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none shadow-inner backdrop-blur-sm transition-all">
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold tracking-tight mb-2 drop-shadow-sm">手機號碼</h3>
+                        <input type="tel" id="phoneInput" placeholder="0912345678" class="w-full rounded-2xl border border-white/30 bg-white/50 dark:bg-black/50 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none shadow-inner backdrop-blur-sm transition-all">
+                    </div>
                 </div>
             </div>
         </section>
 
     </main>
+    </div> <!-- End of relative container -->
 
     <!-- Fixed Bottom Action Bar -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-black/5 dark:border-white/5 p-4 pb-8">
-        <button id="confirmBtn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+    <footer class="fixed bottom-0 left-0 right-0 bg-white/60 dark:bg-black/60 backdrop-blur-xl border-t border-white/20 p-4 pb-8 z-50 max-w-md mx-auto">
+        <button id="confirmBtn" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
             <span>確認預約</span>
-            <span class="material-symbols-outlined text-xl">calendar_check</span>
+            <i class="fa-regular fa-calendar-check text-xl"></i>
         </button>
     </footer>
 
@@ -186,7 +192,7 @@
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         <!-- Modal Content -->
-        <div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-[2rem] p-6 shadow-2xl transform transition-transform duration-300 ease-out translate-y-full" id="modalContent">
+        <div class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-t-[2rem] p-6 shadow-2xl transform transition-transform duration-300 ease-out translate-y-full border-t border-white/20" id="modalContent">
             <div class="w-12 h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-full mx-auto mb-6"></div>
             
             <h3 class="text-xl font-bold mb-4 text-center">您的預約資訊如下</h3>
@@ -216,7 +222,7 @@
 
             <p class="text-center text-lg font-bold mb-6">確定預約嗎？</p>
 
-            <button onclick="submitBooking()" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+            <button onclick="submitBooking()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
                 <span>確定送出預約資訊</span>
             </button>
         </div>

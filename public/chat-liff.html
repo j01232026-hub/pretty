@@ -5,7 +5,9 @@
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>客服對話</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -34,7 +36,7 @@
                         "bubble-other": "#ffffff",
                     },
                     fontFamily: {
-                        "display": ["Manrope", "sans-serif"]
+                        "display": ["'Noto Sans TC'", "Manrope", "sans-serif"]
                     }
                 },
             },
@@ -105,15 +107,15 @@
         }
     </style>
 </head>
-<body class="font-display text-[#1b0d18] bg-[#9bb7d4]">
+<body class="font-display text-[#1b0d18] bg-fixed bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 selection:bg-purple-200 selection:text-purple-900">
     <div id="debug-console"></div>
 
     <!-- Main Container -->
-    <div class="flex flex-col h-full w-full max-w-md mx-auto bg-[#9bb7d4] relative shadow-xl overflow-hidden">
+    <div class="flex flex-col h-full w-full max-w-md mx-auto bg-white/30 backdrop-blur-md relative shadow-2xl overflow-hidden border-x border-white/20">
         <!-- Header -->
-        <div class="flex items-center bg-[#f8f6f7] p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0">
-            <button id="back-btn" class="flex size-12 shrink-0 items-center justify-center cursor-pointer text-[#1b0d18] z-[100] relative bg-transparent border-none outline-none" onclick="handleBack()" ontouchstart="handleBack()">
-                <span class="material-symbols-outlined">arrow_back_ios</span>
+        <div class="flex items-center bg-white/70 backdrop-blur-md p-4 pb-2 justify-between sticky top-0 z-50 shadow-sm shrink-0 border-b border-white/20">
+            <button id="back-btn" class="flex size-12 shrink-0 items-center justify-center cursor-pointer text-[#1b0d18] z-[100] relative bg-transparent border-none outline-none hover:text-purple-600 transition-colors" onclick="handleBack()" ontouchstart="handleBack()">
+                <i class="fa-solid fa-chevron-left text-xl"></i>
             </button>
             <h2 class="text-[#1b0d18] text-lg font-bold leading-tight flex-1 text-center pr-12">Pretty Salon 客服 <span class="text-xs text-gray-400 font-normal">(v1.9)</span></h2>
         </div>
@@ -135,15 +137,15 @@
         </div>
 
         <!-- Input Area -->
-        <div class="absolute bottom-0 left-0 w-full bg-[#f8f6f7] p-2 border-t border-gray-200 flex items-center gap-2 z-20 safe-area-bottom shrink-0">
-            <button class="p-2 text-gray-500 rounded-full hover:bg-gray-200 flex items-center justify-center">
-                <span class="material-symbols-outlined">add</span>
+        <div class="absolute bottom-0 left-0 w-full bg-white/70 backdrop-blur-md p-2 border-t border-white/20 flex items-center gap-2 z-20 safe-area-bottom shrink-0">
+            <button class="p-2 text-gray-500 rounded-full hover:bg-white/50 hover:text-purple-600 transition-colors flex items-center justify-center">
+                <i class="fa-solid fa-plus text-xl"></i>
             </button>
-            <div class="flex-1 bg-white rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center">
-                <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 outline-none p-0 resize-none max-h-[100px] text-base" placeholder="輸入訊息..." style="outline: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent;"></textarea>
+            <div class="flex-1 bg-white/50 backdrop-blur-sm rounded-2xl min-h-[40px] max-h-[120px] py-2 px-4 flex items-center border border-white/30 focus-within:border-purple-300 focus-within:bg-white/80 transition-all">
+                <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 outline-none p-0 resize-none max-h-[100px] text-base placeholder-gray-400" placeholder="輸入訊息..." style="outline: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent;"></textarea>
             </div>
-            <button id="send-btn" class="p-2 text-[#9d2bee] rounded-full hover:bg-gray-200 disabled:opacity-50 focus:outline-none flex items-center justify-center">
-                <span class="material-symbols-outlined text-2xl fill-1">send</span>
+            <button id="send-btn" class="p-2 text-purple-600 rounded-full hover:bg-purple-100 hover:text-purple-700 disabled:opacity-50 disabled:hover:bg-transparent focus:outline-none flex items-center justify-center transition-all active:scale-95">
+                <i class="fa-solid fa-paper-plane text-xl"></i>
             </button>
         </div>
     </div>
@@ -435,25 +437,25 @@
                 // My Message (Right)
                 div.innerHTML = `
                     <div class="flex flex-col items-end max-w-[75%]">
-                        <div class="bg-[#9de694] text-black px-4 py-2 rounded-2xl rounded-tr-none shadow-sm break-words text-sm relative">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-2xl rounded-tr-none shadow-lg shadow-purple-500/20 break-words text-sm relative">
                             ${escapeHtml(msg.content)}
                         </div>
-                        <span class="text-[10px] text-gray-500 mt-1 mr-1">${time}</span>
+                        <span class="text-[10px] text-gray-500 mt-1 mr-1 font-medium">${time}</span>
                     </div>
                 `;
             } else {
                 // Other Message (Left) - Assume Admin/Stylist
                 div.innerHTML = `
                     <div class="flex items-start max-w-[85%]">
-                        <div class="w-8 h-8 rounded-full bg-white mr-2 flex items-center justify-center shrink-0 border border-gray-200">
-                            <span class="material-symbols-outlined text-gray-400 text-lg">support_agent</span>
+                        <div class="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm mr-2 flex items-center justify-center shrink-0 border border-white/40 shadow-sm">
+                            <i class="fa-solid fa-headset text-purple-400 text-sm"></i>
                         </div>
                         <div class="flex flex-col items-start">
-                            <span class="text-[10px] text-gray-600 mb-1 ml-1">Pretty Salon 客服</span>
-                            <div class="bg-white text-black px-4 py-2 rounded-2xl rounded-tl-none shadow-sm break-words text-sm">
+                            <span class="text-[10px] text-gray-600 mb-1 ml-1 font-medium">Pretty Salon 客服</span>
+                            <div class="bg-white/80 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-2xl rounded-tl-none shadow-md border border-white/40 break-words text-sm">
                                 ${escapeHtml(msg.content)}
                             </div>
-                            <span class="text-[10px] text-gray-500 mt-1 ml-1">${time}</span>
+                            <span class="text-[10px] text-gray-500 mt-1 ml-1 font-medium">${time}</span>
                         </div>
                     </div>
                 `;
