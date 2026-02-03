@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Schedule Appointment</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9d2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1a1022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#160d1b] dark:text-white min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 flex items-center justify-between">
+<button class="flex items-center justify-center size-10 rounded-full bg-white dark:bg-zinc-800 shadow-sm">
+<span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Schedule Appointment</h1>
+<div class="size-10"></div> <!-- Spacer for symmetry -->
+</header>
+<main class="flex-1 overflow-y-auto pb-32">
+<!-- Stylist Selection Section -->
+<section class="mt-4">
+<div class="px-4 mb-2 flex justify-between items-end">
+<h3 class="text-lg font-bold tracking-tight">Select Stylist</h3>
+<span class="text-primary text-sm font-semibold">View All</span>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar px-4 py-3 gap-5">
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="size-16 rounded-full p-1 border-2 border-primary">
+<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Professional stylist woman with blonde hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
+</div>
+<p class="text-[13px] font-semibold text-primary">Jessica</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="size-16 rounded-full p-1 border-2 border-transparent">
+<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Smiling male hair stylist with beard" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1Bgy-pciGb6F31ar5s2gpzTWn22bOY2fRW7fd8slqhS4Koii6jMAOD1WPJGnWNTWGTM6ymWiIQX6kbHNdwBhtxCbdsZul7Rmrl-nP7yZRu2Lw-jtrQfaBmGrEfXeW_cezY6sNLsM8UDAYmsLuemy1La0tHrsDgIwZeWZhFHuA7_R8b_13fQIDu58plZoE38YR_PphhP3Nym8yOJwWAPraHgiaQqaIICCHIe0NKTCBEDd-DezvFkIweHudeeofobQ73QxKpyhPpSQV");'></div>
+</div>
+<p class="text-[13px] font-medium opacity-70">Marcus</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="size-16 rounded-full p-1 border-2 border-transparent">
+<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Female stylist with curly hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuByyRrhTtFgLxfmAJAgQUOHY6LLsJ-1O-MUUbOQtx9yw9K9nVMjrVgDP5kwtmc8dtFLZ1cZBzUkiZkP5M5z_u-Qn5lMwzdiv67q4LMYrGbSYdnufo6zhL8MBtuSzaDe5LZ8jP_0opH5wKQDHYHMNsZgQT5PhQJL0upiA9tj2J28jzWBCm8Pnw5asPjIMIrDfEfIO0U2RvoyikWBQjpkqc8p5HEPipUvXSsQ3YsYRLm_j--scQh-9XrFvKasC78S1TFTGiFAaKZnKPvr");'></div>
+</div>
+<p class="text-[13px] font-medium opacity-70">Chloe</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="size-16 rounded-full p-1 border-2 border-transparent">
+<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Male stylist with glasses" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBXiTocK93QgvldfhhsEWRc3e5XQi3jgZSH8v2AOXnThuxDU6miv2IEf1b01D-C_ARJfoVJmR7WalxGh6TjFCqwwAfekcBjsOqmlrs_lz4876EjDjCDnWehiFZ8a1Dr0tdGFuvrtL4WvG0Zi9GhjiIWWVd8EeguEZbXB4Nvo2l-_zS1bgx5ceW4EbrBM2TLsACFa-BrXzPKkYdXhkXuWWnGj5z2ljk_Z5emppYADMMphB4E1Ei_noU1gBiBZ5Ia4I3tkvybKB1qET5Z");'></div>
+</div>
+<p class="text-[13px] font-medium opacity-70">David</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="size-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">group</span>
+</div>
+<p class="text-[13px] font-medium opacity-70">Any Staff</p>
+</div>
+</div>
+</section>
+<!-- Calendar Picker Section -->
+<section class="mt-6 px-4">
+<h3 class="text-lg font-bold tracking-tight mb-4">Select Date</h3>
+<div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-black/5 dark:border-white/5">
+<div class="flex items-center justify-between mb-6">
+<button class="p-2"><span class="material-symbols-outlined">chevron_left</span></button>
+<p class="text-base font-bold">October 2023</p>
+<button class="p-2"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+<div class="grid grid-cols-7 text-center text-[12px] font-bold opacity-40 mb-2">
+<div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+</div>
+<div class="grid grid-cols-7 gap-y-1">
+<div class="h-10"></div><div class="h-10"></div><div class="h-10"></div><div class="h-10"></div>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">1</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">2</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">3</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">4</button>
+<button class="h-10 w-full flex items-center justify-center rounded-full bg-primary text-white text-sm font-bold">5</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">6</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">7</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">8</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">9</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">10</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">11</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">12</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">13</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">14</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">15</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">16</button>
+<button class="h-10 w-full flex items-center justify-center text-sm font-medium">17</button>
+</div>
+</div>
+</section>
+<!-- Time Slots Section -->
+<section class="mt-8">
+<h3 class="px-4 text-lg font-bold tracking-tight mb-4">Select Time</h3>
+<div class="space-y-6">
+<!-- Morning -->
+<div>
+<p class="px-4 text-sm font-bold opacity-40 uppercase tracking-wider mb-3">Morning</p>
+<div class="flex overflow-x-auto hide-scrollbar px-4 gap-3">
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">09:00 AM</button>
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">10:30 AM</button>
+<button class="px-6 py-3 rounded-full bg-primary text-white shadow-lg shadow-primary/25 whitespace-nowrap text-sm font-bold">11:00 AM</button>
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">11:30 AM</button>
+</div>
+</div>
+<!-- Afternoon -->
+<div>
+<p class="px-4 text-sm font-bold opacity-40 uppercase tracking-wider mb-3">Afternoon</p>
+<div class="flex overflow-x-auto hide-scrollbar px-4 gap-3">
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">01:00 PM</button>
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">02:30 PM</button>
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">04:00 PM</button>
+<button class="px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold">05:30 PM</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Service Summary -->
+<section class="mt-8 px-4">
+<div class="bg-primary/5 dark:bg-primary/10 rounded-2xl p-4 flex items-center gap-4">
+<div class="size-12 rounded-xl bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">content_cut</span>
+</div>
+<div class="flex-1">
+<p class="text-xs font-bold opacity-50">SELECTED SERVICE</p>
+<h4 class="font-bold">Haircut &amp; Styling</h4>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">$85</p>
+<p class="text-xs opacity-50">45 min</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action Bar -->
+<footer class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-black/5 dark:border-white/5 p-4 pb-8">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span>Confirm Appointment</span>
+<span class="material-symbols-outlined text-xl">calendar_check</span>
+</button>
+</footer>
+</body></html>
