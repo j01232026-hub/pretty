@@ -41,6 +41,11 @@
         .tab-inactive {
             @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
         }
+        
+        /* Compact Card Styles */
+        .compact-appointment-card {
+            @apply flex items-center bg-white dark:bg-[#2d1a29] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98] border border-gray-100 dark:border-white/5;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 bg-fixed font-display text-[#1b0d18] dark:text-white">
@@ -375,7 +380,8 @@
 
             // For Status Page (Upcoming), we use the "Active Hero Card" style for the first one
             if (type === 'upcoming') {
-                const appt = appointments[0]; // Take the first one as active
+                // 1. Render First Item (Hero Card)
+                const appt = appointments[0]; 
                 const template = document.getElementById('active-card-template');
                 const clone = template.content.cloneNode(true);
                 
@@ -407,9 +413,55 @@
                 cancelBtn.onclick = () => handleCancel(appt.id);
                 
                 const rescheduleBtn = clone.querySelector('.btn-reschedule');
-                rescheduleBtn.onclick = () => alert('請聯繫設計師進行更改'); // Placeholder
+                rescheduleBtn.onclick = () => alert('請聯繫設計師進行更改'); 
 
                 container.appendChild(clone);
+
+                // 2. Render Subsequent Items (Compact List)
+                if (appointments.length > 1) {
+                    // Insert Title
+                    const title = document.createElement('h6');
+                    title.className = 'mt-6 mb-3 text-sm font-bold text-gray-400 uppercase tracking-wider px-1';
+                    title.textContent = '今日稍後行程';
+                    container.appendChild(title);
+
+                    // Loop through the rest
+                    for (let i = 1; i < appointments.length; i++) {
+                        const nextAppt = appointments[i];
+                        const card = document.createElement('div');
+                        // Use the new CSS class
+                        card.className = 'compact-appointment-card mb-3 cursor-pointer group';
+                        // Bind click to cancel/action for now
+                        card.onclick = () => {
+                             if(confirm(`預約時間: ${nextAppt.time}\n要取消此預約嗎？`)) {
+                                 handleCancel(nextAppt.id);
+                             }
+                        };
+
+                        card.innerHTML = `
+                            <div class="flex items-center gap-4 flex-1">
+                                 <div class="flex flex-col items-center justify-center min-w-[60px] border-r border-gray-100 dark:border-white/10 pr-4">
+                                     <i class="fa-regular fa-clock text-primary text-xs mb-1 group-hover:scale-110 transition-transform"></i>
+                                     <span class="text-primary font-bold text-lg leading-none">${nextAppt.time}</span>
+                                 </div>
+                                 <div class="flex flex-col gap-1">
+                                     <span class="text-[#1b0d18] dark:text-white font-bold text-sm line-clamp-1">${nextAppt.service || '一般服務'}</span>
+                                     <div class="flex items-center gap-1.5">
+                                         <div class="size-5 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
+                                         <span class="text-xs text-gray-500 font-medium">${nextAppt.stylist || '指定設計師'}</span>
+                                     </div>
+                                 </div>
+                            </div>
+                            <div class="pl-2">
+                                 <div class="size-8 rounded-full bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                     <i class="fa-solid fa-chevron-right text-xs"></i>
+                                 </div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    }
+                }
+
             } else {
                 // History Rendering
                 const template = document.getElementById('history-card-template');
