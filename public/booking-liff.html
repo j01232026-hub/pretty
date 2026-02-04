@@ -471,6 +471,39 @@
 
             // Fetch Busy Slots
             await fetchBusySlots(dateStr);
+            
+            // Logic 1 & 2: Disable past times and enforce 30-min buffer
+            updateTimeSlotAvailability(dateStr);
+        }
+
+        function updateTimeSlotAvailability(dateStr) {
+            const now = new Date();
+            // Parse dateStr (YYYY-MM-DD) as local time to avoid UTC issues
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const selectedDateObj = new Date(y, m - 1, d);
+            
+            // Check if it's the same day
+            const isToday = selectedDateObj.getFullYear() === now.getFullYear() &&
+                            selectedDateObj.getMonth() === now.getMonth() &&
+                            selectedDateObj.getDate() === now.getDate();
+            
+            if (isToday) {
+                const bufferTime = new Date(now.getTime() + 30 * 60 * 1000); // Now + 30 mins
+                
+                document.querySelectorAll('.time-btn').forEach(btn => {
+                    if (btn.disabled) return; // Already disabled by busy slots
+                    
+                    const [h, min] = btn.dataset.time.split(':').map(Number);
+                    const slotTime = new Date(selectedDateObj);
+                    slotTime.setHours(h, min, 0, 0);
+                    
+                    if (slotTime < bufferTime) {
+                        btn.disabled = true;
+                        btn.classList.add('opacity-30', 'cursor-not-allowed');
+                        // Optional: Add styling to indicate why
+                    }
+                });
+            }
         }
 
         async function fetchBusySlots(date) {
@@ -509,10 +542,32 @@
         }
 
         function selectTime(time, btnElement) {
+            // Logic 3: Contiguity Constraint
             if (selectedTimes.has(time)) {
+                // Deselect logic (Allow standard toggle off)
                 selectedTimes.delete(time);
                 btnElement.classList.remove('selected');
             } else {
+                // Select logic
+                if (selectedTimes.size > 0) {
+                    // Convert HH:MM to minutes for comparison
+                    const toMinutes = (t) => {
+                        const [h, m] = t.split(':').map(Number);
+                        return h * 60 + m;
+                    };
+                    
+                    const currentMinutes = toMinutes(time);
+                    const sortedSelected = Array.from(selectedTimes).map(toMinutes).sort((a, b) => a - b);
+                    const lastSelected = sortedSelected[sortedSelected.length - 1];
+                    
+                    // Check if current is exactly 30 mins after the last selected
+                    // "只能往後不能往前" & "必須是連續時段"
+                    if (currentMinutes !== lastSelected + 30) {
+                        alert('必須要連續時段才可預約');
+                        return;
+                    }
+                }
+                
                 selectedTimes.add(time);
                 btnElement.classList.add('selected');
             }
