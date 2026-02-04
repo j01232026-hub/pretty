@@ -208,15 +208,6 @@
         let currentUserId = null;
         let staffMap = {};
         
-        // Name Aliases for Legacy Data
-        const nameAliases = {
-            "思容Phoebe": "思容"
-        };
-
-        function normalizeName(name) {
-            return nameAliases[name] || name;
-        }
-        
         // Init
         window.onload = async function() {
             try {
@@ -295,8 +286,7 @@
             const clone = template.content.cloneNode(true);
             
             // Stylist Info
-            const rawName = appt.stylist || '指定設計師';
-            const stylistName = normalizeName(rawName);
+            const stylistName = appt.stylist || '指定設計師';
             clone.querySelector('.stylist-name').textContent = stylistName;
             
             let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4";
@@ -387,8 +377,7 @@
             appointments.forEach(appt => {
                 const clone = template.content.cloneNode(true);
                 
-                const rawName = appt.stylist || '指定設計師';
-                const stylistName = normalizeName(rawName);
+                const stylistName = appt.stylist || '指定設計師';
                 clone.querySelector('.stylist-name').textContent = stylistName;
                 
                 let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4";

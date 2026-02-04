@@ -289,13 +289,28 @@
         let currentTab = 'upcoming';
         let staffMap = {}; // Map: name -> { avatar }
 
-        // Name Aliases for Legacy Data
-        const nameAliases = {
-            "思容Phoebe": "思容"
-        };
-
+        // Name Normalization / Aliasing
         function normalizeName(name) {
-            return nameAliases[name] || name;
+            if (!name || name === '指定設計師' || name === 'Any Staff') return '指定設計師';
+            
+            // 1. Exact match
+            if (staffMap[name]) return name;
+
+            // 2. Alias match (Legacy -> Current)
+            const aliases = {
+                "思容": "曾思容Phoebe",
+                "思容Phoebe": "曾思容Phoebe",
+                "Phoebe": "曾思容Phoebe",
+                "曾思容": "曾思容Phoebe"
+            };
+            if (aliases[name] && staffMap[aliases[name]]) return aliases[name];
+
+            // 3. Partial match (fuzzy)
+            // If booking name is part of a staff name (e.g. "思容" in "曾思容Phoebe")
+            const found = Object.keys(staffMap).find(k => k.includes(name) || name.includes(k));
+            if (found) return found;
+
+            return name;
         }
 
         // Initialize LIFF
@@ -406,8 +421,9 @@
                 const clone = template.content.cloneNode(true);
                 
                 // Fill Stylist in the new "Assigned Professional" section
-                const rawName = appt.stylist || '指定設計師';
-                const stylistName = normalizeName(rawName);
+                let rawStylistName = appt.stylist || '指定設計師';
+                const stylistName = normalizeName(rawStylistName);
+                
                 clone.querySelector('.stylist-name').textContent = stylistName;
                 
                 // Update Stylist Avatar
@@ -488,7 +504,7 @@
                                      <span class="text-[#1b0d18] dark:text-white font-bold text-sm line-clamp-1">${nextAppt.service || '一般服務'}</span>
                                      <div class="flex items-center gap-1.5">
                                          <div class="size-5 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style='background-image: url("${(staffMap[normalizeName(nextAppt.stylist)]?.avatar_url) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4'}");'></div>
-                                         <span class="text-xs text-gray-500 font-medium">${normalizeName(nextAppt.stylist) || '指定設計師'}</span>
+                                         <span class="text-xs text-gray-500 font-medium">${normalizeName(nextAppt.stylist)}</span>
                                      </div>
                                  </div>
                             </div>
@@ -528,8 +544,9 @@
                 appointments.forEach(appt => {
                     const clone = template.content.cloneNode(true);
                     
-                    const rawName = appt.stylist || '指定設計師';
-                    const stylistName = normalizeName(rawName);
+                    let rawStylistName = appt.stylist || '指定設計師';
+                    const stylistName = normalizeName(rawStylistName);
+                    
                     clone.querySelector('.stylist-name').textContent = stylistName;
 
                     // Update History Avatar
