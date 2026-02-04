@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/global-style.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script id="tailwind-config">
@@ -171,7 +172,7 @@
         <template id="active-card-template">
             <div class="@container">
                 <!-- Status Hero Card -->
-                <div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden mb-6">
+                <div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden mb-6 brand-card">
                     <!-- Gradient Status Header -->
                     <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #e9d5ff 0%, #9d2bee 100%);">
                         <div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
@@ -222,7 +223,7 @@
                 <!-- Salon Details Section (Location) -->
                 <div>
                     <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">沙龍資訊</h3>
-                    <div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between mb-6">
+                    <div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between mb-6 brand-card">
                         <div class="flex items-center gap-4">
                             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0 salon-image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
                             <div class="flex flex-col justify-center">
@@ -254,7 +255,7 @@
 
         <!-- Template for History Card -->
         <template id="history-card-template">
-            <div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-accent-soft/50 dark:border-white/5 mb-4 history-card">
+            <div class="flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-white/5 overflow-hidden border border-accent-soft/50 dark:border-white/5 mb-4 history-card brand-card">
                 <div class="flex p-4 gap-4">
                     <div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMkStRV5clh0STCcvx_LWc9Vpp_VBOkSH_dWLFtqa_sDAyQmRXubyOk5l8Vr9e18QjvMAaGqZ3ete56yz2J5TaYDSUDg4KoVadJig1m9hZX9mtZ_Tz7BD4Qay9WaQ1SDOEQq7BWAt7zynSJ10s6c7SUeQHXA735GkRYttcb9hRiJw9MIkUMhNSGZP5mVphsrJmc82Hx5j-FDHlUzqU1I4UUEiSY488Pc0O_ES_tGYwo9q8VIcT7CFDgwb0dKscUUwvh3PxL2rhDn3O");'></div>
                     <div class="flex flex-1 flex-col justify-between">
@@ -502,7 +503,7 @@
                      // Loop through filtered appointments
                      laterAppointments.forEach(nextAppt => {
                          const card = document.createElement('div');
-                         card.className = 'compact-appointment-card mb-3 group'; // Removed cursor-pointer
+                         card.className = 'compact-appointment-card mb-3 group brand-card'; // Removed cursor-pointer
                          
                          // Removed onclick event (prevent delete prompt)
 
