@@ -135,6 +135,15 @@
         const BOOKING_LIFF_URL = 'https://liff.line.me/2009027968-7nFLpFJt'; 
         
         let staffMap = {}; // Map: name -> { avatar }
+        
+        // Name Aliases for Legacy Data
+        const nameAliases = {
+            "思容Phoebe": "思容"
+        };
+
+        function normalizeName(name) {
+            return nameAliases[name] || name;
+        }
 
         window.onload = async function() {
             try {
@@ -220,7 +229,8 @@
             appointments.forEach(appt => {
                 const clone = template.content.cloneNode(true);
                 
-                const stylistName = appt.stylist || '指定設計師';
+                const rawName = appt.stylist || '指定設計師';
+                const stylistName = normalizeName(rawName);
                 clone.querySelector('.stylist-name').textContent = stylistName;
                 
                 // Update History Avatar
