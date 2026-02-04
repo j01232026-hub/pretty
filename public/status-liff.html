@@ -196,15 +196,18 @@
                     </div>
                 </div>
 
+                <!-- Compact List Container (Today's Later Schedule) -->
+                <div id="compact-list-container" class="flex flex-col"></div>
+
                 <!-- Salon Details Section (Location) -->
                 <div>
                     <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">沙龍資訊</h3>
                     <div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between mb-6">
                         <div class="flex items-center gap-4">
-                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0 salon-image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
                             <div class="flex flex-col justify-center">
-                                <p class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Pretty Salon</p>
-                                <p class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">台北市信義區時尚大道123號</p>
+                                <p class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1 salon-name">Pretty Salon</p>
+                                <p class="text-primary/70 text-sm font-normal leading-normal line-clamp-2 salon-address">台北市信義區時尚大道123號</p>
                             </div>
                         </div>
                         <div class="shrink-0">
@@ -415,30 +418,30 @@
                 const rescheduleBtn = clone.querySelector('.btn-reschedule');
                 rescheduleBtn.onclick = () => alert('請聯繫設計師進行更改'); 
 
-                container.appendChild(clone);
+                // 2. Render Subsequent Items (Compact List) - FILTERED
+                const currentDay = appt.date;
+                const laterAppointments = appointments.slice(1).filter(a => a.date === currentDay);
 
-                // 2. Render Subsequent Items (Compact List)
-                if (appointments.length > 1) {
-                    // Insert Title
-                    const title = document.createElement('h6');
-                    title.className = 'mt-6 mb-3 text-sm font-bold text-gray-400 uppercase tracking-wider px-1';
-                    title.textContent = '今日稍後行程';
-                    container.appendChild(title);
+                const compactListContainer = clone.getElementById('compact-list-container');
 
-                    // Loop through the rest
-                    for (let i = 1; i < appointments.length; i++) {
-                        const nextAppt = appointments[i];
-                        const card = document.createElement('div');
-                        // Use the new CSS class
-                        card.className = 'compact-appointment-card mb-3 cursor-pointer group';
-                        // Bind click to cancel/action for now
-                        card.onclick = () => {
-                             if(confirm(`預約時間: ${nextAppt.time}\n要取消此預約嗎？`)) {
-                                 handleCancel(nextAppt.id);
-                             }
-                        };
+                if (laterAppointments.length > 0) {
+                     // Insert Title
+                     const title = document.createElement('h6');
+                     title.className = 'mt-4 mb-3 text-sm font-bold text-gray-400 uppercase tracking-wider px-1';
+                     title.textContent = '今日稍後行程';
+                     compactListContainer.appendChild(title);
 
-                        card.innerHTML = `
+                     // Loop through filtered appointments
+                     laterAppointments.forEach(nextAppt => {
+                         const card = document.createElement('div');
+                         card.className = 'compact-appointment-card mb-3 cursor-pointer group';
+                         card.onclick = () => {
+                              if(confirm(`預約時間: ${nextAppt.time}\n要取消此預約嗎？`)) {
+                                  handleCancel(nextAppt.id);
+                              }
+                         };
+
+                         card.innerHTML = `
                             <div class="flex items-center gap-4 flex-1">
                                  <div class="flex flex-col items-center justify-center min-w-[60px] border-r border-gray-100 dark:border-white/10 pr-4">
                                      <i class="fa-regular fa-clock text-primary text-xs mb-1 group-hover:scale-110 transition-transform"></i>
@@ -458,9 +461,29 @@
                                  </div>
                             </div>
                         `;
-                        container.appendChild(card);
-                    }
+                        compactListContainer.appendChild(card);
+                     });
+                } else {
+                    // Remove container if empty
+                    if(compactListContainer) compactListContainer.remove();
                 }
+
+                // 3. Fetch Salon Info (Async update)
+                const salonNameEl = clone.querySelector('.salon-name');
+                const salonAddrEl = clone.querySelector('.salon-address');
+                const salonImgEl = clone.querySelector('.salon-image');
+
+                fetch('/api/get-salon-info')
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.name && salonNameEl) salonNameEl.textContent = data.name;
+                        if(data.address && salonAddrEl) salonAddrEl.textContent = data.address;
+                        if(data.image_url && salonImgEl) salonImgEl.style.backgroundImage = `url("${data.image_url}")`;
+                    })
+                    .catch(e => console.error('Salon info load error', e));
+
+                container.appendChild(clone);
+
 
             } else {
                 // History Rendering
