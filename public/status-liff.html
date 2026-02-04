@@ -297,17 +297,34 @@
             if (staffMap[name]) return name;
 
             // 2. Alias match (Legacy -> Current)
+            // Relaxed check: Return alias even if staffMap isn't fully loaded yet, 
+            // so at least the name is correct.
             const aliases = {
                 "思容": "曾思容Phoebe",
                 "思容Phoebe": "曾思容Phoebe",
                 "Phoebe": "曾思容Phoebe",
                 "曾思容": "曾思容Phoebe"
             };
-            if (aliases[name] && staffMap[aliases[name]]) return aliases[name];
+
+            // Handle case/space variations
+            const cleanName = name.replace(/\s+/g, '').toLowerCase();
+            const cleanAliases = {
+                "思容": "曾思容Phoebe",
+                "思容phoebe": "曾思容Phoebe",
+                "phoebe": "曾思容Phoebe",
+                "曾思容": "曾思容Phoebe"
+            };
+
+            if (aliases[name]) return aliases[name];
+            if (cleanAliases[cleanName]) return cleanAliases[cleanName];
 
             // 3. Partial match (fuzzy)
             // If booking name is part of a staff name (e.g. "思容" in "曾思容Phoebe")
-            const found = Object.keys(staffMap).find(k => k.includes(name) || name.includes(k));
+            // or vice versa, ignoring spaces and case
+            const found = Object.keys(staffMap).find(k => {
+                const cleanK = k.replace(/\s+/g, '').toLowerCase();
+                return cleanK.includes(cleanName) || cleanName.includes(cleanK);
+            });
             if (found) return found;
 
             return name;
@@ -319,7 +336,7 @@
             showSkeleton(currentTab);
 
             try {
-                // Pre-fetch staff data
+                // Pre-fetch staff data with cache busting
                 await fetchStaffData();
 
                 await liff.init({ liffId: LIFF_ID });
@@ -346,7 +363,8 @@
         // Fetch Staff Data
         async function fetchStaffData() {
             try {
-                const res = await fetch('/api/staff');
+                // Add timestamp to prevent caching
+                const res = await fetch(`/api/staff?t=${Date.now()}`);
                 if (res.ok) {
                     const staffList = await res.json();
                     console.debug('Fetched staff data:', staffList);
