@@ -258,7 +258,7 @@
                 <div class="flex justify-between items-start mb-4">
                 <div>
                 <div class="mb-2">
-                    <span class="text-lg font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg tracking-tight">${fullTimeDisplay}</span>
+                    <span class="text-sm font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg tracking-tight">${fullTimeDisplay}</span>
                 </div>
                 <div class="flex items-center gap-3 mt-3">
                      <img src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.src='https://www.w3schools.com/howto/img_avatar.png'">
@@ -269,7 +269,7 @@
                 </div>
                 </div>
                 <div class="text-right">
-                <p class="text-lg font-bold text-[var(--text-secondary)]">${dateDisplay}</p>
+                <p class="text-sm font-bold text-[var(--text-secondary)]">${dateDisplay}</p>
                 <p class="text-sm font-semibold text-[var(--brand-color)] mt-1">${escapeHtml(service)}</p>
                 </div>
                 </div>
@@ -277,9 +277,11 @@
                 <button class="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="editBooking(${b.id}, '${date}', '${time}', '${endTime}')">
                 <span class="material-icons text-sm">edit</span> 編輯
                 </button>
+                <!--
                 <button class="flex-1 btn-danger py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="cancelBooking(${b.id})">
                 <span class="material-icons text-sm">cancel</span> 取消
                 </button>
+                -->
                 </div>
             </div>
             `;
