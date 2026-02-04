@@ -71,7 +71,9 @@
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
                 <label class="text-xs text-slate-500">圖片連結</label>
-                <p id="companyImageDisplay" class="font-medium text-gray-800 truncate">載入中...</p>
+                <div id="companyImageContainer" class="mt-1">
+                    <p id="companyImageDisplay" class="text-gray-400 text-sm">無圖片</p>
+                </div>
             </div>
         </div>
     </section>
@@ -95,8 +97,17 @@
                     <input type="email" id="editCompanyEmail" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">圖片連結</label>
-                    <input type="text" id="editCompanyImage" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">公司圖片</label>
+                    <div class="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer relative group">
+                        <img id="companyImagePreview" src="" class="max-h-40 object-contain hidden">
+                        <div id="companyImagePlaceholder" class="flex flex-col items-center text-gray-400">
+                            <span class="material-icons text-3xl">add_photo_alternate</span>
+                            <span class="text-xs mt-1">點擊上傳圖片</span>
+                        </div>
+                        <input type="file" id="companyImageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleCompanyImageUpload(this)">
+                    </div>
+                    <input type="hidden" id="editCompanyImageUrl">
+                    <p class="text-xs text-slate-400 mt-1 text-center">支援 JPG, PNG (最大 500KB)</p>
                 </div>
             </div>
             <div class="flex gap-3 pt-2">
@@ -125,18 +136,19 @@
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 space-y-4">
             <h3 class="text-lg font-bold text-gray-900" id="staffModalTitle">新增成員</h3>
             <div class="space-y-3">
-                 <!-- Avatar Preview & Upload -->
-                <div class="flex flex-col items-center gap-3">
-                    <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 relative group">
-                        <img id="staffAvatarPreview" src="" class="w-full h-full object-cover hidden">
-                        <span id="staffAvatarPlaceholder" class="material-icons text-slate-300 text-3xl">person</span>
-                        <label for="staffAvatarInput" class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                            <span class="material-icons text-white">camera_alt</span>
-                        </label>
+                <!-- Avatar Preview & Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">員工頭像</label>
+                    <div class="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer relative group">
+                        <img id="staffAvatarPreview" src="" class="w-24 h-24 rounded-full object-cover border border-gray-200 hidden shadow-sm">
+                        <div id="staffAvatarPlaceholder" class="flex flex-col items-center text-gray-400">
+                            <span class="material-icons text-3xl">account_circle</span>
+                            <span class="text-xs mt-1">點擊上傳頭像</span>
+                        </div>
+                        <input type="file" id="staffAvatarInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleAvatarUpload(this)">
                     </div>
-                    <input type="file" id="staffAvatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(this)">
                     <input type="hidden" id="staffAvatarUrl">
-                    <p class="text-xs text-slate-400">點擊圖片上傳頭像</p>
+                    <p class="text-xs text-slate-400 mt-1 text-center">支援 JPG, PNG (最大 500KB)</p>
                 </div>
 
                 <div>
@@ -236,7 +248,13 @@
             document.getElementById('companyNameDisplay').textContent = data.name;
             document.getElementById('companyAddressDisplay').textContent = data.address;
             document.getElementById('companyEmailDisplay').textContent = data.email;
-            document.getElementById('companyImageDisplay').textContent = data.image_url || '無';
+            
+            const imgContainer = document.getElementById('companyImageContainer');
+            if (data.image_url) {
+                imgContainer.innerHTML = `<img src="${data.image_url}" class="h-24 w-auto rounded-lg object-cover border border-gray-200">`;
+            } else {
+                imgContainer.innerHTML = `<p class="text-gray-400 text-sm">無圖片</p>`;
+            }
         }
     }
 
@@ -244,8 +262,41 @@
         document.getElementById('editCompanyName').value = companyInfo.name || '';
         document.getElementById('editCompanyAddress').value = companyInfo.address || '';
         document.getElementById('editCompanyEmail').value = companyInfo.email || '';
-        document.getElementById('editCompanyImage').value = companyInfo.image_url || '';
+        
+        const imageUrl = companyInfo.image_url || '';
+        document.getElementById('editCompanyImageUrl').value = imageUrl;
+        
+        if (imageUrl) {
+            document.getElementById('companyImagePreview').src = imageUrl;
+            document.getElementById('companyImagePreview').classList.remove('hidden');
+            document.getElementById('companyImagePlaceholder').classList.add('hidden');
+        } else {
+            document.getElementById('companyImagePreview').classList.add('hidden');
+            document.getElementById('companyImagePlaceholder').classList.remove('hidden');
+        }
+        
         document.getElementById('editCompanyModal').classList.remove('hidden');
+    }
+
+    function handleCompanyImageUpload(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            // Limit size to avoid DB issues if storing base64
+            if (file.size > 500 * 1024) { // 500KB
+                alert('圖片大小請小於 500KB');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('companyImagePreview').src = e.target.result;
+                document.getElementById('companyImagePreview').classList.remove('hidden');
+                document.getElementById('companyImagePlaceholder').classList.add('hidden');
+                document.getElementById('editCompanyImageUrl').value = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
     }
 
     function closeEditCompanyModal() {
@@ -256,7 +307,7 @@
         const name = document.getElementById('editCompanyName').value;
         const address = document.getElementById('editCompanyAddress').value;
         const email = document.getElementById('editCompanyEmail').value;
-        const image_url = document.getElementById('editCompanyImage').value;
+        const image_url = document.getElementById('editCompanyImageUrl').value;
 
         if (!supabaseClient) return;
 

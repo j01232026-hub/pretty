@@ -404,8 +404,8 @@
                 const stylistAvatarEl = clone.querySelector('.bg-cover.rounded-full.size-12');
                 if (stylistAvatarEl) {
                     let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4"; // Default
-                    if (staffMap[stylistName] && staffMap[stylistName].avatar) {
-                        avatarUrl = staffMap[stylistName].avatar;
+                    if (staffMap[stylistName] && staffMap[stylistName].avatar_url) {
+                        avatarUrl = staffMap[stylistName].avatar_url;
                     }
                     stylistAvatarEl.style.backgroundImage = `url("${avatarUrl}")`;
                 }
@@ -477,7 +477,7 @@
                                  <div class="flex flex-col gap-1">
                                      <span class="text-[#1b0d18] dark:text-white font-bold text-sm line-clamp-1">${nextAppt.service || '一般服務'}</span>
                                      <div class="flex items-center gap-1.5">
-                                         <div class="size-5 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style='background-image: url("${(staffMap[nextAppt.stylist]?.avatar) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4'}");'></div>
+                                         <div class="size-5 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style='background-image: url("${(staffMap[nextAppt.stylist]?.avatar_url) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4'}");'></div>
                                          <span class="text-xs text-gray-500 font-medium">${nextAppt.stylist || '指定設計師'}</span>
                                      </div>
                                  </div>
@@ -525,8 +525,8 @@
                     const historyAvatarEl = clone.querySelector('.bg-cover.rounded-lg.shrink-0'); // Selector based on template structure
                     if (historyAvatarEl) {
                          let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCMkStRV5clh0STCcvx_LWc9Vpp_VBOkSH_dWLFtqa_sDAyQmRXubyOk5l8Vr9e18QjvMAaGqZ3ete56yz2J5TaYDSUDg4KoVadJig1m9hZX9mtZ_Tz7BD4Qay9WaQ1SDOEQq7BWAt7zynSJ10s6c7SUeQHXA735GkRYttcb9hRiJw9MIkUMhNSGZP5mVphsrJmc82Hx5j-FDHlUzqU1I4UUEiSY488Pc0O_ES_tGYwo9q8VIcT7CFDgwb0dKscUUwvh3PxL2rhDn3O";
-                         if (staffMap[stylistName] && staffMap[stylistName].avatar) {
-                             avatarUrl = staffMap[stylistName].avatar;
+                         if (staffMap[stylistName] && staffMap[stylistName].avatar_url) {
+                             avatarUrl = staffMap[stylistName].avatar_url;
                          }
                          historyAvatarEl.style.backgroundImage = `url("${avatarUrl}")`;
                     }

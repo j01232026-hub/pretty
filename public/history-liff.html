@@ -227,8 +227,8 @@
                 const historyAvatarEl = clone.querySelector('.bg-cover.rounded-lg.shrink-0'); 
                 if (historyAvatarEl) {
                         let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCMkStRV5clh0STCcvx_LWc9Vpp_VBOkSH_dWLFtqa_sDAyQmRXubyOk5l8Vr9e18QjvMAaGqZ3ete56yz2J5TaYDSUDg4KoVadJig1m9hZX9mtZ_Tz7BD4Qay9WaQ1SDOEQq7BWAt7zynSJ10s6c7SUeQHXA735GkRYttcb9hRiJw9MIkUMhNSGZP5mVphsrJmc82Hx5j-FDHlUzqU1I4UUEiSY488Pc0O_ES_tGYwo9q8VIcT7CFDgwb0dKscUUwvh3PxL2rhDn3O";
-                        if (staffMap[stylistName] && staffMap[stylistName].avatar) {
-                            avatarUrl = staffMap[stylistName].avatar;
+                        if (staffMap[stylistName] && staffMap[stylistName].avatar_url) {
+                            avatarUrl = staffMap[stylistName].avatar_url;
                         }
                         historyAvatarEl.style.backgroundImage = `url("${avatarUrl}")`;
                 }
