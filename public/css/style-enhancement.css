@@ -1,0 +1,89 @@
+
+/* 
+  Style Enhancement CSS
+  Created: 2026-02-04
+  Purpose: Visual improvements for booking-liff.html
+*/
+
+/* 1. Body Background - Pale Beige/Grey */
+body {
+    background: #F9F8F6 !important;
+    background-image: none !important;
+}
+
+/* 2. Card Depth - Soft Purple Shadow */
+/* Targeting white/transparent white containers */
+/* Calendar Card */
+.bg-white\/60 {
+    box-shadow: 0 10px 30px -10px rgba(138, 43, 226, 0.2) !important;
+    position: relative; /* Ensure relative positioning for watermark */
+    overflow: hidden;   /* Ensure watermark doesn't spill out */
+}
+
+/* Contact Info Card */
+.bg-white\/40 {
+    box-shadow: 0 10px 30px -10px rgba(138, 43, 226, 0.2) !important;
+}
+
+/* Service Selection Card (Future proofing) */
+.bg-white.rounded-3xl {
+    box-shadow: 0 10px 30px -10px rgba(138, 43, 226, 0.2) !important;
+}
+
+/* 3. Watermarks */
+/* Shared watermark styles */
+.watermark-bg::before {
+    content: "";
+    position: absolute;
+    background-image: url('https://placehold.co/400x400/png?text=Line+Art+Profile');
+    background-repeat: no-repeat;
+    opacity: 0.08;
+    pointer-events: none; /* Ensure clicks pass through */
+    z-index: 0;
+}
+
+/* Area 1: Calendar Card Watermark */
+/* Targeting the calendar container specifically */
+section:nth-of-type(3) .bg-white\/60::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    height: 50%; /* Adjust as needed */
+    background-image: url('https://placehold.co/400x400/png?text=Line+Art+Profile');
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: contain; /* or 100% auto to fill the width of the pseudo element */
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ensure content inside calendar is above watermark */
+section:nth-of-type(3) .bg-white\/60 > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Area 2: Time Slots Section Watermark */
+/* Targeting the space-y-6 container inside the time slots section */
+section:nth-of-type(4) .space-y-6 {
+    position: relative;
+}
+
+section:nth-of-type(4) .space-y-6::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://placehold.co/400x400/png?text=Line+Art+Profile');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: -1; /* Behind the buttons */
+}
