@@ -630,10 +630,12 @@
 
             // Get User ID
             let userId = 'U_GUEST';
+            let pictureUrl = '';
             if (liff.isInClient() || liff.isLoggedIn()) {
                 try {
                     const profile = await liff.getProfile();
                     userId = profile.userId;
+                    pictureUrl = profile.pictureUrl;
                 } catch (e) {
                     console.error('Get Profile Error:', e);
                 }
@@ -659,7 +661,8 @@
                         time: startTime,
                         endTime: endTime,
                         phone: phone,
-                        stylist: selectedStylist
+                        stylist: selectedStylist,
+                        pictureUrl
                     })
                 });
 

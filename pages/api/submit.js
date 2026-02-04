@@ -14,10 +14,31 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { userId, date, time, phone, endTime, name, stylist } = req.body;
+        const { userId, date, time, phone, endTime, name, stylist, pictureUrl } = req.body;
 
         if (!userId || !date || !time || !phone) {
             return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Update User Profile with Picture (Upsert)
+        if (userId && userId !== 'U_GUEST') {
+            try {
+                const profileUpdates = {
+                    user_id: userId,
+                    display_name: name,
+                    updated_at: new Date().toISOString()
+                };
+                if (pictureUrl) {
+                    profileUpdates.picture_url = pictureUrl;
+                }
+                
+                // Fire and forget profile update to avoid blocking booking
+                supabase.from('profiles').upsert(profileUpdates, { onConflict: 'user_id' }).then(({ error }) => {
+                    if (error) console.error('Profile update error:', error);
+                });
+            } catch (err) {
+                console.error('Profile update exception:', err);
+            }
         }
 
         // 0. 內部撞期檢查 (查 Supabase) - 改為 "寫入後檢查" 模式
@@ -110,7 +131,8 @@ export default async function handler(req, res) {
                 endTime: endTime || '',
                 phone: phone,
                 name: name || '',
-                stylist: stylist || 'Any Staff'
+                stylist: stylist || 'Any Staff',
+                pictureUrl: pictureUrl || ''
             });
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')

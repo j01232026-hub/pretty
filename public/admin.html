@@ -138,15 +138,24 @@
                 if (userIds.length > 0) {
                     const { data: profiles } = await supabaseClient
                         .from('profiles')
-                        .select('user_id, display_name, custom_name')
+                        .select('user_id, display_name, custom_name, picture_url')
                         .in('user_id', userIds);
                     
                     if (profiles) {
                         const profileMap = {};
-                        profiles.forEach(p => profileMap[p.user_id] = p.custom_name || p.display_name);
+                        profiles.forEach(p => {
+                             profileMap[p.user_id] = {
+                                 name: p.custom_name || p.display_name,
+                                 avatar: p.picture_url
+                             };
+                        });
                         
                         allBookings = allBookings.map(b => {
-                            b.displayName = profileMap[b.user_id] || b.user_id;
+                            const p = profileMap[b.user_id];
+                            if (p) {
+                                b.displayName = p.name;
+                                b.avatarUrl = p.avatar;
+                            }
                             return b;
                         });
                     }
@@ -185,6 +194,9 @@
             const service = b.service || details.service || '一般預約';
             let name = b.displayName || b.user_id || '未知用戶';
             if (name === b.user_id && name.length > 8) name = name.substr(0, 8) + '...';
+            
+            // Avatar logic
+            const avatarUrl = b.avatarUrl || details.pictureUrl || 'https://www.w3schools.com/howto/img_avatar.png';
 
             // Calculate End Time & Duration
             let endTime = b.end_time || details.end_time || details.endTime;
@@ -224,6 +236,23 @@
             const timeDisplay = endTime ? `${time}-${endTime}` : time;
             const fullTimeDisplay = `${timeDisplay} (${durationStr})`;
 
+            // Date formatting
+            let dateDisplay = date;
+            if (date && date !== '未知') {
+                try {
+                    const d = new Date(date);
+                    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                    // Ensure date is parsed correctly in local time context if string is YYYY-MM-DD
+                    // If date string is simple YYYY-MM-DD, new Date(date) might be UTC or Local depending on browser.
+                    // Let's assume input is YYYY-MM-DD and treat it as local date parts.
+                    const parts = date.split('-');
+                    if (parts.length === 3) {
+                         const localDate = new Date(parts[0], parts[1]-1, parts[2]);
+                         dateDisplay = `${date} (${weekdays[localDate.getDay()]})`;
+                    }
+                } catch(e) {}
+            }
+
             return `
             <div class="booking-card mb-4">
                 <div class="flex justify-between items-start mb-4">
@@ -231,11 +260,16 @@
                 <div class="mb-2">
                     <span class="text-xl font-extrabold text-primary bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg tracking-tight">${fullTimeDisplay}</span>
                 </div>
-                <h3 class="text-lg font-bold mt-3 text-[var(--text-primary)]">${escapeHtml(name)}</h3>
-                <p class="text-sm text-[var(--text-secondary)]">${escapeHtml(phone)}</p>
+                <div class="flex items-center gap-3 mt-3">
+                     <img src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.src='https://www.w3schools.com/howto/img_avatar.png'">
+                     <div>
+                         <h3 class="text-xl font-bold text-[var(--text-primary)] leading-tight">${escapeHtml(name)}</h3>
+                         <p class="text-sm text-[var(--text-secondary)] mt-0.5">${escapeHtml(phone)}</p>
+                     </div>
+                </div>
                 </div>
                 <div class="text-right">
-                <p class="text-sm font-medium text-[var(--text-secondary)]">${date}</p>
+                <p class="text-lg font-bold text-[var(--text-secondary)]">${dateDisplay}</p>
                 <p class="text-sm font-semibold text-[var(--brand-color)] mt-1">${escapeHtml(service)}</p>
                 </div>
                 </div>
