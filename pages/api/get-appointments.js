@@ -50,20 +50,54 @@ export default async function handler(req, res) {
         }).filter(appt => appt.date && appt.time); // 過濾掉無法解析日期的無效資料
 
         // 根據 type 進行過濾與排序
+        // 取得現在時間 HH:MM (UTC+8)
+        const currentHours = new Date(now.getTime() + offset).getUTCHours();
+        const currentMinutes = new Date(now.getTime() + offset).getUTCMinutes();
+        const currentTimeVal = currentHours * 60 + currentMinutes;
+
         if (type === 'upcoming') {
-            // 未來預約：日期 >= 今天
-            // 排序：日期 ASC, 時間 ASC (越早的越上面)
+            // 未來預約：日期 > 今天 OR (日期 == 今天 AND 結束時間 > 現在)
             appointments = appointments
-                .filter(a => a.date >= today)
+                .filter(a => {
+                    if (a.date > today) return true;
+                    if (a.date === today) {
+                        // 如果沒有 endTime，預設為 time + 60分鐘
+                        let endH, endM;
+                        if (a.endTime) {
+                            [endH, endM] = a.endTime.split(':').map(Number);
+                        } else {
+                            const [startH, startM] = a.time.split(':').map(Number);
+                            endH = startH + 1;
+                            endM = startM;
+                        }
+                        const endTimeVal = endH * 60 + endM;
+                        return endTimeVal > currentTimeVal;
+                    }
+                    return false;
+                })
                 .sort((a, b) => {
                     if (a.date !== b.date) return a.date.localeCompare(b.date);
                     return a.time.localeCompare(b.time);
                 });
         } else if (type === 'history') {
-            // 歷史紀錄：日期 < 今天
-            // 排序：日期 DESC, 時間 DESC (最近的歷史在最上面)
+            // 歷史紀錄：日期 < 今天 OR (日期 == 今天 AND 結束時間 <= 現在)
             appointments = appointments
-                .filter(a => a.date < today)
+                .filter(a => {
+                    if (a.date < today) return true;
+                    if (a.date === today) {
+                        let endH, endM;
+                        if (a.endTime) {
+                            [endH, endM] = a.endTime.split(':').map(Number);
+                        } else {
+                            const [startH, startM] = a.time.split(':').map(Number);
+                            endH = startH + 1;
+                            endM = startM;
+                        }
+                        const endTimeVal = endH * 60 + endM;
+                        return endTimeVal <= currentTimeVal;
+                    }
+                    return false;
+                })
                 .sort((a, b) => {
                     if (a.date !== b.date) return b.date.localeCompare(a.date);
                     return b.time.localeCompare(a.time);

@@ -436,6 +436,39 @@
                 const appt = appointments[0]; 
                 const template = document.getElementById('active-card-template');
                 const clone = template.content.cloneNode(true);
+
+                // Check Status (Confirmed vs In Progress)
+                const now = new Date();
+                // Simple date string compare (assuming appt.date is YYYY-MM-DD)
+                // Note: This relies on client device time.
+                const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+                
+                if (appt.date === todayStr) {
+                    const [currentH, currentM] = [now.getHours(), now.getMinutes()];
+                    const currentVal = currentH * 60 + currentM;
+                    
+                    const [startH, startM] = appt.time.split(':').map(Number);
+                    const startVal = startH * 60 + startM;
+                    
+                    let endVal;
+                    if (appt.endTime) {
+                        const [endH, endM] = appt.endTime.split(':').map(Number);
+                        endVal = endH * 60 + endM;
+                    } else {
+                        endVal = startVal + 60; // Default 60 mins
+                    }
+                    
+                    if (currentVal >= startVal && currentVal < endVal) {
+                        // In Progress
+                        const statusContainer = clone.querySelector('.fa-circle-check').parentElement;
+                        if (statusContainer) {
+                            statusContainer.innerHTML = `
+                                <i class="fa-solid fa-scissors text-5xl mb-2 fa-beat-fade"></i>
+                                <p class="text-3xl font-bold">進行中</p>
+                            `;
+                        }
+                    }
+                }
                 
                 // Fill Stylist in the new "Assigned Professional" section
                 let rawStylistName = appt.stylist || '指定設計師';
