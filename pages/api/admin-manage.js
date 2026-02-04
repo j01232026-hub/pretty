@@ -283,11 +283,22 @@ export default async function handler(req, res) {
 
             // B. 更新 Supabase 資料庫
             // 更新 message 欄位內的 JSON
+            
+            // 確保有 end_time (如果前端沒傳，就從計算出的 endDateTime 擷取)
+            let finalEndTime = new_end_time;
+            if (!finalEndTime && endDateTime) {
+                try {
+                    // endDateTime format: YYYY-MM-DDTHH:mm:ss+08:00
+                    finalEndTime = endDateTime.split('T')[1].substring(0, 5);
+                } catch (e) {}
+            }
+
             const newMessageObj = {
                 ...bookingDetails,
                 action: 'book', 
                 date: new_date,
                 time: new_start_time,
+                end_time: finalEndTime,
                 phone: phone
             };
             const newMessageStr = JSON.stringify(newMessageObj);

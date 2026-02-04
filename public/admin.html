@@ -186,12 +186,52 @@
             let name = b.displayName || b.user_id || '未知用戶';
             if (name === b.user_id && name.length > 8) name = name.substr(0, 8) + '...';
 
+            // Calculate End Time & Duration
+            let endTime = b.end_time || details.end_time || details.endTime;
+            let durationStr = '1小時'; // Default display string
+
+            if (time !== '未知') {
+                try {
+                    const [h, m] = time.split(':').map(Number);
+                    const startDate = new Date();
+                    startDate.setHours(h, m, 0, 0);
+                    
+                    if (!endTime) {
+                        // Default to +1 hour if not exists
+                        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+                        endTime = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+                    }
+                    
+                    // Calculate duration
+                    const [eh, em] = endTime.split(':').map(Number);
+                    const endDate = new Date();
+                    endDate.setHours(eh, em, 0, 0);
+                    
+                    let diffMs = endDate - startDate;
+                    if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000; // Assume next day if negative
+                    
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHrs = Math.floor(diffMins / 60);
+                    const remMins = diffMins % 60;
+                    
+                    if (diffHrs > 0 && remMins > 0) durationStr = `${diffHrs}小時${remMins}分`;
+                    else if (diffHrs > 0) durationStr = `${diffHrs}小時`;
+                    else durationStr = `${remMins}分鐘`;
+                    
+                } catch (e) { console.error('Time Calc Error', e); }
+            }
+
+            const timeDisplay = endTime ? `${time}-${endTime}` : time;
+            const fullTimeDisplay = `${timeDisplay} (${durationStr})`;
+
             return `
             <div class="booking-card mb-4">
                 <div class="flex justify-between items-start mb-4">
                 <div>
-                <span class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded uppercase tracking-wider">${time}</span>
-                <h3 class="text-lg font-bold mt-2 text-[var(--text-primary)]">${escapeHtml(name)}</h3>
+                <div class="mb-2">
+                    <span class="text-xl font-extrabold text-primary bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg tracking-tight">${fullTimeDisplay}</span>
+                </div>
+                <h3 class="text-lg font-bold mt-3 text-[var(--text-primary)]">${escapeHtml(name)}</h3>
                 <p class="text-sm text-[var(--text-secondary)]">${escapeHtml(phone)}</p>
                 </div>
                 <div class="text-right">
@@ -200,7 +240,7 @@
                 </div>
                 </div>
                 <div class="flex gap-3">
-                <button class="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="editBooking(${b.id}, '${date}', '${time}')">
+                <button class="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="editBooking(${b.id}, '${date}', '${time}', '${endTime}')">
                 <span class="material-icons text-sm">edit</span> 編輯
                 </button>
                 <button class="flex-1 btn-danger py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="cancelBooking(${b.id})">
@@ -254,18 +294,20 @@
     }
 
     // Logic from old admin.html for Edit/Cancel
-    async function editBooking(id, oldDate, oldTime) {
+    async function editBooking(id, oldDate, oldTime, oldEndTime) {
         const newDate = prompt('請輸入新的日期 (YYYY-MM-DD):', oldDate);
         if (!newDate) return;
         const newStartTime = prompt('請輸入新的開始時間 (HH:mm):', oldTime);
         if (!newStartTime) return;
         
-        let defaultEndTime = '';
-        try {
-            const [h, m] = newStartTime.split(':').map(Number);
-            const d = new Date(); d.setHours(h + 1); d.setMinutes(m);
-            defaultEndTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        } catch (e) {}
+        let defaultEndTime = oldEndTime || '';
+        if (!defaultEndTime) {
+            try {
+                const [h, m] = newStartTime.split(':').map(Number);
+                const d = new Date(); d.setHours(h + 1); d.setMinutes(m);
+                defaultEndTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            } catch (e) {}
+        }
         
         const newEndTime = prompt('請輸入新的結束時間 (HH:mm):', defaultEndTime);
         if (!newEndTime) return;
