@@ -380,18 +380,6 @@
 
             // For Status Page (Upcoming), we use the "Active Hero Card" style for the first one
             if (type === 'upcoming') {
-                // --- DEMO/DEBUG: 如果只有一筆預約，自動產生一筆假的「稍後行程」供 UI 測試 ---
-                if (appointments.length === 1) {
-                    appointments.push({
-                        id: 'demo-2',
-                        time: '18:30',
-                        service: '頭皮護理 (測試資料)',
-                        stylist: 'Demo設計師',
-                        date: appointments[0].date // 同一天
-                    });
-                }
-                // -------------------------------------------------------------------
-
                 // 1. Render First Item (Hero Card)
                 const appt = appointments[0]; 
                 const template = document.getElementById('active-card-template');
