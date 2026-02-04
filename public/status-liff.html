@@ -187,7 +187,7 @@
                                 <div class="flex flex-col">
                                     <p class="text-xs text-primary font-bold uppercase">服務項目</p>
                                     <p class="text-[#1b0d18] dark:text-white font-medium booking-service">一般服務</p>
-                                    <p class="text-sm text-gray-500">30 分鐘</p>
+                                    <p class="text-sm text-gray-500 duration-text">30 分鐘</p>
                                 </div>
                                 <div class="flex flex-col items-end">
                                     <p class="text-xs text-primary font-bold uppercase text-right">時間</p>
@@ -385,8 +385,22 @@
                 // Fill Date/Time
                 clone.querySelector('.date-text').textContent = appt.date;
                 let timeDisplay = appt.time;
-                if (appt.endTime) timeDisplay += ` - ${appt.endTime}`;
+                let duration = 30; // Default duration
+
+                if (appt.endTime) {
+                    timeDisplay = `${appt.time} - ${appt.endTime}`;
+                    
+                    // Calculate duration
+                    const [startH, startM] = appt.time.split(':').map(Number);
+                    const [endH, endM] = appt.endTime.split(':').map(Number);
+                    duration = (endH * 60 + endM) - (startH * 60 + startM);
+                }
+                
                 clone.querySelector('.time-text').textContent = timeDisplay;
+                
+                if(clone.querySelector('.duration-text')) {
+                    clone.querySelector('.duration-text').textContent = `${duration} 分鐘`;
+                }
 
                 // Buttons
                 const cancelBtn = clone.querySelector('.btn-cancel');
