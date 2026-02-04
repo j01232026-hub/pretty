@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -23,8 +25,8 @@
             },
         }
     </script>
-<title>Appointment Status and History</title>
-<style type="text/tailwindcss">
+    <title>Appointment Status and History</title>
+    <style type="text/tailwindcss">
         body {
             min-height: max(884px, 100dvh);
         }
@@ -35,210 +37,410 @@
             @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
         }
     </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
+</head>
 <body class="bg-background-light dark:bg-background-dark font-display text-[#1b0d18] dark:text-white">
-<div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
-<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
-<div class="text-[#1b0d18] dark:text-white flex size-12 shrink-0 items-center cursor-pointer">
-<span class="material-symbols-outlined">arrow_back_ios</span>
-</div>
-<h2 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">My Appointments</h2>
-</div>
-<div class="px-4 py-2 sticky top-14 z-10 bg-background-light dark:bg-background-dark">
-<div class="flex p-1 bg-gray-200/50 dark:bg-[#1b0d18] rounded-xl">
-<button class="flex-1 py-2 text-sm rounded-lg transition-all tab-active">Active</button>
-<button class="flex-1 py-2 text-sm rounded-lg transition-all tab-inactive">History</button>
-</div>
-</div>
-<div class="flex flex-col gap-6 p-4" id="active-content">
-<div class="@container">
-<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden">
-<div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #fce7f3 0%, #f042c4 100%);">
-<div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
-<span class="material-symbols-outlined text-5xl mb-2">check_circle</span>
-<p class="text-3xl font-bold">Confirmed</p>
-</div>
-</div>
-<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-6">
-<p class="text-primary text-sm font-semibold uppercase tracking-wider">Upcoming Status</p>
-<p class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Your appointment is all set!</p>
-<div class="mt-4">
-<div class="flex gap-6 justify-between mb-2">
-<p class="text-[#1b0d18] dark:text-white text-base font-medium leading-normal">Arrival in</p>
-<p class="text-[#1b0d18] dark:text-white text-sm font-normal leading-normal">45 mins</p>
-</div>
-<div class="rounded-full bg-primary/20"><div class="h-2 rounded-full bg-primary" style="width: 65%;"></div></div>
-<p class="text-primary text-xs font-medium mt-2">Almost time for your glow up!</p>
-</div>
-</div>
-</div>
-</div>
-<div>
-<h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Salon Details</h3>
-<div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between">
-<div class="flex items-center gap-4">
-<div id="salonImage" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
-<div class="flex flex-col justify-center">
-<p id="salonName" class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Serenity Spa &amp; Salon</p>
-<p id="salonAddress" class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">123 Wellness Way, Bloom District</p>
-</div>
-</div>
-<div class="shrink-0">
-<button class="flex min-w-[48px] h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary/10 text-primary">
-<span class="material-symbols-outlined">directions</span>
-</button>
-</div>
-</div>
-</div>
-<div>
-<h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Booking Information</h3>
-<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm flex flex-col gap-4">
-<div class="flex items-start justify-between">
-<div class="flex flex-col">
-<p class="text-xs text-primary font-bold uppercase">Service</p>
-<p class="text-[#1b0d18] dark:text-white font-medium">一般服務</p>
-<p class="text-sm text-gray-500">30 分鐘</p>
-</div>
-<div class="flex flex-col items-end">
-<p class="text-xs text-primary font-bold uppercase text-right">預約日期</p>
-<p class="text-[#1b0d18] dark:text-white font-medium text-right">YYYY-MM-DD</p>
-<p class="text-sm text-gray-500 text-right">HH:MM</p>
-</div>
-</div>
-<div class="h-px bg-gray-100 dark:bg-gray-700 w-full"></div>
-<div class="flex items-center gap-4">
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRMOJ1Fm6b3CFngPFXZK63GsfrinpyiB4Rabuz8uwoMuScWogVH7IBcH5-3L7nH4tj9v2hdt3Z50Z2xcxV7brA-FHN_yMWmJwt0763oYoaRpLYjp0PaCy4fHk2ULzTgP-x-5B-mAqVm8S0Aec4Ja0saZWOTKbT6eCaV765tWqx2kk6rSROaJ21Y13NMRsfG83nA2HlpQnNEBr0Sn9jMZQFgkUkPuysDO8vBremNHNUKQcIJ2VzvIZn-UlVsisIZ3fKoCAr05bAXXYj");'></div>
-<div class="flex flex-col">
-<p class="text-xs text-primary font-bold uppercase">指定設計師</p>
-<p class="text-[#1b0d18] dark:text-white font-medium">設計師名稱</p>
-<div class="flex items-center gap-1">
-<span class="material-symbols-outlined text-yellow-500 text-sm fill-current">star</span>
-<p class="text-xs text-gray-500">5.0 專業設計師</p>
-</div>
-</div>
-<button class="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-<span class="material-symbols-outlined text-base">chat</span>
-</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 mt-4 mb-4">
-<button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 bg-primary text-white text-base font-bold transition-all hover:bg-opacity-90 active:scale-[0.98]">
-<span class="truncate">Reschedule Appointment</span>
-</button>
-<button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-base font-medium transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98]">
-<span class="truncate">Cancel Booking</span>
-</button>
-</div>
-</div>
-<div class="hidden flex flex-col gap-4 p-4" id="history-content">
-<h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Past Appointments</h3>
-<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-<div class="flex justify-between items-start mb-3">
-<div class="flex flex-col gap-1">
-<p class="text-[#1b0d18] dark:text-white font-bold">Serenity Spa &amp; Salon</p>
-<p class="text-sm text-gray-500">Deep Tissue Massage • 90m</p>
-</div>
-<div class="bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
-                    Completed
+    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+            <div class="text-[#1b0d18] dark:text-white flex size-12 shrink-0 items-center cursor-pointer" onclick="handleBack()">
+                <span class="material-symbols-outlined">arrow_back_ios</span>
+            </div>
+            <h2 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">My Appointments</h2>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="px-4 py-2 sticky top-14 z-10 bg-background-light dark:bg-background-dark">
+            <div class="flex p-1 bg-gray-200/50 dark:bg-[#1b0d18] rounded-xl">
+                <button id="tab-active" class="flex-1 py-2 text-sm rounded-lg transition-all tab-active" onclick="switchTab('active')">Active</button>
+                <button id="tab-history" class="flex-1 py-2 text-sm rounded-lg transition-all tab-inactive" onclick="switchTab('history')">History</button>
+            </div>
+        </div>
+
+        <!-- Active Content -->
+        <div class="flex flex-col gap-6 p-4" id="active-content">
+            <!-- Loading State -->
+            <div id="active-loading" class="flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                <p class="mt-4 text-gray-500 text-sm">Loading appointment...</p>
+            </div>
+
+            <!-- Dynamic Active Appointment will be injected here -->
+        </div>
+
+        <!-- History Content -->
+        <div class="hidden flex flex-col gap-4 p-4" id="history-content">
+            <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Past Appointments</h3>
+            
+            <!-- Loading State -->
+            <div id="history-loading" class="flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                <p class="mt-4 text-gray-500 text-sm">Loading history...</p>
+            </div>
+
+            <!-- Dynamic History List will be injected here -->
+            <div id="history-list" class="flex flex-col gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Template: Active Appointment -->
+    <template id="active-template">
+        <div class="@container">
+            <div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #fce7f3 0%, #f042c4 100%);">
+                    <div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
+                        <span class="material-symbols-outlined text-5xl mb-2">check_circle</span>
+                        <p class="text-3xl font-bold">Confirmed</p>
+                    </div>
                 </div>
-</div>
-<div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
-<span class="material-symbols-outlined text-sm">calendar_today</span>
-<span>Sep 15, 2023 • 11:00 AM</span>
-</div>
-<div class="flex gap-2">
-<button class="flex-1 h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
-                    Book Again
-                </button>
-<button class="flex-1 h-10 rounded-full bg-primary/10 text-primary text-xs font-bold transition-all active:scale-[0.98]">
-                    Leave Review
-                </button>
-</div>
-</div>
-<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-<div class="flex justify-between items-start mb-3">
-<div class="flex flex-col gap-1">
-<p class="text-[#1b0d18] dark:text-white font-bold">The Glow Bar</p>
-<p class="text-sm text-gray-500">Lash Extensions • 120m</p>
-</div>
-<div class="bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
-                    Completed
+                <div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-6">
+                    <p class="text-primary text-sm font-semibold uppercase tracking-wider">Upcoming Status</p>
+                    <p class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Your appointment is all set!</p>
+                    <div class="mt-4">
+                        <div class="flex gap-6 justify-between mb-2">
+                            <p class="text-[#1b0d18] dark:text-white text-base font-medium leading-normal">Arrival in</p>
+                            <p class="text-[#1b0d18] dark:text-white text-sm font-normal leading-normal" id="arrival-time-display">--</p>
+                        </div>
+                        <div class="rounded-full bg-primary/20"><div class="h-2 rounded-full bg-primary" style="width: 100%;"></div></div>
+                        <p class="text-primary text-xs font-medium mt-2">Almost time for your glow up!</p>
+                    </div>
                 </div>
-</div>
-<div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
-<span class="material-symbols-outlined text-sm">calendar_today</span>
-<span>Aug 28, 2023 • 2:00 PM</span>
-</div>
-<div class="flex gap-2">
-<button class="flex-1 h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
-                    Book Again
-                </button>
-<div class="flex-1 flex items-center justify-center gap-1 text-primary text-xs font-bold">
-<span class="material-symbols-outlined text-sm fill-current">star</span>
-<span>5.0 Reviewed</span>
-</div>
-</div>
-</div>
-<div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 opacity-80">
-<div class="flex justify-between items-start mb-3">
-<div class="flex flex-col gap-1">
-<p class="text-[#1b0d18] dark:text-white font-bold">Bloom Hair Studio</p>
-<p class="text-sm text-gray-500">Balayage &amp; Cut • 180m</p>
-</div>
-<div class="bg-red-50 dark:bg-red-900/20 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
-                    Cancelled
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3 pt-6">Salon Details</h3>
+            <div class="flex items-center gap-4 bg-white dark:bg-[#2d1a29] rounded-xl p-3 shadow-sm justify-between">
+                <div class="flex items-center gap-4">
+                    <div id="salonImage" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJMRVTW3ayRoqi5ZrDNrEovFo4AVMQISSN6ZuWwe6xw6hmS5YEIONmzOH1ncr7i7dDh_iof0v5X5WRcjuAN0tMFCavA2vcoYmndBrj6yLTM3jsKYa55-tO8FZPZixCPREULF2nKLCRRCzUHnXkWI9ryQ2srqn7bKRW0JZiX3UGRbJv1cMuBZ9te1hbe5pV8WZrfHsTiYNWgXiuomEkBZFztSsYWc3t7v2mtaez-GPYMsaGB1Rhq8nvJQuNYlDcPyaiNnEmySerDk-d");'></div>
+                    <div class="flex flex-col justify-center">
+                        <p id="salonName" class="text-[#1b0d18] dark:text-white text-base font-bold leading-normal line-clamp-1">Pretty Salon</p>
+                        <p id="salonAddress" class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">台北市信義區時尚大道123號</p>
+                    </div>
                 </div>
-</div>
-<div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
-<span class="material-symbols-outlined text-sm">calendar_today</span>
-<span>Aug 05, 2023 • 10:30 AM</span>
-</div>
-<button class="w-full h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]">
-                Book Again
+                <div class="shrink-0">
+                    <button class="flex min-w-[48px] h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined">directions</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3 pt-6">Booking Information</h3>
+            <div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm flex flex-col gap-4">
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <p class="text-xs text-primary font-bold uppercase">Service</p>
+                        <p class="text-[#1b0d18] dark:text-white font-medium service-name">--</p>
+                        <p class="text-sm text-gray-500 service-duration">30 分鐘</p>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <p class="text-xs text-primary font-bold uppercase text-right">Date</p>
+                        <p class="text-[#1b0d18] dark:text-white font-medium text-right service-date">--</p>
+                        <p class="text-sm text-gray-500 text-right service-time">--</p>
+                    </div>
+                </div>
+                <div class="h-px bg-gray-100 dark:bg-gray-700 w-full"></div>
+                <div class="flex items-center gap-4">
+                    <div class="stylist-avatar bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"></div>
+                    <div class="flex flex-col">
+                        <p class="text-xs text-primary font-bold uppercase">Stylist</p>
+                        <p class="text-[#1b0d18] dark:text-white font-medium stylist-name">--</p>
+                        <div class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-yellow-500 text-sm fill-current">star</span>
+                            <p class="text-xs text-gray-500">5.0 Professional</p>
+                        </div>
+                    </div>
+                    <button class="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-base">chat</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3 mt-4 mb-4 pt-6">
+            <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 bg-primary text-white text-base font-bold transition-all hover:bg-opacity-90 active:scale-[0.98]" onclick="alert('Please contact us to reschedule.')">
+                <span class="truncate">Reschedule Appointment</span>
             </button>
-</div>
-</div>
-<div class="h-10"></div>
-</div>
+            <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-base font-medium transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98]" onclick="handleCancel()">
+                <span class="truncate">Cancel Booking</span>
+            </button>
+        </div>
+    </template>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    async function loadSalonInfo() {
-        try {
-            const res = await fetch('/api/config');
-            const config = await res.json();
-            if (window.supabase) {
-                const supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+    <!-- Template: History Item -->
+    <template id="history-template">
+        <div class="bg-white dark:bg-[#2d1a29] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex flex-col gap-1">
+                    <p class="text-[#1b0d18] dark:text-white font-bold salon-name">Pretty Salon</p>
+                    <p class="text-sm text-gray-500 service-info">Service • Duration</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide status-badge">
+                    Completed
+                </div>
+            </div>
+            
+            <!-- Stylist Info in History -->
+             <div class="flex items-center gap-3 mb-4">
+                <div class="stylist-avatar bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8"></div>
+                <p class="text-sm font-medium text-[#1b0d18] dark:text-white stylist-name">--</p>
+            </div>
+
+            <div class="flex items-center gap-2 mb-4 text-sm text-gray-500">
+                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                <span class="date-time">--</span>
+            </div>
+            <div class="flex gap-2">
+                <button class="flex-1 h-10 rounded-full border border-primary text-primary text-xs font-bold transition-all active:scale-[0.98]" onclick="location.href='booking-liff.html'">
+                    Book Again
+                </button>
+                <div class="flex-1 flex items-center justify-center gap-1 text-primary text-xs font-bold">
+                    <span class="material-symbols-outlined text-sm fill-current">star</span>
+                    <span>5.0 Reviewed</span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY';
+        let currentUserId = null;
+        let staffMap = {};
+        
+        // Init
+        window.onload = async function() {
+            try {
+                // Load staff data first
+                await fetchStaffData();
                 
-                const { data } = await supabase
-                    .from('salon_info')
-                    .select('*')
-                    .limit(1)
-                    .maybeSingle();
-                
-                if (data) {
-                    if (data.image_url) {
-                        document.getElementById('salonImage').style.backgroundImage = `url("${data.image_url}")`;
-                    }
-                    if (data.name) {
-                        document.getElementById('salonName').textContent = data.name;
-                    }
-                    if (data.address) {
-                        document.getElementById('salonAddress').textContent = data.address;
-                    }
+                // Initialize LIFF
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
                 }
+                const profile = await liff.getProfile();
+                currentUserId = profile.userId;
+                
+                // Load appointments
+                await loadAppointments();
+                
+            } catch (err) {
+                console.error('Initialization error:', err);
+                document.getElementById('active-loading').innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
             }
-        } catch(e) {
-            console.error('Error loading salon info:', e);
-        }
-    }
-    loadSalonInfo();
-</script>
+        };
 
-</body></html>
+        async function fetchStaffData() {
+            try {
+                const res = await fetch('/api/staff');
+                if (res.ok) {
+                    const list = await res.json();
+                    list.forEach(s => staffMap[s.name] = s);
+                    console.log('Staff data loaded:', Object.keys(staffMap).length);
+                }
+            } catch (e) {
+                console.error('Failed to load staff data:', e);
+            }
+        }
+
+        async function loadAppointments() {
+            if (!currentUserId) return;
+            
+            try {
+                const [upcomingRes, historyRes] = await Promise.all([
+                    fetch(`/api/get-appointments?user_id=${currentUserId}&type=upcoming`),
+                    fetch(`/api/get-appointments?user_id=${currentUserId}&type=history`)
+                ]);
+                
+                const upcoming = await upcomingRes.json();
+                const history = await historyRes.json();
+                
+                renderActive(upcoming);
+                renderHistory(history);
+                
+            } catch (e) {
+                console.error('Failed to load appointments:', e);
+            }
+        }
+
+        function renderActive(appointments) {
+            const container = document.getElementById('active-content');
+            document.getElementById('active-loading').style.display = 'none';
+            
+            if (!appointments || appointments.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-20 opacity-60">
+                        <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">calendar_today</span>
+                        <p class="text-gray-500 text-sm">No upcoming appointments</p>
+                        <button onclick="location.href='booking-liff.html'" class="mt-6 px-6 py-2 bg-primary text-white rounded-full text-sm font-bold shadow-md">Book Now</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Render first upcoming appointment
+            const appt = appointments[0];
+            const template = document.getElementById('active-template');
+            const clone = template.content.cloneNode(true);
+            
+            // Stylist Info
+            const stylistName = appt.stylist || '指定設計師';
+            clone.querySelector('.stylist-name').textContent = stylistName;
+            
+            let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4";
+            if (staffMap[stylistName] && staffMap[stylistName].avatar_url) {
+                avatarUrl = staffMap[stylistName].avatar_url;
+            }
+            clone.querySelector('.stylist-avatar').style.backgroundImage = `url("${avatarUrl}")`;
+            
+            // Service Info
+            clone.querySelector('.service-name').textContent = appt.service || '一般服務';
+            
+            // Date & Time
+            clone.querySelector('.service-date').textContent = appt.date;
+            let timeDisplay = appt.time;
+            if (appt.endTime) {
+                timeDisplay += ` - ${appt.endTime}`;
+                
+                // Calc duration
+                const [h1, m1] = appt.time.split(':').map(Number);
+                const [h2, m2] = appt.endTime.split(':').map(Number);
+                const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+                clone.querySelector('.service-duration').textContent = `${diff} 分鐘`;
+            } else {
+                clone.querySelector('.service-time').textContent = appt.time;
+            }
+            
+            // Arrival Time Calculation (Approximate)
+            const today = new Date().toISOString().split('T')[0];
+            if (appt.date === today) {
+                const now = new Date();
+                const [apptH, apptM] = appt.time.split(':').map(Number);
+                const apptDate = new Date();
+                apptDate.setHours(apptH, apptM, 0, 0);
+                
+                const diffMs = apptDate - now;
+                if (diffMs > 0) {
+                    const diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 60) {
+                        clone.querySelector('#arrival-time-display').textContent = `${diffMins} mins`;
+                    } else {
+                        const hours = Math.floor(diffMins / 60);
+                        clone.querySelector('#arrival-time-display').textContent = `${hours} hr ${diffMins % 60} mins`;
+                    }
+                } else {
+                    clone.querySelector('#arrival-time-display').textContent = 'Now';
+                }
+            } else {
+                // If not today, show days remaining
+                const apptDay = new Date(appt.date);
+                const todayDay = new Date(today);
+                const diffTime = Math.abs(apptDay - todayDay);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                clone.querySelector('#arrival-time-display').textContent = `${diffDays} days`;
+            }
+            
+            // Cancel Button
+            const cancelBtn = clone.querySelector('button[onclick="handleCancel()"]');
+            cancelBtn.onclick = () => handleCancel(appt.id);
+
+            container.innerHTML = '';
+            container.appendChild(clone);
+            
+            // Fetch Salon Info
+            fetch('/api/get-salon-info')
+                .then(r => r.json())
+                .then(data => {
+                    const img = document.getElementById('salonImage');
+                    const name = document.getElementById('salonName');
+                    const addr = document.getElementById('salonAddress');
+                    if(data.name && name) name.textContent = data.name;
+                    if(data.address && addr) addr.textContent = data.address;
+                    if(data.image_url && img) img.style.backgroundImage = `url("${data.image_url}")`;
+                })
+                .catch(console.error);
+        }
+
+        function renderHistory(appointments) {
+            const container = document.getElementById('history-list');
+            document.getElementById('history-loading').style.display = 'none';
+            
+            if (!appointments || appointments.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No history records</p>';
+                return;
+            }
+            
+            const template = document.getElementById('history-template');
+            
+            appointments.forEach(appt => {
+                const clone = template.content.cloneNode(true);
+                
+                const stylistName = appt.stylist || '指定設計師';
+                clone.querySelector('.stylist-name').textContent = stylistName;
+                
+                let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4";
+                if (staffMap[stylistName] && staffMap[stylistName].avatar_url) {
+                    avatarUrl = staffMap[stylistName].avatar_url;
+                }
+                clone.querySelector('.stylist-avatar').style.backgroundImage = `url("${avatarUrl}")`;
+                
+                clone.querySelector('.service-info').textContent = `${appt.service || '一般服務'}`;
+                clone.querySelector('.date-time').textContent = `${appt.date} • ${appt.time}`;
+                
+                container.appendChild(clone);
+            });
+        }
+
+        function handleBack() {
+            if (liff.isInClient()) {
+                liff.closeWindow();
+            } else {
+                window.history.back();
+            }
+        }
+
+        function switchTab(tab) {
+            const activeBtn = document.getElementById('tab-active');
+            const historyBtn = document.getElementById('tab-history');
+            const activeContent = document.getElementById('active-content');
+            const historyContent = document.getElementById('history-content');
+            
+            if (tab === 'active') {
+                activeBtn.className = 'flex-1 py-2 text-sm rounded-lg transition-all tab-active';
+                historyBtn.className = 'flex-1 py-2 text-sm rounded-lg transition-all tab-inactive';
+                activeContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+            } else {
+                activeBtn.className = 'flex-1 py-2 text-sm rounded-lg transition-all tab-inactive';
+                historyBtn.className = 'flex-1 py-2 text-sm rounded-lg transition-all tab-active';
+                activeContent.classList.add('hidden');
+                historyContent.classList.remove('hidden');
+            }
+        }
+        
+        async function handleCancel(id) {
+            if(!confirm('Are you sure you want to cancel this appointment?')) return;
+            
+            try {
+                const res = await fetch('/api/cancel-appointment', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id })
+                });
+                
+                if (res.ok) {
+                    alert('Appointment cancelled');
+                    location.reload();
+                } else {
+                    alert('Failed to cancel');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error cancelling appointment');
+            }
+        }
+    </script>
+</body>
+</html>
