@@ -465,7 +465,7 @@
 
             // Reset Time Buttons
             document.querySelectorAll('.time-btn').forEach(b => {
-                b.classList.remove('selected');
+                b.classList.remove('selected', 'opacity-30', 'cursor-not-allowed');
                 b.disabled = false;
             });
 
@@ -499,8 +499,7 @@
                     
                     if (slotTime < bufferTime) {
                         btn.disabled = true;
-                        btn.classList.add('opacity-30', 'cursor-not-allowed');
-                        // Optional: Add styling to indicate why
+                        // CSS :disabled selector handles styling (opacity-30, cursor-not-allowed)
                     }
                 });
             }
