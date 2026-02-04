@@ -208,7 +208,7 @@ export default async function handler(req, res) {
                             to: userId,
                             messages: [{
                                 type: 'text',
-                                text: `✅ 預約已確認！\n\n設計師：思容Phoebe\n日期：${date}\n時間：${time}${endTime ? '-' + endTime : ''}\n手機：${phone}\n\n請準時到達，謝謝！`
+                                text: `✅ 預約已確認！\n\n設計師：${stylist || '指定設計師'}\n日期：${date}\n時間：${time}${endTime ? '-' + endTime : ''}\n手機：${phone}\n\n請準時到達，謝謝！`
                             }]
                         },
                         {

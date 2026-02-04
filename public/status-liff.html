@@ -325,6 +325,7 @@
                 const res = await fetch('/api/staff');
                 if (res.ok) {
                     const staffList = await res.json();
+                    console.debug('Fetched staff data:', staffList);
                     staffList.forEach(s => {
                         staffMap[s.name] = s;
                     });
@@ -362,6 +363,7 @@
                 const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}`);
                 if (!res.ok) throw new Error('API Error');
                 const data = await res.json();
+                console.debug('Fetched appointments data:', data);
                 
                 renderAppointments(data, type);
 
