@@ -7,6 +7,11 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing user_id' });
     }
 
+    // Disable caching
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     try {
         // 取得今天的日期字串 (YYYY-MM-DD)
         // 為了確保時區正確，這裡使用簡單的 ISO 切割，或者固定 +8 時區

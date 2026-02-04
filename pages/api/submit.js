@@ -15,6 +15,7 @@ export default async function handler(req, res) {
 
     try {
         const { userId, date, time, phone, endTime, name, stylist, pictureUrl } = req.body;
+        console.log('Received booking request:', { userId, date, time, stylist }); // Debug log
 
         if (!userId || !date || !time || !phone) {
             return res.status(400).json({ error: 'Missing required fields' });

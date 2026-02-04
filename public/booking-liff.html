@@ -595,6 +595,7 @@
             const name = document.getElementById('nameInput').value.trim();
             const phone = document.getElementById('phoneInput').value.trim();
             
+            if (!selectedStylist) return alert('請選擇設計師 (若列表未載入請重新整理網頁)');
             if (!selectedDate) return alert('請選擇日期');
             if (selectedTimes.size === 0) return alert('請選擇至少一個時段');
             if (!name) return alert('請輸入姓名');

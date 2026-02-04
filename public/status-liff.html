@@ -222,7 +222,7 @@
                             <div class="flex items-center gap-4">
                                 <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
                                 <div class="flex flex-col">
-                                    <p class="text-xs text-primary font-bold uppercase">指定設計師</p>
+                                    <p class="text-xs text-primary font-bold uppercase">設計師</p>
                                     <p class="text-[#1b0d18] dark:text-white font-medium stylist-name">設計師名稱</p>
                                     <div class="flex items-center gap-1">
                                         <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
@@ -421,10 +421,10 @@
                     return; 
                 }
 
-                const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}`);
+                const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}&t=${Date.now()}`);
                 if (!res.ok) throw new Error('API Error');
                 const data = await res.json();
-                console.debug('Fetched appointments data:', data);
+                console.log('Fetched appointments data:', data); // Debug log
                 
                 renderAppointments(data, type);
 
@@ -484,7 +484,7 @@
                         if (statusContainer) {
                             statusContainer.innerHTML = `
                                 <div class="relative h-14 w-full flex justify-center items-center mb-2">
-                                    <i class="fa-solid fa-spa text-5xl absolute animate-icon-1"></i>
+                                    <i class="fa-solid fa-mask-face text-5xl absolute animate-icon-1"></i>
                                     <i class="fa-solid fa-hand-sparkles text-5xl absolute animate-icon-2"></i>
                                     <i class="fa-solid fa-eye text-5xl absolute animate-icon-3"></i>
                                 </div>
@@ -554,7 +554,7 @@
                      // Insert Title
                      const title = document.createElement('h6');
                      title.className = 'mt-4 mb-3 text-sm font-bold text-gray-400 uppercase tracking-wider px-1';
-                     title.textContent = '今日稍後行程';
+                     title.textContent = '當日稍後行程';
                      compactListContainer.appendChild(title);
 
                      // Loop through filtered appointments
