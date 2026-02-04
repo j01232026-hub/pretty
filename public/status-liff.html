@@ -47,6 +47,26 @@
         .compact-appointment-card {
             @apply flex items-center bg-white dark:bg-[#2d1a29] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98] border border-gray-100 dark:border-white/5;
         }
+        
+        /* Icon Carousel Animation */
+        @keyframes icon-fade-1 {
+            0%, 28% { opacity: 1; transform: scale(1); }
+            33%, 100% { opacity: 0; transform: scale(0.9); }
+        }
+        @keyframes icon-fade-2 {
+            0%, 28% { opacity: 0; transform: scale(0.9); }
+            33%, 61% { opacity: 1; transform: scale(1); }
+            66%, 100% { opacity: 0; transform: scale(0.9); }
+        }
+        @keyframes icon-fade-3 {
+            0%, 61% { opacity: 0; transform: scale(0.9); }
+            66%, 95% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.9); }
+        }
+        
+        .animate-icon-1 { animation: icon-fade-1 6s infinite; }
+        .animate-icon-2 { animation: icon-fade-2 6s infinite; }
+        .animate-icon-3 { animation: icon-fade-3 6s infinite; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 bg-fixed font-display text-[#1b0d18] dark:text-white">
@@ -463,7 +483,11 @@
                         const statusContainer = clone.querySelector('.fa-circle-check').parentElement;
                         if (statusContainer) {
                             statusContainer.innerHTML = `
-                                <i class="fa-solid fa-scissors text-5xl mb-2 fa-beat-fade"></i>
+                                <div class="relative h-14 w-full flex justify-center items-center mb-2">
+                                    <i class="fa-solid fa-mask-face text-5xl absolute animate-icon-1"></i>
+                                    <i class="fa-solid fa-hand-sparkles text-5xl absolute animate-icon-2"></i>
+                                    <i class="fa-solid fa-eye text-5xl absolute animate-icon-3"></i>
+                                </div>
                                 <p class="text-3xl font-bold">進行中</p>
                             `;
                         }
