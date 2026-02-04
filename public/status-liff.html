@@ -181,20 +181,26 @@
                     </div>
                     
                     <!-- Content Body -->
-                    <div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-6">
-                        <div class="flex flex-col gap-4">
-                            <div class="flex items-start justify-between">
-                                <div class="flex flex-col">
-                                    <p class="text-xs text-primary font-bold uppercase">服務項目</p>
-                                    <p class="text-[#1b0d18] dark:text-white font-medium booking-service">一般服務</p>
-                                    <p class="text-sm text-gray-500 duration-text">30 分鐘</p>
-                                </div>
-                                <div class="flex flex-col items-end">
-                                    <p class="text-xs text-primary font-bold uppercase text-right">時間</p>
-                                    <p class="text-[#1b0d18] dark:text-white font-medium text-right date-text">YYYY-MM-DD</p>
-                                    <p class="text-sm text-gray-500 text-right time-text">HH:MM</p>
-                                </div>
+                <div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-6">
+                    <!-- User Info (Added from LINE) -->
+                    <div class="flex items-center gap-3 mb-4 user-info-section hidden">
+                         <div class="user-avatar bg-cover bg-center rounded-full size-10 bg-gray-200" style='background-image: url("https://via.placeholder.com/150");'></div>
+                         <p class="user-name text-[#1b0d18] dark:text-white font-bold text-lg">User Name</p>
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <p class="text-xs text-primary font-bold uppercase">服務項目</p>
+                                <p class="text-[#1b0d18] dark:text-white font-medium booking-service">一般服務</p>
+                                <p class="text-sm text-gray-500 duration-text">30 分鐘</p>
                             </div>
+                            <div class="flex flex-col items-end">
+                                <p class="text-xs text-primary font-bold uppercase text-right">時間</p>
+                                <p class="text-[#1b0d18] dark:text-white font-bold text-2xl text-right date-text">YYYY-MM-DD</p>
+                                <p class="text-sm text-gray-500 text-right time-text">HH:MM</p>
+                            </div>
+                        </div>
                             <div class="h-px bg-gray-100 dark:bg-gray-700 w-full"></div>
                             
                             <!-- Assigned Professional (Stylist) -->
@@ -286,6 +292,7 @@
         const LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY'; 
         console.log('Using LIFF ID:', LIFF_ID);
         let currentUserId = null; // Will be set after LIFF init
+        let currentUserProfile = null;
         let currentTab = 'upcoming';
         let staffMap = {}; // Map: name -> { avatar }
 
@@ -345,6 +352,7 @@
                     return;
                 }
                 const profile = await liff.getProfile();
+                currentUserProfile = profile;
                 currentUserId = profile.userId;
                 console.log('User ID:', currentUserId);
                 
@@ -459,8 +467,33 @@
                     clone.querySelector('.booking-service').textContent = appt.service || '一般服務';
                 }
 
+                // User Info (New)
+                const userSection = clone.querySelector('.user-info-section');
+                const userAvatar = clone.querySelector('.user-avatar');
+                const userName = clone.querySelector('.user-name');
+                
+                if (currentUserProfile && userSection) {
+                    userSection.classList.remove('hidden');
+                    if(userName) userName.textContent = currentUserProfile.displayName;
+                    if(userAvatar && currentUserProfile.pictureUrl) {
+                        userAvatar.style.backgroundImage = `url("${currentUserProfile.pictureUrl}")`;
+                    }
+                }
+
+                // Format Date with Day
+                const formatDateWithDay = (dateStr) => {
+                     if(!dateStr) return '';
+                     try {
+                         const [y, m, d] = dateStr.split('-').map(Number);
+                         const date = new Date(y, m - 1, d);
+                         const days = ['(日)', '(一)', '(二)', '(三)', '(四)', '(五)', '(六)'];
+                         const dayName = days[date.getDay()];
+                         return `${y}-${m}-${d} ${dayName}`;
+                     } catch(e) { return dateStr; }
+                };
+
                 // Fill Date/Time
-                clone.querySelector('.date-text').textContent = appt.date;
+                clone.querySelector('.date-text').textContent = formatDateWithDay(appt.date);
                 let timeDisplay = appt.time;
                 let duration = 30; // Default duration
 
