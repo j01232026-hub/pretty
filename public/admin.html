@@ -214,7 +214,9 @@
 
     function updateStats(bookings) {
         document.getElementById('totalCount').innerText = bookings.length;
-        const todayStr = new Date().toISOString().split('T')[0];
+        // Use local time instead of UTC
+        const d = new Date();
+        const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         const todayCount = bookings.filter(b => b.date === todayStr).length;
         document.getElementById('todayCount').innerText = todayCount;
     }
@@ -229,7 +231,9 @@
 
         let filtered = allBookings;
         if (type === 'today') {
-            const todayStr = new Date().toISOString().split('T')[0];
+            // Use local time instead of UTC
+            const d = new Date();
+            const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             filtered = allBookings.filter(b => b.date === todayStr);
         } else if (type === 'week') {
             // Simple logic for this week
