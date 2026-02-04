@@ -76,14 +76,8 @@
             <div class="px-4 mb-2 flex justify-between items-end">
                 <h3 class="text-lg font-bold tracking-tight">選擇設計師</h3>
             </div>
-            <div class="flex px-4 py-3 gap-5">
-                <!-- Single Stylist: 思容Phoebe -->
-                <div class="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer stylist-item" onclick="selectStylist(this, '思容Phoebe')">
-                    <div class="size-16 rounded-full p-1 border-2 border-primary transition-colors">
-                        <div class="w-full h-full bg-center bg-cover rounded-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
-                    </div>
-                    <p class="text-[13px] font-semibold text-primary">思容Phoebe</p>
-                </div>
+            <div class="flex px-4 py-3 gap-5 overflow-x-auto hide-scrollbar" id="stylistContainer">
+                <div class="text-sm text-gray-400 p-2">載入設計師中...</div>
             </div>
         </section>
 
@@ -233,7 +227,7 @@
         let currentYear, currentMonth;
         let selectedDate = null;
         let selectedTimes = new Set();
-        let selectedStylist = '思容Phoebe'; // Default stylist
+        let selectedStylist = null; // Changed from hardcoded default
 
         function handleBack() {
             try {
@@ -248,20 +242,89 @@
             }
         }
 
+        // Fetch Stylists
+        async function fetchStylists() {
+            const container = document.getElementById('stylistContainer');
+            try {
+                const res = await fetch('/api/staff');
+                if (!res.ok) throw new Error('Failed to fetch stylists');
+                const staffList = await res.json();
+
+                container.innerHTML = '';
+
+                if (staffList.length === 0) {
+                    container.innerHTML = '<div class="text-sm text-gray-400 p-2">目前無設計師可選</div>';
+                    return;
+                }
+
+                staffList.forEach((staff, index) => {
+                    // If no stylist selected yet, select the first one by default? 
+                    // Or let user choose. Let's default to first one if null.
+                    if (!selectedStylist && index === 0) {
+                        selectedStylist = staff.name;
+                    }
+
+                    const isSelected = (selectedStylist === staff.name);
+                    const activeClass = isSelected ? 'border-primary' : 'border-transparent';
+                    const opacityClass = isSelected ? 'opacity-100 font-bold text-primary' : 'opacity-70';
+                    
+                    const el = document.createElement('div');
+                    el.className = 'stylist-item flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group';
+                    el.onclick = () => selectStylistUI(el, staff.name);
+                    
+                    // Use a default avatar if none provided
+                    const avatarUrl = staff.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
+                    
+                    el.innerHTML = `
+                        <div class="size-16 rounded-full p-1 border-2 ${activeClass} transition-all duration-300 img-wrapper">
+                            <div class="w-full h-full bg-center bg-cover rounded-full shadow-sm" style="background-image: url('${avatarUrl}')"></div>
+                        </div>
+                        <p class="text-[13px] font-medium ${opacityClass} transition-colors name-text text-center truncate w-full">${staff.name}</p>
+                    `;
+                    
+                    container.appendChild(el);
+                });
+
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div class="text-sm text-red-400 p-2">載入失敗</div>';
+            }
+        }
+
+        function selectStylistUI(el, name) {
+            selectedStylist = name;
+            
+            // Reset all
+            document.querySelectorAll('.stylist-item .img-wrapper').forEach(div => {
+                div.classList.remove('border-primary');
+                div.classList.add('border-transparent');
+            });
+            document.querySelectorAll('.stylist-item .name-text').forEach(p => {
+                p.classList.remove('opacity-100', 'font-bold', 'text-primary');
+                p.classList.add('opacity-70');
+            });
+
+            // Set active
+            const wrapper = el.querySelector('.img-wrapper');
+            const text = el.querySelector('.name-text');
+            
+            wrapper.classList.remove('border-transparent');
+            wrapper.classList.add('border-primary');
+            
+            text.classList.remove('opacity-70');
+            text.classList.add('opacity-100', 'font-bold', 'text-primary');
+        }
+
         // Initialization
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const stylist = urlParams.get('stylist');
             if (stylist) {
                 selectedStylist = stylist;
-                // Auto select the single stylist visually
-                const singleStylistEl = document.querySelector('.stylist-item');
-                if (singleStylistEl) {
-                    const imgWrapper = singleStylistEl.querySelector('div:first-child');
-                    imgWrapper.classList.remove('border-transparent');
-                    imgWrapper.classList.add('border-primary');
-                }
             }
+
+            // Load Stylists
+            await fetchStylists();
 
             // Initialize LIFF
             try {
@@ -595,7 +658,8 @@
                         date: selectedDate,
                         time: startTime,
                         endTime: endTime,
-                        phone: phone
+                        phone: phone,
+                        stylist: selectedStylist
                     })
                 });
 

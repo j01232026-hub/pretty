@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { userId, date, time, phone, endTime, name } = req.body;
+        const { userId, date, time, phone, endTime, name, stylist } = req.body;
 
         if (!userId || !date || !time || !phone) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -109,7 +109,8 @@ export default async function handler(req, res) {
                 startTime: time,
                 endTime: endTime || '',
                 phone: phone,
-                name: name || ''
+                name: name || '',
+                stylist: stylist || 'Any Staff'
             });
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
@@ -177,8 +178,8 @@ export default async function handler(req, res) {
 
             // 3. 建立事件物件
             const event = {
-                summary: `【新預約】${summaryDisplay} ${phone}`,
-                description: `透過 LINE 預約系統建立 (API)\nUser ID: ${userId}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}`,
+                summary: `【新預約】${summaryDisplay} ${phone} - ${stylist || 'Any Staff'}`,
+                description: `透過 LINE 預約系統建立 (API)\nUser ID: ${userId}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}\nStylist: ${stylist || 'Any Staff'}`,
                 start: {
                     dateTime: startDateTime,
                     timeZone: 'Asia/Taipei',

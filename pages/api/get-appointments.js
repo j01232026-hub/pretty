@@ -44,7 +44,7 @@ export default async function handler(req, res) {
                 time: details.time || booking.time,
                 endTime: details.endTime,
                 phone: details.phone,
-                stylist: '思容Phoebe', // 目前系統預設設計師
+                stylist: details.stylist || '指定設計師',
                 ...details // 展開其他可能欄位
             };
         }).filter(appt => appt.date && appt.time); // 過濾掉無法解析日期的無效資料

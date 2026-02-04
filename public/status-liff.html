@@ -287,6 +287,7 @@
         console.log('Using LIFF ID:', LIFF_ID);
         let currentUserId = null; // Will be set after LIFF init
         let currentTab = 'upcoming';
+        let staffMap = {}; // Map: name -> { avatar }
 
         // Initialize LIFF
         window.onload = async function() {
@@ -294,6 +295,9 @@
             showSkeleton(currentTab);
 
             try {
+                // Pre-fetch staff data
+                await fetchStaffData();
+
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -314,6 +318,22 @@
                 document.getElementById('loading-spinner').innerHTML = `<div class="px-4 text-center"><p class="text-red-500 font-bold mb-2">LIFF 初始化失敗</p><p class="text-xs text-gray-500 bg-gray-100 p-2 rounded text-left break-all">${err.message || JSON.stringify(err)}</p><p class="text-xs text-gray-400 mt-2">請確認此頁面網址是否已在 LINE Developers Console 註冊為 LIFF 應用程式，或者 Endpoint URL 是否正確。</p></div>`;
             }
         };
+
+        // Fetch Staff Data
+        async function fetchStaffData() {
+            try {
+                const res = await fetch('/api/staff');
+                if (res.ok) {
+                    const staffList = await res.json();
+                    staffList.forEach(s => {
+                        staffMap[s.name] = s;
+                    });
+                    console.log('Staff data loaded:', Object.keys(staffMap).length);
+                }
+            } catch (e) {
+                console.error('Failed to load staff data:', e);
+            }
+        }
 
         // Handle Back Button
         function handleBack() {
@@ -375,7 +395,18 @@
                 const clone = template.content.cloneNode(true);
                 
                 // Fill Stylist in the new "Assigned Professional" section
-                clone.querySelector('.stylist-name').textContent = appt.stylist || '指定設計師';
+                const stylistName = appt.stylist || '指定設計師';
+                clone.querySelector('.stylist-name').textContent = stylistName;
+                
+                // Update Stylist Avatar
+                const stylistAvatarEl = clone.querySelector('.bg-cover.rounded-full.size-12');
+                if (stylistAvatarEl) {
+                    let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4"; // Default
+                    if (staffMap[stylistName] && staffMap[stylistName].avatar) {
+                        avatarUrl = staffMap[stylistName].avatar;
+                    }
+                    stylistAvatarEl.style.backgroundImage = `url("${avatarUrl}")`;
+                }
                 
                 // Fill Service Name
                 if(clone.querySelector('.booking-service')) {
@@ -444,7 +475,7 @@
                                  <div class="flex flex-col gap-1">
                                      <span class="text-[#1b0d18] dark:text-white font-bold text-sm line-clamp-1">${nextAppt.service || '一般服務'}</span>
                                      <div class="flex items-center gap-1.5">
-                                         <div class="size-5 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
+                                         <div class="size-5 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style='background-image: url("${(staffMap[nextAppt.stylist]?.avatar) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4'}");'></div>
                                          <span class="text-xs text-gray-500 font-medium">${nextAppt.stylist || '指定設計師'}</span>
                                      </div>
                                  </div>
@@ -485,7 +516,18 @@
                 appointments.forEach(appt => {
                     const clone = template.content.cloneNode(true);
                     
-                    clone.querySelector('.stylist-name').textContent = appt.stylist || '指定設計師';
+                    const stylistName = appt.stylist || '指定設計師';
+                    clone.querySelector('.stylist-name').textContent = stylistName;
+
+                    // Update History Avatar
+                    const historyAvatarEl = clone.querySelector('.bg-cover.rounded-lg.shrink-0'); // Selector based on template structure
+                    if (historyAvatarEl) {
+                         let avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCMkStRV5clh0STCcvx_LWc9Vpp_VBOkSH_dWLFtqa_sDAyQmRXubyOk5l8Vr9e18QjvMAaGqZ3ete56yz2J5TaYDSUDg4KoVadJig1m9hZX9mtZ_Tz7BD4Qay9WaQ1SDOEQq7BWAt7zynSJ10s6c7SUeQHXA735GkRYttcb9hRiJw9MIkUMhNSGZP5mVphsrJmc82Hx5j-FDHlUzqU1I4UUEiSY488Pc0O_ES_tGYwo9q8VIcT7CFDgwb0dKscUUwvh3PxL2rhDn3O";
+                         if (staffMap[stylistName] && staffMap[stylistName].avatar) {
+                             avatarUrl = staffMap[stylistName].avatar;
+                         }
+                         historyAvatarEl.style.backgroundImage = `url("${avatarUrl}")`;
+                    }
                     
                     // Format Date
                     let timeDisplay = appt.time;

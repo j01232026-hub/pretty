@@ -57,42 +57,13 @@
 <!-- Stylist Selection Section -->
 <section class="mt-4">
 <div class="px-4 mb-2 flex justify-between items-end">
-<h3 class="text-lg font-bold tracking-tight">Select Stylist</h3>
-<span class="text-primary text-sm font-semibold">View All</span>
-</div>
-<div class="flex overflow-x-auto hide-scrollbar px-4 py-3 gap-5">
-<div class="flex flex-col items-center gap-2 min-w-[72px]">
-<div class="size-16 rounded-full p-1 border-2 border-primary">
-<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Professional stylist woman with blonde hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4");'></div>
-</div>
-<p class="text-[13px] font-semibold text-primary">Jessica</p>
-</div>
-<div class="flex flex-col items-center gap-2 min-w-[72px]">
-<div class="size-16 rounded-full p-1 border-2 border-transparent">
-<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Smiling male hair stylist with beard" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1Bgy-pciGb6F31ar5s2gpzTWn22bOY2fRW7fd8slqhS4Koii6jMAOD1WPJGnWNTWGTM6ymWiIQX6kbHNdwBhtxCbdsZul7Rmrl-nP7yZRu2Lw-jtrQfaBmGrEfXeW_cezY6sNLsM8UDAYmsLuemy1La0tHrsDgIwZeWZhFHuA7_R8b_13fQIDu58plZoE38YR_PphhP3Nym8yOJwWAPraHgiaQqaIICCHIe0NKTCBEDd-DezvFkIweHudeeofobQ73QxKpyhPpSQV");'></div>
-</div>
-<p class="text-[13px] font-medium opacity-70">Marcus</p>
-</div>
-<div class="flex flex-col items-center gap-2 min-w-[72px]">
-<div class="size-16 rounded-full p-1 border-2 border-transparent">
-<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Female stylist with curly hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuByyRrhTtFgLxfmAJAgQUOHY6LLsJ-1O-MUUbOQtx9yw9K9nVMjrVgDP5kwtmc8dtFLZ1cZBzUkiZkP5M5z_u-Qn5lMwzdiv67q4LMYrGbSYdnufo6zhL8MBtuSzaDe5LZ8jP_0opH5wKQDHYHMNsZgQT5PhQJL0upiA9tj2J28jzWBCm8Pnw5asPjIMIrDfEfIO0U2RvoyikWBQjpkqc8p5HEPipUvXSsQ3YsYRLm_j--scQh-9XrFvKasC78S1TFTGiFAaKZnKPvr");'></div>
-</div>
-<p class="text-[13px] font-medium opacity-70">Chloe</p>
-</div>
-<div class="flex flex-col items-center gap-2 min-w-[72px]">
-<div class="size-16 rounded-full p-1 border-2 border-transparent">
-<div class="w-full h-full bg-center bg-cover rounded-full" data-alt="Male stylist with glasses" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBXiTocK93QgvldfhhsEWRc3e5XQi3jgZSH8v2AOXnThuxDU6miv2IEf1b01D-C_ARJfoVJmR7WalxGh6TjFCqwwAfekcBjsOqmlrs_lz4876EjDjCDnWehiFZ8a1Dr0tdGFuvrtL4WvG0Zi9GhjiIWWVd8EeguEZbXB4Nvo2l-_zS1bgx5ceW4EbrBM2TLsACFa-BrXzPKkYdXhkXuWWnGj5z2ljk_Z5emppYADMMphB4E1Ei_noU1gBiBZ5Ia4I3tkvybKB1qET5Z");'></div>
-</div>
-<p class="text-[13px] font-medium opacity-70">David</p>
-</div>
-<div class="flex flex-col items-center gap-2 min-w-[72px]">
-<div class="size-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">group</span>
-</div>
-<p class="text-[13px] font-medium opacity-70">Any Staff</p>
-</div>
-</div>
-</section>
+            <h3 class="text-lg font-bold tracking-tight">Select Stylist</h3>
+            <span class="text-primary text-sm font-semibold">View All</span>
+        </div>
+        <div class="flex overflow-x-auto hide-scrollbar px-4 py-3 gap-5" id="stylistContainer">
+            <div class="text-sm text-gray-400 p-2">Loading stylists...</div>
+        </div>
+    </section>
 <!-- Calendar Picker Section -->
 <section class="mt-6 px-4">
 <h3 class="text-lg font-bold tracking-tight mb-4">Select Date</h3>
@@ -177,4 +148,50 @@
 <span class="material-symbols-outlined text-xl">calendar_check</span>
 </button>
 </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('stylistContainer');
+            try {
+                const res = await fetch('/api/staff');
+                const staffList = await res.json();
+                
+                container.innerHTML = '';
+                
+                if (staffList.length === 0) {
+                     container.innerHTML = '<div class="text-sm text-gray-400 p-2">No stylists available</div>';
+                     return;
+                }
+                
+                staffList.forEach(staff => {
+                    const el = document.createElement('div');
+                    el.className = 'flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group';
+                    
+                    const avatarUrl = staff.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
+                    
+                    el.innerHTML = `
+                        <div class="size-16 rounded-full p-1 border-2 border-transparent hover:border-primary transition-colors">
+                            <div class="w-full h-full bg-center bg-cover rounded-full" style="background-image: url('${avatarUrl}')"></div>
+                        </div>
+                        <p class="text-[13px] font-medium opacity-70 group-hover:opacity-100 transition-opacity">${staff.name}</p>
+                    `;
+                    container.appendChild(el);
+                });
+
+                // Add "Any Staff" option
+                const anyEl = document.createElement('div');
+                anyEl.className = 'flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group';
+                anyEl.innerHTML = `
+                    <div class="size-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center border-2 border-transparent hover:border-primary transition-colors">
+                        <span class="material-symbols-outlined text-primary">group</span>
+                    </div>
+                    <p class="text-[13px] font-medium opacity-70 group-hover:opacity-100 transition-opacity">Any Staff</p>
+                `;
+                container.appendChild(anyEl);
+                
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<div class="text-sm text-red-500">Failed to load</div>';
+            }
+        });
+    </script>
 </body></html>
