@@ -10,7 +10,8 @@ const App = {
         currentTab: 'upcoming', // For Status page
         supabase: null,
         currentUserId: null,
-        staffMap: {} // Shared staff data
+        staffMap: {}, // Shared staff data
+        salonInfo: null // Shared salon info
     },
 
     utils: {
@@ -47,7 +48,29 @@ const App = {
             } catch (e) {
                 console.error('Failed to load staff data:', e);
             }
-       }
+        },
+        fetchSalonData: async () => {
+            if (App.state.salonInfo) return; // Already loaded
+            try {
+                const res = await fetch('/api/get-salon-info');
+                if (res.ok) {
+                    App.state.salonInfo = await res.json();
+                    console.log('Salon info loaded');
+                    
+                    // Reactive update if elements exist
+                    const info = App.state.salonInfo;
+                    const sName = document.querySelector('.salon-name');
+                    const sAddr = document.querySelector('.salon-address');
+                    const sImg = document.querySelector('.salon-image');
+                    
+                    if (sName && info.name) sName.textContent = info.name;
+                    if (sAddr && info.address) sAddr.textContent = info.address;
+                    if (sImg && info.image_url) sImg.style.backgroundImage = `url("${info.image_url}")`;
+                }
+            } catch (e) {
+                console.error('Failed to load salon info:', e);
+            }
+        }
     },
 
     init: async () => {
@@ -457,7 +480,7 @@ const App = {
                 const phoneInput = document.getElementById('phoneInput');
                 
                 if (!state.selectedDate) { alert('請選擇日期'); return; }
-                if (state.selectedTimes.size === 0) { alert('請選擇時段'); return; }
+                if (state.selectedTimes.size < 2) { alert('預約時間必須超過 30 分鐘 (至少選擇 2 個時段)'); return; }
                 if (!nameInput.value.trim()) { alert('請輸入姓名'); return; }
                 if (!phoneInput.value.trim()) { alert('請輸入手機'); return; }
                 
@@ -557,6 +580,9 @@ const App = {
                 if (Object.keys(App.state.staffMap).length === 0) {
                     await App.utils.fetchStaffData();
                 }
+
+                // Fetch Salon Info
+                App.utils.fetchSalonData();
 
                 // Initial Tab
                 App.pages.status.switchTab('upcoming');
@@ -670,10 +696,22 @@ const App = {
                 const clone = template.content.cloneNode(true);
                 
                 const first = data[0];
+                
+                // Helper to calculate end time (default +60 mins)
+                const getEndTime = (timeStr) => {
+                    if (!timeStr) return '';
+                    const [h, m] = timeStr.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(h, m + 60);
+                    return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                };
+
                 // Fill Hero Card
                 clone.querySelector('.booking-service').textContent = first.service || '一般服務';
                 clone.querySelector('.date-text').textContent = first.date;
-                clone.querySelector('.time-text').textContent = first.time;
+                // Show Time Range
+                clone.querySelector('.time-text').textContent = `${first.time} - ${getEndTime(first.time)}`;
+                clone.querySelector('.duration-text').textContent = '60 分鐘';
                 clone.querySelector('.stylist-name').textContent = App.utils.normalizeName(first.stylist);
                 
                 const staff = App.state.staffMap[first.stylist];
@@ -708,23 +746,79 @@ const App = {
                     };
                 }
 
-                // Render Compact List
+                // Update Salon Info from State
+                const salonInfo = App.state.salonInfo;
+                if (salonInfo) {
+                    const sName = clone.querySelector('.salon-name');
+                    const sAddr = clone.querySelector('.salon-address');
+                    const sImg = clone.querySelector('.salon-image');
+                    
+                    if (sName && salonInfo.name) sName.textContent = salonInfo.name;
+                    if (sAddr && salonInfo.address) sAddr.textContent = salonInfo.address;
+                    if (sImg && salonInfo.image_url) sImg.style.backgroundImage = `url("${salonInfo.image_url}")`;
+                }
+
+                // Render Compact List (Same Day Later Schedule)
                 const listContainer = clone.getElementById('compact-list-container');
                 if (listContainer && data.length > 1) {
-                    data.slice(1).forEach(app => {
-                        const div = document.createElement('div');
-                        div.className = 'compact-appointment-card mb-3';
-                        div.innerHTML = `
-                            <div class="flex flex-col flex-1">
-                                <p class="text-sm font-bold text-[#1b0d18] dark:text-white">${app.service || '一般服務'}</p>
-                                <p class="text-xs text-gray-500">${app.date} ${app.time}</p>
-                            </div>
-                            <div class="text-primary font-bold text-sm">
-                                ${App.utils.normalizeName(app.stylist)}
-                            </div>
-                        `;
-                        listContainer.appendChild(div);
-                    });
+                    const sameDayApps = data.slice(1).filter(a => a.date === first.date);
+                    
+                    if (sameDayApps.length > 0) {
+                        // Header
+                        const header = document.createElement('h3');
+                        header.className = 'text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3 mt-4';
+                        header.textContent = '當日稍後行程';
+                        listContainer.appendChild(header);
+                        
+                        // Cards
+                        sameDayApps.forEach(app => {
+                            const staffInfo = App.state.staffMap[app.stylist] || {};
+                            const avatarUrl = staffInfo.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4';
+                            const timeRange = `${app.time} - ${getEndTime(app.time)}`;
+                            
+                            const div = document.createElement('div');
+                            div.className = 'flex items-center gap-3 p-3 bg-white dark:bg-[#2d1a29] rounded-xl shadow-sm mb-3 border border-gray-50 dark:border-white/5';
+                            div.innerHTML = `
+                                <div class="flex flex-col items-center justify-center min-w-[80px]">
+                                   <span class="text-xs font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded-md whitespace-nowrap">
+                                       ${timeRange}
+                                   </span>
+                               </div>
+                               <div class="flex-1 flex flex-col justify-center">
+                                   <p class="text-sm font-bold text-[#1b0d18] dark:text-white line-clamp-1">${app.service || '一般服務'}</p>
+                                   <div class="flex items-center gap-2 mt-1">
+                                       <div class="w-5 h-5 rounded-full bg-cover bg-center shrink-0" style="background-image: url('${avatarUrl}')"></div>
+                                       <p class="text-xs text-gray-500 line-clamp-1">${App.utils.normalizeName(app.stylist)}</p>
+                                   </div>
+                               </div>
+                            `;
+                            listContainer.appendChild(div);
+                        });
+                    }
+                    
+                    // Handle future dates if needed (Optional: currently hiding to keep it clean as requested)
+                    const futureApps = data.slice(1).filter(a => a.date !== first.date);
+                    if (futureApps.length > 0) {
+                         const header = document.createElement('h3');
+                         header.className = 'text-[#1b0d18] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3 mt-4';
+                         header.textContent = '未來行程';
+                         listContainer.appendChild(header);
+                         
+                         futureApps.forEach(app => {
+                             const div = document.createElement('div');
+                             div.className = 'compact-appointment-card mb-3';
+                             div.innerHTML = `
+                                <div class="flex flex-col flex-1">
+                                    <p class="text-sm font-bold text-[#1b0d18] dark:text-white">${app.service || '一般服務'}</p>
+                                    <p class="text-xs text-gray-500">${app.date} ${app.time}</p>
+                                </div>
+                                <div class="text-primary font-bold text-sm">
+                                    ${App.utils.normalizeName(app.stylist)}
+                                </div>
+                             `;
+                             listContainer.appendChild(div);
+                         });
+                    }
                 }
                 
                 container.appendChild(clone);
