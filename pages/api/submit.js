@@ -135,6 +135,7 @@ export default async function handler(req, res) {
                 stylist: stylist || 'Any Staff',
                 pictureUrl: pictureUrl || ''
             });
+            
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
                 .insert([
@@ -149,9 +150,10 @@ export default async function handler(req, res) {
 
             if (supabaseError) {
                 console.error('Supabase 寫入錯誤:', supabaseError);
-                throw supabaseError;
+                throw new Error(`Database Write Failed: ${supabaseError.message}`);
             }
             insertedBooking = bookingData;
+            console.log(`Supabase 寫入成功 ID: ${insertedBooking.id}`);
 
             // 1.5 雙重預約檢查 (Compensating Transaction)
             const { data: duplicateBookings } = await supabase
@@ -202,7 +204,7 @@ export default async function handler(req, res) {
             // 3. 建立事件物件
             const event = {
                 summary: `【新預約】${summaryDisplay} ${phone} - ${stylist || 'Any Staff'}`,
-                description: `透過 LINE 預約系統建立 (API)\nUser ID: ${userId}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}\nStylist: ${stylist || 'Any Staff'}`,
+                description: `透過 LINE 預約系統建立 (API)\nBooking ID: ${insertedBooking.id}\nUser ID: ${userId}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}\nStylist: ${stylist || 'Any Staff'}`,
                 start: {
                     dateTime: startDateTime,
                     timeZone: 'Asia/Taipei',
@@ -213,13 +215,36 @@ export default async function handler(req, res) {
                 },
             };
 
-            // 4. 寫入 Google Calendar
-            const insertResponse = await calendar.events.insert({
-                calendarId: process.env.GOOGLE_CALENDAR_ID,
-                resource: event,
-            });
+            // 4. 寫入 Google Calendar (含補償機制)
+            let insertResponse;
+            try {
+                insertResponse = await calendar.events.insert({
+                    calendarId: process.env.GOOGLE_CALENDAR_ID,
+                    resource: event,
+                });
+            } catch (googleError) {
+                console.error('Google Calendar 寫入失敗，執行 DB 回滾:', googleError);
+                // CRITICAL: 如果 Google 寫入失敗，必須刪除 DB 紀錄，確保一致性
+                await supabase.from('bookings').delete().eq('id', insertedBooking.id);
+                throw new Error(`Google Calendar Sync Failed: ${googleError.message}`);
+            }
+
             eventUrl = insertResponse.data.htmlLink;
             console.log('Google Calendar 事件建立成功:', eventUrl);
+
+            // 4.5 更新 DB 紀錄，補上 Google Event 連結 (Optional but recommended for traceability)
+            try {
+                const updatedMessage = JSON.parse(insertedBooking.message);
+                updatedMessage.googleEventLink = eventUrl;
+                updatedMessage.googleEventId = insertResponse.data.id;
+                
+                await supabase
+                    .from('bookings')
+                    .update({ message: JSON.stringify(updatedMessage) })
+                    .eq('id', insertedBooking.id);
+            } catch (updateError) {
+                console.warn('Failed to update booking with Google Link (Non-fatal):', updateError);
+            }
 
             // --- 5. 發送 LINE Push Message (通知用戶預約成功) ---
             const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
