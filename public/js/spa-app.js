@@ -167,6 +167,14 @@ const App = {
                 window.closeModal = App.pages.booking.closeModal;
                 window.submitBooking = App.pages.booking.submitBooking;
                 
+                // Set Default Date to Today
+                const today = new Date();
+                // Format YYYY-MM-DD manually to avoid timezone issues
+                const y = today.getFullYear();
+                const m = String(today.getMonth() + 1).padStart(2, '0');
+                const d = String(today.getDate()).padStart(2, '0');
+                App.pages.booking.state.selectedDate = `${y}-${m}-${d}`;
+                
                 // Initialize Calendar
                 App.pages.booking.renderCalendar();
                 
@@ -175,6 +183,9 @@ const App = {
                     await App.utils.fetchStaffData();
                 }
                 App.pages.booking.renderStylists();
+                
+                // Fetch slots for today immediately
+                App.pages.booking.fetchBookedSlots(App.pages.booking.state.selectedDate);
                 
                 // Bind Confirm Button
                 const confirmBtn = document.getElementById('confirmBtn');
@@ -202,28 +213,26 @@ const App = {
                 
                 container.innerHTML = '';
                 
-                // Add "Any Stylist" option
-                const anyDiv = document.createElement('div');
-                anyDiv.className = 'flex flex-col items-center gap-2 cursor-pointer stylist-item min-w-[72px]';
-                anyDiv.onclick = () => App.pages.booking.selectStylist(anyDiv, '不指定');
-                anyDiv.innerHTML = `
-                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 border-primary transition-all overflow-hidden">
-                        <i class="fa-solid fa-user-group text-gray-400 text-xl"></i>
-                    </div>
-                    <p class="text-xs font-bold text-primary text-center truncate w-full">不指定</p>
-                `;
-                container.appendChild(anyDiv);
-                
-                // Default select "Any"
-                App.pages.booking.state.selectedStylist = '不指定';
+                // Default select "曾思容Phoebe"
+                // Check if Phoebe exists, otherwise use the first one
+                const defaultStylist = staffList.find(s => s.name === '曾思容Phoebe') || staffList[0];
+                if (!App.pages.booking.state.selectedStylist) {
+                    App.pages.booking.state.selectedStylist = defaultStylist.name;
+                }
                 
                 staffList.forEach(stylist => {
+                    // Filter out '不指定' if it exists in the data (just in case)
+                    if (stylist.name === '不指定') return;
+
+                    const isSelected = App.pages.booking.state.selectedStylist === stylist.name;
+                    
                     const div = document.createElement('div');
                     div.className = 'flex flex-col items-center gap-2 cursor-pointer stylist-item min-w-[72px]';
                     div.onclick = () => App.pages.booking.selectStylist(div, stylist.name);
+                    
                     div.innerHTML = `
-                        <div class="w-16 h-16 rounded-full bg-gray-100 border-2 border-transparent transition-all overflow-hidden bg-cover bg-center" style="background-image: url('${stylist.avatar || ''}')"></div>
-                        <p class="text-xs font-bold text-gray-500 text-center truncate w-full opacity-70">${stylist.name}</p>
+                        <div class="w-16 h-16 rounded-full bg-gray-100 border-2 ${isSelected ? 'border-primary' : 'border-transparent'} transition-all overflow-hidden bg-cover bg-center" style="background-image: url('${stylist.avatar || ''}')"></div>
+                        <p class="text-xs font-bold ${isSelected ? 'text-primary' : 'text-gray-500 opacity-70'} text-center truncate w-full">${stylist.name}</p>
                     `;
                     container.appendChild(div);
                 });
@@ -343,16 +352,40 @@ const App = {
                 const buttons = document.querySelectorAll('.time-btn');
                 const state = App.pages.booking.state;
                 
+                // Check if selected date is today
+                const now = new Date();
+                const selectedDateStr = state.selectedDate;
+                
+                // Format now to YYYY-MM-DD for comparison
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                const todayStr = `${y}-${m}-${d}`;
+                const isToday = selectedDateStr === todayStr;
+
                 buttons.forEach(btn => {
                     const time = btn.dataset.time;
                     const isBooked = bookedSlots.includes(time);
                     
+                    // Check if past time
+                    let isPastTime = false;
+                    if (isToday) {
+                        const [h, min] = time.split(':').map(Number);
+                        const slotDate = new Date();
+                        slotDate.setHours(h, min, 0, 0);
+                        // Add buffer if needed? (e.g. current time is 17:36, can I book 17:30? No. 18:00? Maybe)
+                        // User complained "17:36, can select all". So strictly block past.
+                        if (slotDate < now) {
+                            isPastTime = true;
+                        }
+                    }
+
                     // Reset classes
                     btn.className = 'time-btn px-4 py-3 rounded-xl border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors'; // Base class
                     
                     if (state.selectedTimes.has(time)) {
                         btn.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-purple-500/30');
-                    } else if (isBooked) {
+                    } else if (isBooked || isPastTime) {
                         btn.classList.add('bg-gray-100', 'text-gray-300', 'cursor-not-allowed', 'dark:bg-white/5', 'dark:text-gray-600');
                         btn.disabled = true;
                     } else {
@@ -375,6 +408,12 @@ const App = {
                 if (selectedTimes.has(time)) {
                     // Deselect
                     selectedTimes.delete(time);
+                    // Re-render to update UI (simpler than manual class toggle)
+                    App.pages.booking.renderTimeSlots([]); // Need bookedSlots? 
+                    // To avoid re-fetching, we should pass the current cached booked slots or just toggle classes.
+                    // But re-rendering is safer to ensure state consistency. 
+                    // However, we don't have bookedSlots here easily unless we store it.
+                    // Let's just toggle classes manually as before.
                     btn.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-purple-500/30');
                     btn.classList.add('bg-white', 'dark:bg-zinc-900', 'hover:border-primary', 'hover:text-primary');
                 } else {
@@ -388,15 +427,12 @@ const App = {
                             return h * 60 + m;
                         };
                         const currentMinutes = toMins(time);
-                        const firstMinutes = toMins(times[0]);
                         const lastMinutes = toMins(times[times.length - 1]);
                         
-                        // Check if adjacent
-                        const isNext = currentMinutes === lastMinutes + 30;
-                        const isPrev = currentMinutes === firstMinutes - 30;
-                        
-                        if (!isNext && !isPrev) {
-                            alert('必須要連續時段才可預約');
+                        // Strict Rule: Must be consecutive and later (Append only)
+                        // "必須連續往後的時段，不能往前也不能不連續"
+                        if (currentMinutes !== lastMinutes + 30) {
+                            alert('只能往後連續預約 (例如: 14:00, 14:30...)');
                             return;
                         }
                     }
