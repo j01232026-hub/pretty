@@ -1,0 +1,147 @@
+<!-- Stylist Selection Section -->
+<section class="mt-4">
+    <div class="px-4 mb-2 flex justify-between items-end">
+        <h3 class="text-lg font-bold tracking-tight">選擇設計師</h3>
+    </div>
+    <div class="flex px-4 py-3 gap-5 overflow-x-auto hide-scrollbar" id="stylistContainer">
+        <div class="text-sm text-gray-400 p-2">載入設計師中...</div>
+    </div>
+</section>
+
+<!-- Service Selection Section (New) -->
+<section class="mt-6 px-4">
+    <h3 class="text-lg font-bold tracking-tight mb-4">選擇服務項目</h3>
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-black/5 dark:border-white/5 text-center text-gray-500">
+        (未來功能預留區)
+    </div>
+</section>
+
+<!-- Calendar Picker Section -->
+<section class="mt-6 px-4">
+    <h3 class="text-lg font-bold tracking-tight mb-4">選擇日期</h3>
+    <div class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-white/20">
+        <div class="flex items-center justify-between mb-6">
+            <button class="p-2 hover:bg-white/20 rounded-full transition-colors" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <p class="text-base font-bold text-[#1b0d18] dark:text-white" id="currentMonthDisplay">Loading...</p>
+            <button class="p-2 hover:bg-white/20 rounded-full transition-colors" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="grid grid-cols-7 text-center text-[12px] font-bold opacity-40 mb-2">
+            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+        </div>
+        <div class="grid grid-cols-7 gap-y-1" id="calendarGrid">
+            <!-- Calendar days will be generated here -->
+        </div>
+    </div>
+</section>
+
+<!-- Time Slots Section -->
+<section class="mt-8">
+    <h3 class="px-4 text-lg font-bold tracking-tight mb-4">選擇時段 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(每選擇一個時段為30分鐘)</span></h3>
+    <div class="space-y-6">
+        <!-- Morning (10:00 - 12:00) -->
+        <div>
+            <p class="px-4 text-sm font-bold opacity-40 uppercase tracking-wider mb-3">上午時段</p>
+            <div class="flex overflow-x-auto hide-scrollbar px-4 gap-3">
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="10:00">10:00</button>
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="10:30">10:30</button>
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="11:00">11:00</button>
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="11:30">11:30</button>
+            </div>
+        </div>
+
+        <!-- Afternoon (12:00 - 18:00) -->
+        <div>
+            <p class="px-4 text-sm font-bold opacity-40 uppercase tracking-wider mb-3">下午時段</p>
+            <div class="grid grid-cols-4 px-4 gap-3">
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="12:00">12:00</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="12:30">12:30</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="13:00">13:00</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="13:30">13:30</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="14:00">14:00</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="14:30">14:30</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="15:00">15:00</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="15:30">15:30</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="16:00">16:00</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="16:30">16:30</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="17:00">17:00</button>
+                <button class="time-btn px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="17:30">17:30</button>
+            </div>
+        </div>
+
+        <!-- Evening (18:00 - 20:00) -->
+        <div>
+            <p class="px-4 text-sm font-bold opacity-40 uppercase tracking-wider mb-3">晚上時段</p>
+            <div class="flex overflow-x-auto hide-scrollbar px-4 gap-3">
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="18:00">18:00</button>
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="18:30">18:30</button>
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="19:00">19:00</button>
+                <button class="time-btn px-6 py-3 rounded-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 whitespace-nowrap text-sm font-semibold transition-colors" data-time="19:30">19:30</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Info Section -->
+<section class="mt-8 px-4 mb-4">
+    <div class="bg-white/40 dark:bg-black/40 backdrop-blur-md rounded-3xl p-5 shadow-lg border border-white/20">
+        <div class="flex gap-4">
+            <div class="flex-1">
+                <h3 class="text-lg font-bold tracking-tight mb-2 drop-shadow-sm">姓名</h3>
+                <input type="text" id="nameInput" placeholder="您的姓名" class="w-full rounded-2xl border border-white/30 bg-white/50 dark:bg-black/50 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none shadow-inner backdrop-blur-sm transition-all">
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold tracking-tight mb-2 drop-shadow-sm">手機號碼</h3>
+                <input type="tel" id="phoneInput" placeholder="0912345678" class="w-full rounded-2xl border border-white/30 bg-white/50 dark:bg-black/50 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none shadow-inner backdrop-blur-sm transition-all">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fixed Bottom Action Bar (Specific to Booking) -->
+<div class="p-4 pb-8 max-w-md mx-auto">
+    <button id="confirmBtn" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+        <span>確認預約</span>
+        <i class="fa-regular fa-calendar-check text-xl"></i>
+    </button>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="fixed inset-0 z-[60] hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+    <!-- Modal Content -->
+    <div class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-t-[2rem] p-6 shadow-2xl transform transition-transform duration-300 ease-out translate-y-full border-t border-white/20" id="modalContent">
+        <div class="w-12 h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-full mx-auto mb-6"></div>
+        
+        <h3 class="text-xl font-bold mb-4 text-center">您的預約資訊如下</h3>
+        
+        <div class="space-y-3 mb-8 text-base">
+            <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                <span class="text-gray-500">設計師</span>
+                <span class="font-bold" id="modalStylist"></span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                <span class="text-gray-500">日期</span>
+                <span class="font-bold" id="modalDate"></span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                <span class="text-gray-500">時間</span>
+                <span class="font-bold" id="modalTime"></span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                <span class="text-gray-500">姓名</span>
+                <span class="font-bold" id="modalName"></span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                <span class="text-gray-500">手機</span>
+                <span class="font-bold" id="modalPhone"></span>
+            </div>
+        </div>
+
+        <p class="text-center text-lg font-bold mb-6">確定預約嗎？</p>
+
+        <button onclick="submitBooking()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+            <span>確定送出預約資訊</span>
+        </button>
+    </div>
+</div>
