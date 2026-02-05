@@ -1237,6 +1237,7 @@ const App = {
                 const phoneInput = document.getElementById('phone');
                 const birthdayInput = document.getElementById('birthday');
                 const emailInput = document.getElementById('email');
+                const profileAvatarEdit = document.getElementById('profile-avatar-edit');
 
                 if (completeSection) completeSection.style.display = 'block';
                 if (cardSection) cardSection.style.display = 'none';
@@ -1250,8 +1251,20 @@ const App = {
                     if (profileData.phone && phoneInput) phoneInput.value = profileData.phone;
                     if (profileData.birthday && birthdayInput) birthdayInput.value = profileData.birthday;
                     if (profileData.email && emailInput) emailInput.value = profileData.email;
+
+                    // Avatar
+                    if (profileAvatarEdit) {
+                         if (profileData.picture_url) {
+                             profileAvatarEdit.style.backgroundImage = `url("${profileData.picture_url}")`;
+                         } else if (App.state.userProfile && App.state.userProfile.pictureUrl) {
+                             profileAvatarEdit.style.backgroundImage = `url("${App.state.userProfile.pictureUrl}")`;
+                         }
+                    }
                 } else if (App.state.userProfile && realNameInput) {
                     realNameInput.value = App.state.userProfile.displayName;
+                    if (profileAvatarEdit && App.state.userProfile.pictureUrl) {
+                         profileAvatarEdit.style.backgroundImage = `url("${App.state.userProfile.pictureUrl}")`;
+                    }
                 }
             },
             showMemberCard: (profileData) => {
