@@ -26,8 +26,7 @@ export default async function handler(req, res) {
             phone,
             birthday,
             email,
-            is_complete: true,
-            updated_at: new Date().toISOString()
+            is_complete: true
         };
 
         if (picture_url) {
