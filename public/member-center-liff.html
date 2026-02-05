@@ -277,8 +277,34 @@
 
             } catch (err) {
                 console.error('LIFF Init Error:', err);
-                alert('LIFF 初始化失敗，請檢查網路或稍後再試');
-                loadingScreen.style.display = 'none';
+                
+                // Fallback Mode for Testing/Dev
+                console.warn('Entering Fallback Mode (Test User)');
+                currentUserId = 'U_TEST_USER_' + Math.floor(Math.random() * 1000);
+                currentUserProfile = {
+                    displayName: '測試用戶',
+                    pictureUrl: 'https://placehold.co/100x100?text=Test'
+                };
+                
+                // Show Toast/Banner for Error
+                const errorToast = document.createElement('div');
+                errorToast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-[10000] shadow-lg flex flex-col items-center';
+                errorToast.innerHTML = `
+                    <strong class="font-bold">LIFF 初始化失敗 (測試模式)</strong>
+                    <span class="text-sm">無法連接 LINE，已使用測試帳號登入。</span>
+                    <span class="text-xs mt-1 text-gray-500">錯誤: ${err.message || 'ID 無效'}</span>
+                `;
+                document.body.appendChild(errorToast);
+                
+                // Hide toast after 5 seconds
+                setTimeout(() => {
+                    errorToast.style.transition = 'opacity 0.5s';
+                    errorToast.style.opacity = '0';
+                    setTimeout(() => errorToast.remove(), 500);
+                }, 5000);
+
+                // Proceed with Test User
+                checkMemberStatus(currentUserId);
             }
         }
 
