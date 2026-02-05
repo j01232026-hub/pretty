@@ -339,7 +339,7 @@ const App = {
                 
                 try {
                     const stylist = App.pages.booking.state.selectedStylist === '不指定' ? '' : App.pages.booking.state.selectedStylist;
-                    const res = await fetch(`/api/booked-slots?date=${date}&stylist=${encodeURIComponent(stylist)}`);
+                    const res = await fetch(`/api/get-busy-slots?date=${date}&stylist=${encodeURIComponent(stylist)}`);
                     const bookedSlots = await res.json();
                     App.pages.booking.renderTimeSlots(bookedSlots);
                 } catch (err) {
@@ -607,7 +607,7 @@ const App = {
                 }
                 
                 try {
-                    const res = await fetch(`/api/appointments?user_id=${App.state.currentUserId}`);
+                    const res = await fetch(`/api/get-appointments?user_id=${App.state.currentUserId}`);
                     if (!res.ok) {
                         let msg = `API Error: ${res.status}`;
                         try {
