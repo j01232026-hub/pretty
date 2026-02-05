@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>完善個人資料</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#9d2bee",
+              "background-light": "#fbfafd",
+              "background-dark": "#1a1022",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Manrope', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .form-input:focus {
+            @apply ring-2 ring-primary/20 border-primary;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#160d1b] dark:text-white min-h-screen">
+<div class="relative flex flex-col max-w-[480px] mx-auto min-h-screen bg-background-light dark:bg-background-dark shadow-2xl overflow-x-hidden pb-10">
+<header class="flex items-center bg-background-light dark:bg-background-dark p-4 justify-between sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<button class="flex size-10 items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-sm text-[#160d1b] dark:text-white">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h1 class="text-[#160d1b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">完善個人資料</h1>
+</div>
+<div class="size-10"></div> 
+</header>
+<main class="px-6 pt-4 flex-1">
+<div class="flex flex-col items-center justify-center mb-8">
+<div class="relative group cursor-pointer">
+<div class="size-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-md overflow-hidden bg-zinc-200">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD18kdXGQJigkOXLPlvC-ECcl42zQCh8--Ip7Z27VF8utUTyy7lg4FwmZy5Ai4mf2QGMy0_vZVVkPKKWsK29ZcLR-QvSP2UrZjhuZCnVwml_TxJV0WgSDMjJ6a2ypZY8nC_twruafjXRDeUpsv5xK8jNis2t4TeSMhQRs9Q4MV1LnBG3_PbkU9oSdJ0-Y7X5p5-5YNLKrF4Z9wk2QRlGWCbSxrCojYJMqCnkPne6xhTwh1z60s8K7CMrSNd9ZZy8N1871srYoLFjIx4");'></div>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-white size-10 rounded-full flex items-center justify-center border-4 border-background-light dark:border-background-dark shadow-sm">
+<span class="material-symbols-outlined text-[20px]">photo_camera</span>
+</div>
+</div>
+<p class="text-[#794c9a] dark:text-zinc-400 text-sm mt-3 font-medium">更換大頭貼</p>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">姓名</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">person</span>
+<input class="w-full h-14 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="請輸入姓名" type="text" value="Sarah Johnson"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">生日</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">cake</span>
+<input class="w-full h-14 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base appearance-none" type="date" value="1995-06-15"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">電話號碼</label>
+<div class="relative flex gap-2">
+<div class="relative w-28">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#794c9a] text-[18px]">public</span>
+<select class="w-full h-14 pl-9 pr-2 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-sm appearance-none">
+<option>+886</option>
+<option>+852</option>
+<option>+86</option>
+</select>
+</div>
+<input class="flex-1 h-14 px-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="手機號碼" type="tel" value="0912345678"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">電子郵件</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">mail</span>
+<input class="w-full h-14 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="example@mail.com" type="email" value="sarah.j@example.com"/>
+</div>
+</div>
+</form>
+</main>
+<div class="p-6 mt-auto">
+<button class="w-full bg-primary hover:bg-primary/90 text-white h-14 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span>儲存設定</span>
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</button>
+</div>
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-[#eee7f3] dark:border-zinc-800 flex justify-around py-3 px-6 z-50">
+<button class="flex flex-col items-center gap-1 text-zinc-400">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold">首頁</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-zinc-400">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-[10px] font-bold">預約</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-zinc-400">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px] font-bold">探索</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill-current">person</span>
+<span class="text-[10px] font-bold">個人資料</span>
+</button>
+</nav>
+</div>
+
+</body></html>

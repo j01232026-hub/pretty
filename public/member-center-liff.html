@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-Hant">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>會員中心</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/global-style.css">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#9d2bee",
+              "background-light": "#fbfafd",
+              "background-dark": "#1a1022",
+              "accent-soft": "#e9d5ff",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Manrope', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .form-input:focus {
+            @apply ring-2 ring-primary/20 border-primary;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+        /* Loading Overlay */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#160d1b] dark:text-white min-h-screen">
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p class="text-primary font-bold">載入中...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative flex flex-col max-w-[480px] mx-auto min-h-screen bg-background-light dark:bg-background-dark shadow-2xl overflow-x-hidden pb-10">
+        
+        <!-- Header (Shared) -->
+        <header class="flex items-center bg-background-light dark:bg-background-dark p-4 justify-between sticky top-0 z-20">
+            <div class="flex items-center gap-4">
+                <button class="flex size-10 items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-sm text-[#160d1b] dark:text-white" onclick="history.back()">
+                    <span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+                </button>
+                <h1 class="text-[#160d1b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]" id="page-title">會員中心</h1>
+            </div>
+            <div class="size-10"></div> 
+        </header>
+
+        <main class="px-6 pt-4 flex-1">
+
+            <!-- Section 1: Complete Profile (Hidden by default) -->
+            <div id="complete-profile-section" style="display: none;">
+                <div class="flex flex-col items-center justify-center mb-8">
+                    <div class="relative group cursor-pointer">
+                        <div class="size-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-md overflow-hidden bg-zinc-200">
+                            <div id="profile-avatar-edit" class="w-full h-full bg-center bg-no-repeat bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD18kdXGQJigkOXLPlvC-ECcl42zQCh8--Ip7Z27VF8utUTyy7lg4FwmZy5Ai4mf2QGMy0_vZVVkPKKWsK29ZcLR-QvSP2UrZjhuZCnVwml_TxJV0WgSDMjJ6a2ypZY8nC_twruafjXRDeUpsv5xK8jNis2t4TeSMhQRs9Q4MV1LnBG3_PbkU9oSdJ0-Y7X5p5-5YNLKrF4Z9wk2QRlGWCbSxrCojYJMqCnkPne6xhTwh1z60s8K7CMrSNd9ZZy8N1871srYoLFjIx4");'></div>
+                        </div>
+                        <div class="absolute bottom-0 right-0 bg-primary text-white size-10 rounded-full flex items-center justify-center border-4 border-background-light dark:border-background-dark shadow-sm">
+                            <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+                        </div>
+                    </div>
+                    <p class="text-[#794c9a] dark:text-zinc-400 text-sm mt-3 font-medium">完善資料以獲取會員優惠</p>
+                </div>
+
+                <form class="space-y-6" id="profile-form">
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">姓名</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">person</span>
+                            <input id="real-name" class="w-full h-14 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="請輸入姓名" type="text" />
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">生日</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">cake</span>
+                            <input id="birthday" class="w-full h-14 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base appearance-none" type="date" required/>
+                        </div>
+                        <p class="text-xs text-gray-500 ml-1">* 填寫生日可獲得生日禮遇</p>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">電話號碼</label>
+                        <div class="relative flex gap-2">
+                            <div class="relative w-28">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#794c9a] text-[18px]">public</span>
+                                <select class="w-full h-14 pl-9 pr-2 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-sm appearance-none">
+                                    <option>+886</option>
+                                    <option>+852</option>
+                                    <option>+86</option>
+                                </select>
+                            </div>
+                            <input id="phone" class="flex-1 h-14 px-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="手機號碼" type="tel" required/>
+                        </div>
+                        <p class="text-xs text-gray-500 ml-1">* 用於預約通知與會員驗證</p>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">電子郵件</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">mail</span>
+                            <input id="email" class="w-full h-14 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="example@mail.com" type="email" />
+                        </div>
+                    </div>
+                </form>
+
+                <div class="p-6 mt-6">
+                    <button id="submit-btn" class="w-full bg-primary hover:bg-primary/90 text-white h-14 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span>確認送出</span>
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 2: Member Card (Hidden by default) -->
+            <div id="member-card-section" style="display: none;">
+                <!-- Digital Member Card -->
+                <div class="brand-card p-6 mb-6 relative overflow-hidden bg-white">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i class="fa-solid fa-crown text-8xl text-primary"></i>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 mb-6 relative z-10">
+                        <div class="size-20 rounded-full border-2 border-primary/20 p-1">
+                            <div id="card-avatar" class="w-full h-full rounded-full bg-cover bg-center bg-gray-200" style='background-image: url("https://placehold.co/100x100?text=User");'></div>
+                        </div>
+                        <div>
+                            <h2 id="card-name" class="text-2xl font-bold text-[#160d1b]">會員名稱</h2>
+                            <p id="card-phone" class="text-gray-500 font-medium">09XX-XXX-XXX</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">VIP 會員</span>
+                                <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-star mr-1"></i>0 點</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 relative z-10">
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-gray-500 mb-1">生日</p>
+                            <p id="card-birthday" class="font-bold text-[#160d1b]">-</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-gray-500 mb-1">入會日期</p>
+                            <p id="card-join-date" class="font-bold text-[#160d1b]">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button class="brand-card p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+                        <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fa-solid fa-ticket text-xl"></i>
+                        </div>
+                        <span class="font-bold text-sm">我的優惠券</span>
+                    </button>
+                    <button class="brand-card p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+                        <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                        </div>
+                        <span class="font-bold text-sm">預約紀錄</span>
+                    </button>
+                </div>
+
+                <div class="p-6 mt-auto">
+                    <button id="edit-profile-btn" class="w-full bg-white border border-gray-200 text-[#160d1b] h-14 rounded-2xl font-bold text-lg shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span class="material-icons text-primary">edit</span>
+                        <span>修改資料</span>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation (Shared) -->
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-[#eee7f3] dark:border-zinc-800 flex justify-around py-3 px-6 z-50">
+            <button class="flex flex-col items-center gap-1 text-zinc-400" onclick="window.location.href='index.html'">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-[10px] font-bold">首頁</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-zinc-400" onclick="window.location.href='booking-liff.html'">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span class="text-[10px] font-bold">預約</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-zinc-400">
+                <span class="material-symbols-outlined">explore</span>
+                <span class="text-[10px] font-bold">探索</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-primary">
+                <span class="material-symbols-outlined fill-current">person</span>
+                <span class="text-[10px] font-bold">會員</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // Configuration
+        const LIFF_ID = new URLSearchParams(window.location.search).get('liffId') || '2009027968-4BN6SYDY';
+        let currentUserId = null;
+        let currentUserProfile = null;
+
+        // Elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const completeSection = document.getElementById('complete-profile-section');
+        const cardSection = document.getElementById('member-card-section');
+        const pageTitle = document.getElementById('page-title');
+
+        // Form Elements
+        const realNameInput = document.getElementById('real-name');
+        const birthdayInput = document.getElementById('birthday');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const profileAvatarEdit = document.getElementById('profile-avatar-edit');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Card Elements
+        const cardName = document.getElementById('card-name');
+        const cardPhone = document.getElementById('card-phone');
+        const cardAvatar = document.getElementById('card-avatar');
+        const cardBirthday = document.getElementById('card-birthday');
+        const cardJoinDate = document.getElementById('card-join-date');
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+
+        // Initialize
+        async function init() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                const profile = await liff.getProfile();
+                currentUserId = profile.userId;
+                currentUserProfile = profile;
+                
+                // Pre-fill avatar and name (if available)
+                if (profile.pictureUrl) {
+                    profileAvatarEdit.style.backgroundImage = `url("${profile.pictureUrl}")`;
+                    cardAvatar.style.backgroundImage = `url("${profile.pictureUrl}")`;
+                }
+
+                // Check Member Status
+                checkMemberStatus(currentUserId);
+
+            } catch (err) {
+                console.error('LIFF Init Error:', err);
+                alert('LIFF 初始化失敗，請檢查網路或稍後再試');
+                loadingScreen.style.display = 'none';
+            }
+        }
+
+        // Check Status API
+        async function checkMemberStatus(userId) {
+            try {
+                const res = await fetch(`/api/check-member-status?user_id=${userId}`);
+                const data = await res.json();
+
+                loadingScreen.style.display = 'none';
+
+                if (data.is_complete) {
+                    showMemberCard(data.profile);
+                } else {
+                    showCompleteProfile(data.profile);
+                }
+            } catch (err) {
+                console.error('Check Status Error:', err);
+                loadingScreen.style.display = 'none';
+                // Default to complete profile if error (assume new user)
+                showCompleteProfile({});
+            }
+        }
+
+        // Show Complete Profile Section
+        function showCompleteProfile(profileData) {
+            completeSection.style.display = 'block';
+            cardSection.style.display = 'none';
+            pageTitle.textContent = '完善個人資料';
+
+            // Auto-fill Logic
+            if (profileData) {
+                if (profileData.display_name) realNameInput.value = profileData.display_name;
+                else if (currentUserProfile && currentUserProfile.displayName) realNameInput.value = currentUserProfile.displayName;
+                
+                if (profileData.phone) phoneInput.value = profileData.phone;
+                if (profileData.birthday) birthdayInput.value = profileData.birthday;
+                if (profileData.email) emailInput.value = profileData.email;
+            } else if (currentUserProfile) {
+                realNameInput.value = currentUserProfile.displayName;
+            }
+        }
+
+        // Show Member Card Section
+        function showMemberCard(profileData) {
+            completeSection.style.display = 'none';
+            cardSection.style.display = 'block';
+            pageTitle.textContent = '會員中心';
+
+            if (profileData) {
+                cardName.textContent = profileData.display_name || '會員';
+                cardPhone.textContent = profileData.phone || '-';
+                cardBirthday.textContent = profileData.birthday || '-';
+                
+                if (profileData.created_at) {
+                    const date = new Date(profileData.created_at);
+                    cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
+                } else {
+                    cardJoinDate.textContent = '2025/01/01'; // Fallback
+                }
+
+                if (profileData.picture_url) {
+                    cardAvatar.style.backgroundImage = `url("${profileData.picture_url}")`;
+                } else if (currentUserProfile && currentUserProfile.pictureUrl) {
+                    cardAvatar.style.backgroundImage = `url("${currentUserProfile.pictureUrl}")`;
+                }
+            }
+        }
+
+        // Handle Submit
+        submitBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            const name = realNameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const birthday = birthdayInput.value;
+            const email = emailInput.value.trim();
+
+            if (!phone || !birthday) {
+                alert('請填寫手機號碼和生日以完成註冊');
+                return;
+            }
+
+            // Show loading
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>';
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/update-member-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        name: name,
+                        phone: phone,
+                        birthday: birthday,
+                        email: email
+                    })
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    alert('資料補齊成功！已發送優惠券至您的 LINE');
+                    showMemberCard(result.data[0]); // Upsert returns array
+                } else {
+                    alert('更新失敗：' + (result.error || '未知錯誤'));
+                }
+
+            } catch (err) {
+                console.error('Update Error:', err);
+                alert('系統錯誤，請稍後再試');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Handle Edit Profile
+        editProfileBtn.addEventListener('click', () => {
+            // Fetch latest data again or just switch view?
+            // Switching view is faster, but data might be stale if modified elsewhere.
+            // For now, just switch and pre-fill with current card data logic (which uses stored profileData if we kept it, 
+            // but we need to pass it back. Let's just re-fetch or use DOM values).
+            
+            // Re-use showCompleteProfile logic but with current DOM values
+            completeSection.style.display = 'block';
+            cardSection.style.display = 'none';
+            pageTitle.textContent = '修改個人資料';
+            
+            realNameInput.value = cardName.textContent;
+            phoneInput.value = cardPhone.textContent !== '-' ? cardPhone.textContent : '';
+            birthdayInput.value = cardBirthday.textContent !== '-' ? cardBirthday.textContent : '';
+            // Email isn't shown on card, so keep whatever was in input (it's hidden not destroyed)
+        });
+
+        // Start
+        window.onload = init;
+
+    </script>
+</body>
+</html>
