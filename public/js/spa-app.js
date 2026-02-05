@@ -1371,7 +1371,10 @@ const App = {
                     if (cardBirthday) cardBirthday.textContent = profileData.birthday || '-';
                     
                     if (cardJoinDate) {
-                        if (profileData.created_at) {
+                        if (profileData.join_date) {
+                            const date = new Date(profileData.join_date);
+                            cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
+                        } else if (profileData.created_at) {
                             const date = new Date(profileData.created_at);
                             cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
                         } else if (profileData.updated_at) {
