@@ -1153,7 +1153,7 @@ const App = {
             }
         },
         member: {
-            state: { pendingAvatar: null },
+            state: { pendingAvatar: null, currentProfile: null },
             compressImage: (file) => {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -1241,16 +1241,30 @@ const App = {
                 if (cardSection) cardSection.style.display = 'none';
                 if (pageTitle) pageTitle.textContent = '修改資料';
                 
-                // Pre-fill data from card
+                const realNameInput = document.getElementById('real-name');
+                const phoneInput = document.getElementById('phone');
+                const birthdayInput = document.getElementById('birthday');
+                const emailInput = document.getElementById('email');
+                const profileAvatarEdit = document.getElementById('profile-avatar-edit');
+                
+                // Try to load from state first
+                const profile = App.pages.member.state.currentProfile;
+                if (profile) {
+                    if (realNameInput) realNameInput.value = profile.display_name || '';
+                    if (phoneInput) phoneInput.value = profile.phone || '';
+                    if (birthdayInput) birthdayInput.value = profile.birthday || '';
+                    if (emailInput) emailInput.value = profile.email || '';
+                    if (profileAvatarEdit && profile.picture_url) {
+                        profileAvatarEdit.style.backgroundImage = `url("${profile.picture_url}")`;
+                    }
+                    return; // Done if state exists
+                }
+
+                // Fallback to DOM scraping (Legacy)
                 const cardName = document.getElementById('card-name');
                 const cardPhone = document.getElementById('card-phone');
                 const cardBirthday = document.getElementById('card-birthday');
                 const cardAvatar = document.getElementById('card-avatar');
-                
-                const realNameInput = document.getElementById('real-name');
-                const phoneInput = document.getElementById('phone');
-                const birthdayInput = document.getElementById('birthday');
-                const profileAvatarEdit = document.getElementById('profile-avatar-edit');
                 
                 if (cardName && realNameInput) realNameInput.value = cardName.textContent;
                 if (cardPhone && phoneInput && cardPhone.textContent !== '-') phoneInput.value = cardPhone.textContent;
@@ -1277,6 +1291,8 @@ const App = {
                     const data = await res.json();
 
                     if (loadingScreen) loadingScreen.style.display = 'none';
+
+                    App.pages.member.state.currentProfile = data.profile;
 
                     if (data.is_complete) {
                         App.pages.member.showMemberCard(data.profile);
@@ -1410,6 +1426,7 @@ const App = {
                     if (res.ok) {
                         const result = await res.json();
                         alert('資料更新成功！');
+                        App.pages.member.state.currentProfile = result.profile;
                         App.pages.member.showMemberCard(result.profile);
                     } else {
                         const errData = await res.json();
