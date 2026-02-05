@@ -357,8 +357,16 @@ const App = {
                 }
             },
             fetchBookedSlots: async (date) => {
-                // Reset time buttons
-                App.pages.booking.renderTimeSlots([]); // Temporarily clear/reset
+                // Show Skeleton, Hide Content
+                const skeleton = document.getElementById('timeSlotsSkeleton');
+                const container = document.getElementById('timeSlotsContainer');
+                if (skeleton && container) {
+                    skeleton.classList.remove('hidden');
+                    container.classList.add('hidden');
+                }
+
+                // Reset time buttons (optional, but good practice to clear state)
+                // App.pages.booking.renderTimeSlots([]); 
                 
                 try {
                     const stylist = App.pages.booking.state.selectedStylist === '不指定' ? '' : App.pages.booking.state.selectedStylist;
@@ -397,6 +405,12 @@ const App = {
                 } catch (err) {
                     console.error('Failed to fetch booked slots', err);
                     App.pages.booking.renderTimeSlots([]); // Fallback
+                } finally {
+                    // Hide Skeleton, Show Content
+                    if (skeleton && container) {
+                        skeleton.classList.add('hidden');
+                        container.classList.remove('hidden');
+                    }
                 }
             },
             renderTimeSlots: (bookedSlots) => {

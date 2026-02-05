@@ -39,7 +39,56 @@
     <div class="px-4 mb-4">
         <h3 class="text-lg font-bold tracking-tight border-l-4 border-primary pl-3">選擇時段 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(每選擇一個時段為30分鐘)</span></h3>
     </div>
-    <div class="space-y-6">
+    
+    <!-- Skeleton Loader -->
+    <div id="timeSlotsSkeleton" class="space-y-6">
+        <!-- Morning Skeleton -->
+        <div>
+            <div class="px-4 mb-3">
+                <div class="h-4 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
+            </div>
+            <div class="grid grid-cols-4 px-4 gap-3">
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+            </div>
+        </div>
+        <!-- Afternoon Skeleton -->
+        <div>
+            <div class="px-4 mb-3">
+                    <div class="h-4 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
+            </div>
+            <div class="grid grid-cols-4 px-4 gap-3">
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+            </div>
+        </div>
+            <!-- Evening Skeleton -->
+        <div>
+            <div class="px-4 mb-3">
+                    <div class="h-4 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
+            </div>
+            <div class="grid grid-cols-4 px-4 gap-3">
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+                <div class="h-[46px] bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="timeSlotsContainer" class="space-y-6 hidden">
         <!-- Morning (10:00 - 12:00) -->
         <div>
             <p class="px-4 text-sm font-bold opacity-40 uppercase tracking-wider mb-3">上午時段</p>
