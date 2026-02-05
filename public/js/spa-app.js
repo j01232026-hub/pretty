@@ -596,6 +596,7 @@ const App = {
                 }
             },
             fetchAppointments: async () => {
+                const container = document.getElementById('appointments-container');
                 if (!container) return;
                 
                 // Guard: If user not logged in, show loading or empty state
