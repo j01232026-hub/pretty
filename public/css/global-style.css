@@ -2,45 +2,51 @@
 
 /* 1. Global Background & Reset */
 body {
-    background-color: #F9F8F6 !important; /* Pale Beige - Breaks the "dead white" look */
-    background-image: none !important; /* Ensure no conflicting backgrounds */
+    /* Radial gradient from very pale beige to pale purple-pink */
+    background: radial-gradient(circle at top left, #FDFCFE, #F4F0F8) !important;
+    background-attachment: fixed !important; /* Fixed background for depth during scroll */
     min-height: 100vh;
     position: relative;
-    font-family: 'Noto Sans TC', 'Manrope', sans-serif; /* Ensure font consistency if not already set */
+    font-family: 'Noto Sans TC', 'Manrope', sans-serif;
 }
 
 /* 2. Global Watermark (Soul Injection) */
 body::before {
     content: "";
-    position: fixed; /* Fixed to viewport so it stays while scrolling */
+    position: fixed; /* Fixed to viewport */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    /* Line Art Female Profile - Placeholder as requested */
+    /* Line Art Female Profile */
     background-image: url('https://placehold.co/400x400/png?text=Line+Art+Profile'); 
-    /* Ideally replace with: url('../images/watermark-profile.png'); */
-    
     background-repeat: no-repeat;
-    /* Position: Bottom Right, slightly offset */
     background-position: bottom -50px right -50px;
-    background-size: 600px auto; /* Large and subtle */
-    
-    /* Extreme Subtlety */
+    background-size: 600px auto;
     opacity: 0.05; 
-    pointer-events: none; /* Non-blocking */
-    z-index: -1; /* Behind everything */
-    mix-blend-mode: multiply; /* Better integration with beige background */
+    pointer-events: none;
+    z-index: -1;
+    mix-blend-mode: multiply;
 }
 
 /* 3. Brand Card - The "Pop" Factor */
 .brand-card {
     background: #FFFFFF !important;
-    border-radius: 16px !important;
-    border: none !important;
-    /* Soft Purple-tinted Shadow for Depth */
-    box-shadow: 0 10px 30px -10px rgba(138, 43, 226, 0.15) !important;
+    border-radius: 20px !important; /* Slightly larger radius */
+    /* Deeper, purple-tinted shadow */
+    box-shadow: 0 12px 40px -12px rgba(138, 43, 226, 0.2) !important;
+    /* Subtle border for definition */
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 4. Bottom Navigation - Glassmorphism */
+.bottom-nav {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05) !important;
 }
 
 /* Optional: Hover effect for interactive cards */

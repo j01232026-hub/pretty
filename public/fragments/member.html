@@ -67,33 +67,39 @@
 <!-- Section 2: Member Card (Hidden by default) -->
 <div id="member-card-section" style="display: none;">
     <!-- Digital Member Card -->
-    <div class="brand-card p-6 mb-6 relative overflow-hidden bg-white">
+    <div class="brand-card mb-6 relative overflow-hidden bg-white">
+        <!-- Decorative Arc Header -->
+        <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-[#f3e7ff] to-[#e0c3fc] rounded-b-[40%] scale-x-125 -ml-[12.5%] shadow-sm"></div>
+        
         <div class="absolute top-0 right-0 p-4 opacity-10">
             <i class="fa-solid fa-crown text-8xl text-primary"></i>
         </div>
         
-        <div class="flex items-center gap-4 mb-6 relative z-10">
-            <div class="size-20 rounded-full border-2 border-primary/20 p-1">
-                <div id="card-avatar" class="w-full h-full rounded-full bg-cover bg-center bg-gray-200" style='background-image: url("https://placehold.co/100x100?text=User");'></div>
-            </div>
-            <div>
-                <h2 id="card-name" class="text-2xl font-bold text-[#160d1b]">會員名稱</h2>
-                <p id="card-phone" class="text-gray-500 font-medium">09XX-XXX-XXX</p>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">VIP 會員</span>
-                    <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-star mr-1"></i>0 點</span>
+        <div class="relative z-10 p-6 pt-10">
+            <div class="flex items-end gap-4 mb-4">
+                <div class="size-24 rounded-full border-[5px] border-white shadow-lg bg-white flex-shrink-0">
+                    <div id="card-avatar" class="w-full h-full rounded-full bg-cover bg-center bg-gray-200" style='background-image: url("https://placehold.co/100x100?text=User");'></div>
+                </div>
+                <div class="pb-1">
+                    <h2 id="card-name" class="text-2xl font-bold text-[#160d1b] drop-shadow-sm">會員名稱</h2>
+                    <p id="card-phone" class="text-gray-600 font-medium text-sm">09XX-XXX-XXX</p>
                 </div>
             </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 relative z-10">
-            <div class="bg-gray-50 rounded-xl p-3 text-center">
-                <p class="text-xs text-gray-500 mb-1">生日</p>
-                <p id="card-birthday" class="font-bold text-[#160d1b]">-</p>
+            
+            <div class="flex items-center gap-2 mb-6">
+                <span class="bg-white/50 backdrop-blur-sm text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/10 shadow-sm">VIP 會員</span>
+                <span class="bg-white/50 backdrop-blur-sm text-yellow-700 text-xs font-bold px-3 py-1 rounded-full border border-yellow-200 shadow-sm"><i class="fa-solid fa-star mr-1"></i>0 點</span>
             </div>
-            <div class="bg-gray-50 rounded-xl p-3 text-center">
-                <p class="text-xs text-gray-500 mb-1">入會日期</p>
-                <p id="card-join-date" class="font-bold text-[#160d1b]">-</p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50/80 rounded-xl p-3 text-center border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">生日</p>
+                    <p id="card-birthday" class="font-bold text-[#160d1b]">-</p>
+                </div>
+                <div class="bg-gray-50/80 rounded-xl p-3 text-center border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">入會日期</p>
+                    <p id="card-join-date" class="font-bold text-[#160d1b]">-</p>
+                </div>
             </div>
         </div>
     </div>

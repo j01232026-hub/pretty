@@ -55,7 +55,7 @@
             @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
         }
         .compact-appointment-card {
-            @apply flex items-center bg-white dark:bg-[#2d1a29] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98] border border-gray-100 dark:border-white/5;
+            @apply flex items-center bg-[#F8F6FA] dark:bg-[#2d1a29] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98] border border-gray-100 dark:border-white/5;
         }
         
         /* Icon Carousel Animation */
@@ -79,7 +79,7 @@
         .animate-icon-3 { animation: icon-fade-3 6s infinite; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 bg-fixed font-display text-[#1b0d18] dark:text-white min-h-screen flex flex-col">
+<body class="bg-fixed font-display text-[#1b0d18] dark:text-white min-h-screen flex flex-col">
     <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-white/30 dark:bg-black/30 backdrop-blur-3xl border-x border-white/20">
         
         <!-- App Content Container -->
@@ -90,7 +90,7 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-[#eee7f3] dark:border-zinc-800 flex justify-around py-3 px-6 z-50">
+    <nav class="bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] flex justify-around py-3 px-6 z-50">
         <a href="#" class="flex flex-col items-center gap-1 text-zinc-400" data-page="booking">
             <span class="material-symbols-outlined">calendar_today</span>
             <span class="text-[10px] font-bold">預約</span>

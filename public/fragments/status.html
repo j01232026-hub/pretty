@@ -113,10 +113,12 @@
         <!-- Status Hero Card -->
         <div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2d1a29] overflow-hidden mb-6 brand-card">
             <!-- Gradient Status Header -->
-            <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style="background-image: linear-gradient(135deg, #e9d5ff 0%, #9d2bee 100%);">
-                <div class="flex flex-col h-full items-center justify-center text-white text-center p-6">
-                    <i class="fa-solid fa-circle-check text-5xl mb-2"></i>
-                    <p class="text-3xl font-bold">已確認</p>
+            <div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" style="background-image: linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%);">
+                <!-- Optional pattern overlay -->
+                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 20%, white 2px, transparent 2px); background-size: 20px 20px;"></div>
+                <div class="flex flex-col h-full items-center justify-center text-white text-center p-6 relative z-10">
+                    <i class="fa-solid fa-circle-check text-5xl mb-2 drop-shadow-md"></i>
+                    <p class="text-3xl font-bold drop-shadow-sm">已確認</p>
                 </div>
             </div>
             

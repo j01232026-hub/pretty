@@ -1,7 +1,7 @@
 <!-- Stylist Selection Section -->
 <section class="mt-4">
     <div class="px-4 mb-2 flex justify-between items-end">
-        <h3 class="text-lg font-bold tracking-tight">選擇設計師</h3>
+        <h3 class="text-lg font-bold tracking-tight border-l-4 border-primary pl-3">選擇設計師</h3>
     </div>
     <div class="flex px-4 py-3 gap-5 overflow-x-auto hide-scrollbar" id="stylistContainer">
         <div class="text-sm text-gray-400 p-2">載入設計師中...</div>
@@ -10,7 +10,7 @@
 
 <!-- Service Selection Section (New) -->
 <section class="mt-6 px-4">
-    <h3 class="text-lg font-bold tracking-tight mb-4">選擇服務項目</h3>
+    <h3 class="text-lg font-bold tracking-tight mb-4 border-l-4 border-primary pl-3">選擇服務項目</h3>
     <div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-black/5 dark:border-white/5 text-center text-gray-500">
         (未來功能預留區)
     </div>
@@ -18,7 +18,7 @@
 
 <!-- Calendar Picker Section -->
 <section class="mt-6 px-4">
-    <h3 class="text-lg font-bold tracking-tight mb-4">選擇日期</h3>
+    <h3 class="text-lg font-bold tracking-tight mb-4 border-l-4 border-primary pl-3">選擇日期</h3>
     <div class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-white/20">
         <div class="flex items-center justify-between mb-6">
             <button class="p-2 hover:bg-white/20 rounded-full transition-colors" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
@@ -36,7 +36,9 @@
 
 <!-- Time Slots Section -->
 <section class="mt-8">
-    <h3 class="px-4 text-lg font-bold tracking-tight mb-4">選擇時段 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(每選擇一個時段為30分鐘)</span></h3>
+    <div class="px-4 mb-4">
+        <h3 class="text-lg font-bold tracking-tight border-l-4 border-primary pl-3">選擇時段 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(每選擇一個時段為30分鐘)</span></h3>
+    </div>
     <div class="space-y-6">
         <!-- Morning (10:00 - 12:00) -->
         <div>
