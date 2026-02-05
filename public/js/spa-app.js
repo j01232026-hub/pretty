@@ -608,7 +608,14 @@ const App = {
                 
                 try {
                     const res = await fetch(`/api/appointments?user_id=${App.state.currentUserId}`);
-                    if (!res.ok) throw new Error('API Error');
+                    if (!res.ok) {
+                        let msg = `API Error: ${res.status}`;
+                        try {
+                            const errData = await res.json();
+                            if (errData.error) msg += ` - ${errData.error}`;
+                        } catch (e) {}
+                        throw new Error(msg);
+                    }
                     const data = await res.json();
                     
                     const now = new Date();
@@ -634,7 +641,10 @@ const App = {
                     
                 } catch (err) {
                     console.error(err);
-                    container.innerHTML = '<p class="text-center p-4 text-gray-500">載入失敗</p>';
+                    container.innerHTML = `<div class="text-center p-4 text-gray-500">
+                        <p>載入失敗</p>
+                        <p class="text-xs text-red-400 mt-2">${err.message}</p>
+                    </div>`;
                 }
             },
             renderUpcoming: () => {
