@@ -231,7 +231,7 @@ const App = {
                     div.onclick = () => App.pages.booking.selectStylist(div, stylist.name);
                     
                     div.innerHTML = `
-                        <div class="w-16 h-16 rounded-full bg-gray-100 border-2 ${isSelected ? 'border-primary' : 'border-transparent'} transition-all overflow-hidden bg-cover bg-center" style="background-image: url('${stylist.avatar || ''}')"></div>
+                        <div class="w-16 h-16 rounded-full bg-gray-100 border-2 ${isSelected ? 'border-primary' : 'border-transparent'} transition-all overflow-hidden bg-cover bg-center" style="background-image: url('${stylist.avatar || 'https://lh3.googleusercontent.com/d/1XqCjV9w9dM-vJj1_9WzJ9f8_6wz0_0_0'}')"></div>
                         <p class="text-xs font-bold ${isSelected ? 'text-primary' : 'text-gray-500 opacity-70'} text-center truncate w-full">${stylist.name}</p>
                     `;
                     container.appendChild(div);
@@ -373,9 +373,18 @@ const App = {
                         const [h, min] = time.split(':').map(Number);
                         const slotDate = new Date();
                         slotDate.setHours(h, min, 0, 0);
-                        // Add buffer if needed? (e.g. current time is 17:36, can I book 17:30? No. 18:00? Maybe)
-                        // User complained "17:36, can select all". So strictly block past.
-                        if (slotDate < now) {
+                        
+                        // User complained "17:41 can select 18:00"
+                        // If current time is 17:41, next valid slot should be > 17:41.
+                        // 18:00 is > 17:41, so it SHOULD be selectable?
+                        // Wait, maybe the user means they CANNOT select it?
+                        // Or maybe they mean "it's too close"?
+                        // Let's assume standard booking buffer (e.g. 30 mins advance notice)
+                        // If now is 17:41, 18:00 is only 19 mins away.
+                        // Let's add a 30-minute buffer.
+                        const bufferTime = new Date(now.getTime() + 30 * 60000); // Now + 30 mins
+
+                        if (slotDate < bufferTime) {
                             isPastTime = true;
                         }
                     }
