@@ -1316,7 +1316,7 @@ const App = {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             user_id: userId,
-                            display_name: realNameInput.value,
+                            name: realNameInput.value,
                             phone: phoneInput.value,
                             birthday: birthdayInput.value,
                             email: emailInput.value,
@@ -1329,7 +1329,8 @@ const App = {
                         alert('資料更新成功！');
                         App.pages.member.showMemberCard(result.profile);
                     } else {
-                        alert('更新失敗，請稍後再試');
+                        const errData = await res.json();
+                        alert(`更新失敗: ${errData.error || '請稍後再試'}`);
                     }
                 } catch (err) {
                     console.error(err);

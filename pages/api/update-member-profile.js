@@ -7,7 +7,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { user_id, name, phone, birthday, email } = req.body;
+    const { user_id, name, display_name, phone, birthday, email } = req.body;
+    const finalName = name || display_name;
 
     if (!user_id) {
         return res.status(400).json({ error: 'Missing user_id' });
@@ -21,7 +22,7 @@ export default async function handler(req, res) {
     try {
         const updates = {
             user_id,
-            display_name: name,
+            display_name: finalName,
             phone,
             birthday,
             email,
