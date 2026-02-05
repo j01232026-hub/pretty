@@ -20,13 +20,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Fetch existing profile to check for join_date
-        const { data: existingProfile } = await supabase
-            .from('profiles')
-            .select('join_date')
-            .eq('user_id', user_id)
-            .single();
-
         const updates = {
             user_id,
             display_name: finalName,
@@ -35,10 +28,6 @@ export default async function handler(req, res) {
             email,
             is_complete: true
         };
-
-        if (!existingProfile || !existingProfile.join_date) {
-            updates.join_date = new Date().toISOString();
-        }
 
         if (picture_url) {
             updates.picture_url = picture_url;

@@ -1371,6 +1371,7 @@ const App = {
                     if (cardBirthday) cardBirthday.textContent = profileData.birthday || '-';
                     
                     if (cardJoinDate) {
+                        // Priority: join_date > created_at > updated_at > last_seen_at (fallback for new members)
                         if (profileData.join_date) {
                             const date = new Date(profileData.join_date);
                             cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
@@ -1380,8 +1381,12 @@ const App = {
                         } else if (profileData.updated_at) {
                             const date = new Date(profileData.updated_at);
                             cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
+                        } else if (profileData.last_seen_at) {
+                             // Use last_seen_at as a proxy for join date if others missing
+                             const date = new Date(profileData.last_seen_at);
+                             cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
                         } else {
-                            cardJoinDate.textContent = '2025/01/01'; // Fallback
+                            cardJoinDate.textContent = new Date().toLocaleDateString('zh-TW'); // Fallback to today
                         }
                     }
 
