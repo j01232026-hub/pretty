@@ -596,11 +596,17 @@ const App = {
                 }
             },
             fetchAppointments: async () => {
-                const container = document.getElementById('appointments-container');
                 if (!container) return;
                 
+                // Guard: If user not logged in, show loading or empty state
+                if (!App.state.currentUserId) {
+                     // Wait for init or show login prompt if needed. 
+                     // For now, let the interval in init handle it or just return.
+                     return;
+                }
+                
                 try {
-                    const res = await fetch(`/api/appointments?userId=${App.state.currentUserId}`);
+                    const res = await fetch(`/api/appointments?user_id=${App.state.currentUserId}`);
                     if (!res.ok) throw new Error('API Error');
                     const data = await res.json();
                     
