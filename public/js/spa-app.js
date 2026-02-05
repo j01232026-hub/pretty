@@ -5,7 +5,7 @@
 
 const App = {
     state: {
-        liffId: '2009027968-4BN6SYDY', // Default ID
+        liffId: '2009027968-BcsbldUe', // Updated LIFF ID
         userProfile: null,
         currentTab: 'upcoming', // For Status page
         supabase: null,
@@ -58,6 +58,13 @@ const App = {
         const content = document.getElementById('app-content');
 
         App.navigate = async (pageName) => {
+            // Update URL hash without scrolling (Deep Linking support)
+            if (pageName !== 'booking') {
+                 history.replaceState(null, null, `#${pageName}`);
+            } else {
+                 history.replaceState(null, null, ' '); // Clear hash for default page
+            }
+
             // Update Nav UI
             links.forEach(l => {
                 l.classList.remove('text-primary');
@@ -105,8 +112,16 @@ const App = {
         // Initialize LIFF
         await App.initLiff();
 
-        // Load default page (Booking or Home)
-        App.navigate('booking'); 
+        // Handle Deep Linking (Hash-based Routing)
+        // Check if there is a hash in the URL (e.g., #status, #member)
+        const hash = location.hash.replace('#', '');
+        if (hash && App.pages[hash]) {
+            console.log(`Deep linking to: ${hash}`);
+            App.navigate(hash);
+        } else {
+            // Load default page (Booking)
+            App.navigate('booking'); 
+        }
     },
 
     initLiff: async () => {
