@@ -777,18 +777,20 @@ const App = {
                             const timeRange = `${app.time} - ${getEndTime(app.time)}`;
                             
                             const div = document.createElement('div');
-                            div.className = 'flex items-center gap-3 p-3 bg-white dark:bg-[#2d1a29] rounded-xl shadow-sm mb-3 border border-gray-50 dark:border-white/5';
+                            // Updated to match user requested design (Image 2 style)
+                            div.className = 'flex items-stretch bg-white dark:bg-[#2d1a29] rounded-[2rem] shadow-[0_2px_12px_rgba(0,0,0,0.04)] mb-4 overflow-hidden';
                             div.innerHTML = `
-                                <div class="flex flex-col items-center justify-center min-w-[80px]">
-                                   <span class="text-xs font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded-md whitespace-nowrap">
+                                <div class="flex flex-col items-center justify-center w-[140px] border-r border-gray-100 dark:border-white/10 py-5">
+                                   <i class="fa-regular fa-clock text-[#9d2bee] text-xl mb-2"></i>
+                                   <span class="text-[#9d2bee] font-bold text-lg tracking-tight whitespace-nowrap">
                                        ${timeRange}
                                    </span>
                                </div>
-                               <div class="flex-1 flex flex-col justify-center">
-                                   <p class="text-sm font-bold text-[#1b0d18] dark:text-white line-clamp-1">${app.service || '一般服務'}</p>
-                                   <div class="flex items-center gap-2 mt-1">
-                                       <div class="w-5 h-5 rounded-full bg-cover bg-center shrink-0" style="background-image: url('${avatarUrl}')"></div>
-                                       <p class="text-xs text-gray-500 line-clamp-1">${App.utils.normalizeName(app.stylist)}</p>
+                               <div class="flex-1 flex flex-col justify-center px-6 py-4">
+                                   <p class="text-[#1b0d18] dark:text-white text-lg font-bold mb-2 leading-tight line-clamp-1">${app.service || '一般服務'}</p>
+                                   <div class="flex items-center gap-2">
+                                       <div class="w-6 h-6 rounded-full bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-700" style="background-image: url('${avatarUrl}')"></div>
+                                       <p class="text-gray-500 dark:text-gray-400 font-medium text-sm line-clamp-1">${App.utils.normalizeName(app.stylist)}</p>
                                    </div>
                                </div>
                             `;
