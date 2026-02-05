@@ -254,7 +254,7 @@ const App = {
                     div.onclick = () => App.pages.booking.selectStylist(div, stylist.name);
                     
                     div.innerHTML = `
-                        <div class="w-16 h-16 rounded-full bg-gray-100 border-2 ${isSelected ? 'border-primary' : 'border-transparent'} transition-all overflow-hidden bg-cover bg-center" style="background-image: url('${stylist.avatar || 'https://lh3.googleusercontent.com/d/1XqCjV9w9dM-vJj1_9WzJ9f8_6wz0_0_0'}')"></div>
+                        <div class="w-16 h-16 rounded-full bg-gray-100 border-2 ${isSelected ? 'border-primary' : 'border-transparent'} transition-all overflow-hidden bg-cover bg-center" style="background-image: url('${stylist.avatar_url || stylist.avatar || 'https://lh3.googleusercontent.com/d/1XqCjV9w9dM-vJj1_9WzJ9f8_6wz0_0_0'}')"></div>
                         <p class="text-xs font-bold ${isSelected ? 'text-primary' : 'text-gray-500 opacity-70'} text-center truncate w-full">${stylist.name}</p>
                     `;
                     container.appendChild(div);
@@ -715,9 +715,9 @@ const App = {
                 clone.querySelector('.stylist-name').textContent = App.utils.normalizeName(first.stylist);
                 
                 const staff = App.state.staffMap[first.stylist];
-                if (staff && staff.avatar) {
+                if (staff && (staff.avatar_url || staff.avatar)) {
                     const avatar = clone.querySelector('.bg-cover.rounded-full');
-                    if (avatar) avatar.style.backgroundImage = `url('${staff.avatar}')`;
+                    if (avatar) avatar.style.backgroundImage = `url('${staff.avatar_url || staff.avatar}')`;
                 }
                 
                 // In Progress Check
@@ -773,7 +773,7 @@ const App = {
                         // Cards
                         sameDayApps.forEach(app => {
                             const staffInfo = App.state.staffMap[app.stylist] || {};
-                            const avatarUrl = staffInfo.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4';
+                            const avatarUrl = staffInfo.avatar_url || staffInfo.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL1YvZc9vWZJ9GiVuuWWM-av6u8YdeHm1Jgv8tYw8axrTwQq7ZR84wTe89nuC8A5dwR_oya7pRLN6xYwqXY8V-0NRIgWQ5hWQYbI9iVI30AvhTiRXo4NRXDFL5ZndEXlKm6RxxbKoZh000JC42yB5urx2De51L2d10BSBu_klGM0fcejTK5Q0QbbocZy6IOVWw3hV_fkczYRfPQpCjbbdHHyun9LGo16YDclE613E4Y6fLw_q4igKd9RsXCfy1sTzTNgW7Do_pC8u4';
                             const timeRange = `${app.time} - ${getEndTime(app.time)}`;
                             
                             const div = document.createElement('div');
@@ -846,9 +846,9 @@ const App = {
                     clone.querySelector('.price-info').textContent = `NT$ ${app.price || '500'}`;
                     
                     const staff = App.state.staffMap[app.stylist];
-                    if (staff && staff.avatar) {
+                    if (staff && (staff.avatar_url || staff.avatar)) {
                         const avatar = clone.querySelector('.bg-cover');
-                        if (avatar) avatar.style.backgroundImage = `url('${staff.avatar}')`;
+                        if (avatar) avatar.style.backgroundImage = `url('${staff.avatar_url || staff.avatar}')`;
                     }
                     
                     const rebookBtn = clone.querySelector('.btn-rebook');
