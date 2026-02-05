@@ -1020,7 +1020,7 @@ const App = {
                     div.innerHTML = `
                          <div class="flex w-full max-w-[85%] gap-2">
                             <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-                                <img src="${msg.sender_avatar || 'https://via.placeholder.com/32'}" class="w-full h-full object-cover">
+                                <img src="${msg.sender_avatar || 'https://api.dicebear.com/9.x/avataaars/svg?seed=Support'}" class="w-full h-full object-cover">
                             </div>
                             <div class="flex flex-col items-start">
                                 <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.sender_name || '客服'}</span>
