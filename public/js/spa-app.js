@@ -633,7 +633,7 @@ const App = {
                 }
                 
                 try {
-                    const res = await fetch(`/api/get-appointments?user_id=${App.state.currentUserId}`);
+                    const res = await fetch(`/api/get-appointments?user_id=${App.state.currentUserId}&type=all`);
                     if (!res.ok) {
                         let msg = `API Error: ${res.status}`;
                         try {
