@@ -1,0 +1,119 @@
+<!-- Section 1: Complete Profile (Hidden by default) -->
+<div id="complete-profile-section" style="display: none;">
+    <div class="flex flex-col items-center justify-center mb-4">
+        <div class="relative group cursor-pointer">
+            <div class="size-24 rounded-full border-4 border-white dark:border-zinc-800 shadow-md overflow-hidden bg-zinc-200">
+                <div id="profile-avatar-edit" class="w-full h-full bg-center bg-no-repeat bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD18kdXGQJigkOXLPlvC-ECcl42zQCh8--Ip7Z27VF8utUTyy7lg4FwmZy5Ai4mf2QGMy0_vZVVkPKKWsK29ZcLR-QvSP2UrZjhuZCnVwml_TxJV0WgSDMjJ6a2ypZY8nC_twruafjXRDeUpsv5xK8jNis2t4TeSMhQRs9Q4MV1LnBG3_PbkU9oSdJ0-Y7X5p5-5YNLKrF4Z9wk2QRlGWCbSxrCojYJMqCnkPne6xhTwh1z60s8K7CMrSNd9ZZy8N1871srYoLFjIx4");'></div>
+            </div>
+            <div class="absolute bottom-0 right-0 bg-primary text-white size-8 rounded-full flex items-center justify-center border-2 border-background-light dark:border-background-dark shadow-sm">
+                <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+            </div>
+        </div>
+        <p class="text-[#794c9a] dark:text-zinc-400 text-sm mt-2 font-medium">完善資料以獲取會員優惠</p>
+    </div>
+
+    <form class="space-y-3" id="profile-form">
+        <div class="space-y-1">
+            <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">姓名</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">person</span>
+                <input id="real-name" class="w-full h-12 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="請輸入姓名" type="text" />
+            </div>
+        </div>
+        <div class="space-y-1">
+            <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">生日</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">cake</span>
+                <input id="birthday" class="w-full h-12 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base appearance-none" type="date" required/>
+            </div>
+            <p class="text-xs text-gray-500 ml-1">* 填寫生日可獲得生日禮遇</p>
+        </div>
+        <div class="space-y-1">
+            <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">電話號碼</label>
+            <div class="relative flex gap-2">
+                <div class="relative w-24">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#794c9a] text-[18px]">public</span>
+                    <select class="w-full h-12 pl-9 pr-2 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-sm appearance-none">
+                        <option>+886</option>
+                        <option>+852</option>
+                        <option>+86</option>
+                    </select>
+                </div>
+                <input id="phone" class="flex-1 h-12 px-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="手機號碼" type="tel" required/>
+            </div>
+            <p class="text-xs text-gray-500 ml-1">* 用於預約通知與會員驗證</p>
+        </div>
+        <div class="space-y-1">
+            <label class="text-sm font-bold text-[#160d1b] dark:text-zinc-300 ml-1">電子郵件</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#794c9a] text-[20px]">mail</span>
+                <input id="email" class="w-full h-12 pl-12 pr-4 bg-white dark:bg-zinc-800 border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 text-base" placeholder="example@mail.com" type="email" />
+            </div>
+        </div>
+    </form>
+
+    <div class="px-6 mt-4 pb-8">
+        <button id="submit-btn" onclick="submitProfile()" class="w-full bg-primary hover:bg-primary/90 text-white h-12 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <span>確認送出</span>
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+        </button>
+    </div>
+</div>
+
+<!-- Section 2: Member Card (Hidden by default) -->
+<div id="member-card-section" style="display: none;">
+    <!-- Digital Member Card -->
+    <div class="brand-card p-6 mb-6 relative overflow-hidden bg-white">
+        <div class="absolute top-0 right-0 p-4 opacity-10">
+            <i class="fa-solid fa-crown text-8xl text-primary"></i>
+        </div>
+        
+        <div class="flex items-center gap-4 mb-6 relative z-10">
+            <div class="size-20 rounded-full border-2 border-primary/20 p-1">
+                <div id="card-avatar" class="w-full h-full rounded-full bg-cover bg-center bg-gray-200" style='background-image: url("https://placehold.co/100x100?text=User");'></div>
+            </div>
+            <div>
+                <h2 id="card-name" class="text-2xl font-bold text-[#160d1b]">會員名稱</h2>
+                <p id="card-phone" class="text-gray-500 font-medium">09XX-XXX-XXX</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">VIP 會員</span>
+                    <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-star mr-1"></i>0 點</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 relative z-10">
+            <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">生日</p>
+                <p id="card-birthday" class="font-bold text-[#160d1b]">-</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">入會日期</p>
+                <p id="card-join-date" class="font-bold text-[#160d1b]">-</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <button class="brand-card p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+            <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fa-solid fa-ticket text-xl"></i>
+            </div>
+            <span class="font-bold text-sm">我的優惠券</span>
+        </button>
+        <button class="brand-card p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+            <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+            </div>
+            <span class="font-bold text-sm">預約紀錄</span>
+        </button>
+    </div>
+
+    <div class="p-6 mt-auto">
+        <button id="edit-profile-btn" onclick="editProfile()" class="w-full bg-white border border-gray-200 text-[#160d1b] h-14 rounded-2xl font-bold text-lg shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <span class="material-icons text-primary">edit</span>
+            <span>修改資料</span>
+        </button>
+    </div>
+</div>

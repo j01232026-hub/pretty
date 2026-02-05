@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Pretty Salon SPA</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/global-style.css">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9d2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1a1022",
+                        "accent-soft": "#e9d5ff",
+                        "text-main": "#1b0d18",
+                        "text-muted": "#7e22ce",
+                        "chat-bg": "#9bb7d4",
+                        "bubble-me": "#9de694",
+                        "bubble-other": "#ffffff"
+                    },
+                    fontFamily: {
+                        "display": ["'Noto Sans TC'", "Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Manrope', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .tab-active {
+            @apply bg-white/80 dark:bg-black/60 shadow-sm text-primary font-bold backdrop-blur-sm;
+        }
+        .tab-inactive {
+            @apply text-gray-500 dark:text-gray-400 font-medium hover:text-primary/70;
+        }
+        .compact-appointment-card {
+            @apply flex items-center bg-white dark:bg-[#2d1a29] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98] border border-gray-100 dark:border-white/5;
+        }
+        
+        /* Icon Carousel Animation */
+        @keyframes icon-fade-1 {
+            0%, 28% { opacity: 1; transform: scale(1); }
+            33%, 100% { opacity: 0; transform: scale(0.9); }
+        }
+        @keyframes icon-fade-2 {
+            0%, 28% { opacity: 0; transform: scale(0.9); }
+            33%, 61% { opacity: 1; transform: scale(1); }
+            66%, 100% { opacity: 0; transform: scale(0.9); }
+        }
+        @keyframes icon-fade-3 {
+            0%, 61% { opacity: 0; transform: scale(0.9); }
+            66%, 95% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.9); }
+        }
+        
+        .animate-icon-1 { animation: icon-fade-1 6s infinite; }
+        .animate-icon-2 { animation: icon-fade-2 6s infinite; }
+        .animate-icon-3 { animation: icon-fade-3 6s infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 bg-fixed font-display text-[#1b0d18] dark:text-white min-h-screen flex flex-col">
+    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-white/30 dark:bg-black/30 backdrop-blur-3xl border-x border-white/20">
+        
+        <!-- App Content Container -->
+        <div id="app-content" class="flex-1 overflow-y-auto pb-24">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-[#eee7f3] dark:border-zinc-800 flex justify-around py-3 px-6 z-50">
+            <a href="#" class="flex flex-col items-center gap-1 text-zinc-400" data-page="booking">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span class="text-[10px] font-bold">預約</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-zinc-400" data-page="status">
+                <span class="material-symbols-outlined">event_note</span>
+                <span class="text-[10px] font-bold">我的預約</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-zinc-400" data-page="chat">
+                <span class="material-symbols-outlined">chat</span>
+                <span class="text-[10px] font-bold">客服</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-zinc-400" data-page="member">
+                <span class="material-symbols-outlined fill-current">person</span>
+                <span class="text-[10px] font-bold">會員</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="js/spa-app.js"></script>
+</body>
+</html>
