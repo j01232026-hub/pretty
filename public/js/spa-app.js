@@ -363,8 +363,37 @@ const App = {
                 try {
                     const stylist = App.pages.booking.state.selectedStylist === '不指定' ? '' : App.pages.booking.state.selectedStylist;
                     const res = await fetch(`/api/get-busy-slots?date=${date}&stylist=${encodeURIComponent(stylist)}`);
-                    const bookedSlots = await res.json();
-                    App.pages.booking.renderTimeSlots(bookedSlots);
+                    const rawSlots = await res.json();
+                    
+                    // Convert raw ISO time ranges to occupied 30-min slots (HH:mm)
+                    const occupiedSlots = [];
+                    
+                    rawSlots.forEach(slot => {
+                        try {
+                            const start = new Date(slot.start);
+                            const end = new Date(slot.end);
+                            
+                            // Generate 30-min intervals between start and end
+                            let current = new Date(start);
+                            
+                            // Safety: Prevent infinite loops
+                            let safety = 0;
+                            while (current < end && safety < 50) {
+                                const h = current.getHours().toString().padStart(2, '0');
+                                const m = current.getMinutes().toString().padStart(2, '0');
+                                occupiedSlots.push(`${h}:${m}`);
+                                
+                                // Add 30 mins
+                                current.setMinutes(current.getMinutes() + 30);
+                                safety++;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing slot:', slot, e);
+                        }
+                    });
+                    
+                    console.log('Occupied Slots:', occupiedSlots);
+                    App.pages.booking.renderTimeSlots(occupiedSlots);
                 } catch (err) {
                     console.error('Failed to fetch booked slots', err);
                     App.pages.booking.renderTimeSlots([]); // Fallback
