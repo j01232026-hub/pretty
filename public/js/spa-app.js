@@ -627,10 +627,29 @@ const App = {
                 
                 // Guard: If user not logged in, show loading or empty state
                 if (!App.state.currentUserId) {
-                     // Wait for init or show login prompt if needed. 
-                     // For now, let the interval in init handle it or just return.
                      return;
                 }
+
+                // Skeleton HTML Definition
+                const skeletonHTML = `
+                    <div class="brand-card p-6 mb-4 relative overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-3/4">
+                                <div class="skeleton skeleton-text w-1/3 mb-2"></div>
+                                <div class="skeleton skeleton-text w-1/2"></div>
+                            </div>
+                            <div class="skeleton skeleton-circle w-12 h-12"></div>
+                        </div>
+                        <div class="skeleton skeleton-block h-24 w-full rounded-xl mb-4"></div>
+                        <div class="flex gap-2">
+                             <div class="skeleton skeleton-block h-10 flex-1 rounded-lg"></div>
+                             <div class="skeleton skeleton-block h-10 flex-1 rounded-lg"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Show Skeleton (Insert 2 items to simulate loading)
+                container.innerHTML = skeletonHTML + skeletonHTML;
                 
                 try {
                     const res = await fetch(`/api/get-appointments?user_id=${App.state.currentUserId}&type=all`);
@@ -1033,17 +1052,29 @@ const App = {
                 const container = document.getElementById('history-container');
                 if (!container) return;
 
-                // Show loading (if not already there)
-                // The HTML fragment already has the loading spinner by default, so we don't need to inject it unless we cleared it.
+                const userId = App.state.currentUserId;
+                if (!userId) {
+                        console.warn('User ID missing for history');
+                        return;
+                }
+
+                // Skeleton HTML Definition
+                const skeletonHTML = `
+                    <div class="bg-white rounded-xl p-4 mb-3 shadow-sm flex gap-3 items-center">
+                        <div class="skeleton skeleton-block w-16 h-16 rounded-lg shrink-0"></div>
+                        <div class="flex-1 flex flex-col gap-2">
+                            <div class="skeleton skeleton-text w-1/3 h-4"></div>
+                            <div class="skeleton skeleton-text w-3/4 h-3"></div>
+                            <div class="skeleton skeleton-text w-1/4 h-3"></div>
+                        </div>
+                        <div class="skeleton skeleton-block w-20 h-8 rounded-full"></div>
+                    </div>
+                `;
+
+                // Show Skeleton
+                container.innerHTML = skeletonHTML + skeletonHTML + skeletonHTML;
                 
                 try {
-                    const userId = App.state.currentUserId;
-                    if (!userId) {
-                         // wait or retry?
-                         console.warn('User ID missing for history');
-                         return;
-                    }
-
                     const res = await fetch(`/api/get-appointments?user_id=${userId}&type=history`);
                     if (!res.ok) throw new Error('API Error');
                     const data = await res.json();
