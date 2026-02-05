@@ -1153,12 +1153,62 @@ const App = {
             }
         },
         member: {
+            state: { pendingAvatar: null },
+            compressImage: (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const MAX_WIDTH = 500;
+                            const MAX_HEIGHT = 500;
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+                            } else {
+                                if (height > MAX_HEIGHT) {
+                                    width *= MAX_HEIGHT / height;
+                                    height = MAX_HEIGHT;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.7));
+                        };
+                        img.onerror = reject;
+                    };
+                    reader.onerror = reject;
+                });
+            },
+            handleAvatarChange: async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                try {
+                    const compressed = await App.pages.member.compressImage(file);
+                    const profileAvatarEdit = document.getElementById('profile-avatar-edit');
+                    if (profileAvatarEdit) profileAvatarEdit.style.backgroundImage = `url("${compressed}")`;
+                    App.pages.member.state.pendingAvatar = compressed;
+                } catch (e) {
+                    console.error('Avatar error', e);
+                    alert('圖片處理失敗');
+                }
+            },
             init: async () => {
                 console.log('Member Page Initialized');
                 
                 // Expose global functions for fragment onclicks
                 window.submitProfile = App.pages.member.submitProfile;
                 window.editProfile = App.pages.member.editProfile;
+                window.handleAvatarChange = App.pages.member.handleAvatarChange;
 
                 const loadingScreen = document.getElementById('loading-screen');
                 
@@ -1230,6 +1280,9 @@ const App = {
                 }
             },
             showCompleteProfile: (profileData) => {
+                // Reset pending avatar state
+                App.pages.member.state.pendingAvatar = null;
+
                 const completeSection = document.getElementById('complete-profile-section');
                 const cardSection = document.getElementById('member-card-section');
                 const pageTitle = document.getElementById('page-title');
@@ -1324,6 +1377,10 @@ const App = {
 
                 try {
                     const userId = App.state.currentUserId;
+                    const pendingAvatar = App.pages.member.state.pendingAvatar;
+                    const currentAvatar = App.state.userProfile ? App.state.userProfile.pictureUrl : '';
+                    const finalAvatar = pendingAvatar || currentAvatar;
+
                     const res = await fetch('/api/update-member-profile', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1333,7 +1390,7 @@ const App = {
                             phone: phoneInput.value,
                             birthday: birthdayInput.value,
                             email: emailInput.value,
-                            picture_url: App.state.userProfile ? App.state.userProfile.pictureUrl : ''
+                            picture_url: finalAvatar
                         })
                     });
                     

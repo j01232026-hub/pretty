@@ -1,13 +1,14 @@
 <!-- Section 1: Complete Profile (Hidden by default) -->
 <div id="complete-profile-section" style="display: none;">
     <div class="flex flex-col items-center justify-center mb-4 mt-6">
-        <div class="relative group cursor-pointer">
+        <div class="relative group cursor-pointer" onclick="document.getElementById('avatar-input').click()">
             <div class="size-24 rounded-full border-4 border-white dark:border-zinc-800 shadow-md overflow-hidden bg-zinc-200">
                 <div id="profile-avatar-edit" class="w-full h-full bg-center bg-no-repeat bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD18kdXGQJigkOXLPlvC-ECcl42zQCh8--Ip7Z27VF8utUTyy7lg4FwmZy5Ai4mf2QGMy0_vZVVkPKKWsK29ZcLR-QvSP2UrZjhuZCnVwml_TxJV0WgSDMjJ6a2ypZY8nC_twruafjXRDeUpsv5xK8jNis2t4TeSMhQRs9Q4MV1LnBG3_PbkU9oSdJ0-Y7X5p5-5YNLKrF4Z9wk2QRlGWCbSxrCojYJMqCnkPne6xhTwh1z60s8K7CMrSNd9ZZy8N1871srYoLFjIx4");'></div>
             </div>
-            <div class="absolute bottom-0 right-0 bg-primary text-white size-8 rounded-full flex items-center justify-center border-2 border-background-light dark:border-background-dark shadow-sm">
+            <div class="absolute bottom-0 right-0 bg-primary text-white size-8 rounded-full flex items-center justify-center border-2 border-background-light dark:border-background-dark shadow-sm hover:scale-110 transition-transform">
                 <span class="material-symbols-outlined text-[16px]">photo_camera</span>
             </div>
+            <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="handleAvatarChange(event)">
         </div>
         <p class="text-[#794c9a] dark:text-zinc-400 text-sm mt-2 font-medium">完善資料以獲取會員優惠</p>
     </div>
