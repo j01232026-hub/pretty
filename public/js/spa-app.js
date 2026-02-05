@@ -1245,14 +1245,24 @@ const App = {
                 const cardName = document.getElementById('card-name');
                 const cardPhone = document.getElementById('card-phone');
                 const cardBirthday = document.getElementById('card-birthday');
+                const cardAvatar = document.getElementById('card-avatar');
                 
                 const realNameInput = document.getElementById('real-name');
                 const phoneInput = document.getElementById('phone');
                 const birthdayInput = document.getElementById('birthday');
+                const profileAvatarEdit = document.getElementById('profile-avatar-edit');
                 
                 if (cardName && realNameInput) realNameInput.value = cardName.textContent;
                 if (cardPhone && phoneInput && cardPhone.textContent !== '-') phoneInput.value = cardPhone.textContent;
                 if (cardBirthday && birthdayInput && cardBirthday.textContent !== '-') birthdayInput.value = cardBirthday.textContent;
+                
+                if (cardAvatar && profileAvatarEdit) {
+                     // Extract URL from background-image
+                     const style = cardAvatar.style.backgroundImage;
+                     if (style) {
+                         profileAvatarEdit.style.backgroundImage = style;
+                     }
+                }
             },
             checkMemberStatus: async () => {
                 const loadingScreen = document.getElementById('loading-screen');
@@ -1341,7 +1351,10 @@ const App = {
                     if (cardBirthday) cardBirthday.textContent = profileData.birthday || '-';
                     
                     if (cardJoinDate) {
-                        if (profileData.created_at) {
+                        if (profileData.updated_at) {
+                            const date = new Date(profileData.updated_at);
+                            cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
+                        } else if (profileData.created_at) {
                             const date = new Date(profileData.created_at);
                             cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
                         } else {
