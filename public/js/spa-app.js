@@ -1254,8 +1254,12 @@ const App = {
                     if (phoneInput) phoneInput.value = profile.phone || '';
                     if (birthdayInput) birthdayInput.value = profile.birthday || '';
                     if (emailInput) emailInput.value = profile.email || '';
-                    if (profileAvatarEdit && profile.picture_url) {
-                        profileAvatarEdit.style.backgroundImage = `url("${profile.picture_url}")`;
+                    if (profileAvatarEdit) {
+                        if (profile.picture_url) {
+                            profileAvatarEdit.style.backgroundImage = `url("${profile.picture_url}")`;
+                        } else if (App.state.userProfile && App.state.userProfile.pictureUrl) {
+                            profileAvatarEdit.style.backgroundImage = `url("${App.state.userProfile.pictureUrl}")`;
+                        }
                     }
                     return; // Done if state exists
                 }
@@ -1367,11 +1371,11 @@ const App = {
                     if (cardBirthday) cardBirthday.textContent = profileData.birthday || '-';
                     
                     if (cardJoinDate) {
-                        if (profileData.updated_at) {
-                            const date = new Date(profileData.updated_at);
-                            cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
-                        } else if (profileData.created_at) {
+                        if (profileData.created_at) {
                             const date = new Date(profileData.created_at);
+                            cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
+                        } else if (profileData.updated_at) {
+                            const date = new Date(profileData.updated_at);
                             cardJoinDate.textContent = date.toLocaleDateString('zh-TW');
                         } else {
                             cardJoinDate.textContent = '2025/01/01'; // Fallback
