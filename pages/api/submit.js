@@ -135,6 +135,24 @@ export default async function handler(req, res) {
                 stylist: stylist || 'Any Staff',
                 pictureUrl: pictureUrl || ''
             });
+
+            // --- 0. 寫入前檢查 (Read Check) - 已恢復 ---
+            // 檢查該時段是否已存在預約 (針對同一位使用者，避免重複提交)
+            // 注意：這不是主要的防撞檢查 (主要防撞在 Google Calendar Check)，這是為了防止前端重複點擊造成的垃圾資料
+            const { data: existingBookings } = await supabase
+                .from('bookings')
+                .select('id')
+                .ilike('message', `%"date": "${date}", "time": "${time}"%`)
+                .eq('user_id', userId);
+
+            if (existingBookings && existingBookings.length > 0) {
+                console.warn('使用者重複提交預約，嘗試刪除舊資料以允許覆蓋 (Overwriting logic restored)');
+                // 刪除舊的預約 (使用者要求的恢復邏輯)
+                // 這在某些情境下是有用的，例如使用者想修正資料重新送出
+                for (const booking of existingBookings) {
+                    await supabase.from('bookings').delete().eq('id', booking.id);
+                }
+            }
             
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
