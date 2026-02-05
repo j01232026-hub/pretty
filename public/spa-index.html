@@ -80,8 +80,11 @@
     </style>
 </head>
 <body class="bg-fixed font-display text-[#1b0d18] dark:text-white min-h-screen flex flex-col">
-    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-white/30 dark:bg-black/30 backdrop-blur-3xl border-x border-white/20">
+    <div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl border-x border-white/20">
         
+        <!-- Background Layer (Moved here to avoid stacking context issues for fixed children) -->
+        <div class="absolute inset-0 bg-white/30 dark:bg-black/30 backdrop-blur-3xl -z-10 pointer-events-none"></div>
+
         <!-- App Content Container -->
         <div id="app-content" class="flex-1 overflow-y-auto pb-24">
             <!-- Dynamic content will be loaded here -->
