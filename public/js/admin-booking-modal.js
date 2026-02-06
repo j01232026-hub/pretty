@@ -132,7 +132,7 @@ function renderCalendar() {
     // Previous month padding
     for (let i = 0; i < startingDay; i++) {
         const div = document.createElement('div');
-        div.className = 'h-7 flex items-center justify-center text-xs text-gray-300';
+        div.className = 'h-10 flex items-center justify-center text-sm text-gray-300';
         grid.appendChild(div);
     }
     
@@ -145,7 +145,7 @@ function renderCalendar() {
         btn.type = 'button';
         btn.textContent = day;
         // Use primary color (purple) for selection
-        btn.className = `h-7 w-7 mx-auto rounded-full flex items-center justify-center text-sm transition-colors ${
+        btn.className = `h-10 w-10 mx-auto rounded-full flex items-center justify-center text-base transition-colors ${
             isSelected 
             ? 'bg-primary text-white font-bold shadow-md' 
             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
