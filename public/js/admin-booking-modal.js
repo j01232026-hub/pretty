@@ -220,7 +220,7 @@ function renderTimeSlots() {
         groupDiv.appendChild(labelDiv);
         
         const gridDiv = document.createElement('div');
-        gridDiv.className = 'grid grid-cols-4 gap-1';
+        gridDiv.className = 'grid grid-cols-4 gap-y-2 gap-x-1';
         
         groupSlots.forEach(time => {
             const isSelected = selectedTime === time;
@@ -228,11 +228,11 @@ function renderTimeSlots() {
             btn.type = 'button';
             btn.textContent = time;
             // Use primary color (purple) for selection
-            // FORCE HEIGHT and CAPSULE SHAPE
-            btn.className = `h-7 w-full flex items-center justify-center rounded-full text-sm border transition-all ${
+            // COMPACT CAPSULE: Auto width, centered, fixed height
+            btn.className = `h-8 w-[72px] mx-auto flex items-center justify-center rounded-full text-sm font-display tracking-wide border transition-all ${
                 isSelected
-                ? 'bg-primary border-primary text-white shadow-sm font-bold'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
+                ? 'bg-primary border-primary text-white shadow-md font-bold'
+                : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 font-bold'
             }`;
             btn.onclick = () => selectTimeSlot(time);
             gridDiv.appendChild(btn);
