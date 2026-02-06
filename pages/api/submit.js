@@ -14,15 +14,38 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { userId, date, time, phone, endTime, name, stylist, pictureUrl } = req.body;
-        console.log('Received booking request:', { userId, date, time, stylist }); // Debug log
+        const { 
+            userId, 
+            date, 
+            time, 
+            phone, 
+            endTime, 
+            name, 
+            stylist, 
+            pictureUrl, 
+            type = 'regular', // default type
+            admin_override = false,
+            isAllDay = false
+        } = req.body;
+        
+        console.log('Received booking request:', { userId, date, time, stylist, type, admin_override, isAllDay });
 
-        if (!userId || !date || !time || !phone) {
-            return res.status(400).json({ error: 'Missing required fields' });
+        // Validation logic
+        if (!date || (!time && !isAllDay)) {
+             return res.status(400).json({ error: 'Missing required fields (date or time)' });
         }
 
-        // Update User Profile with Picture (Upsert)
-        if (userId && userId !== 'U_GUEST') {
+        // For 'block' type, userId is optional. For 'regular' and 'staff_booking', userId or phone/name might be needed
+        // Relaxing checks: if it's a block, we don't strictly need user info, but we need date/time/stylist usually.
+        // For compatibility, if type is regular, we keep strict checks unless it's an admin override scenario?
+        // Let's keep it simple: if not 'block', we expect phone to be present usually for contact.
+        if (type !== 'block' && !phone) {
+             // For guest bookings or staff bookings for a client, phone is essential
+             return res.status(400).json({ error: 'Missing required fields (phone)' });
+        }
+        
+        // Update User Profile with Picture (Upsert) - Only for regular users
+        if (userId && userId !== 'U_GUEST' && type === 'regular') {
             try {
                 const profileUpdates = {
                     user_id: userId,
@@ -42,9 +65,6 @@ export default async function handler(req, res) {
             }
         }
 
-        // 0. 內部撞期檢查 (查 Supabase) - 改為 "寫入後檢查" 模式
-        // 先移除這裡的讀取檢查，改用 Optimistic Locking
-
         // --- Google Calendar 開始 ---
         let insertedBooking = null;
         let eventUrl = '';
@@ -56,8 +76,6 @@ export default async function handler(req, res) {
             // 1. 初始化 Google 日曆 API
             const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
             
-            // 除錯日誌：檢查金鑰結構 (隱藏敏感資訊)
-            // console.log('Google Credentials Keys:', Object.keys(serviceAccountKey));
             if (!serviceAccountKey.private_key) {
                 throw new Error('Missing private_key in GOOGLE_SERVICE_ACCOUNT_KEY');
             }
@@ -76,93 +94,101 @@ export default async function handler(req, res) {
             
             // 取得已授權的客戶端
             const authClient = await auth.getClient();
-            // console.log('Google Auth 授權成功');
-
             const calendar = google.calendar({ version: 'v3', auth: authClient });
 
             // 2. 準備時間
-            // 確保格式為 RFC3339 (含時區 +08:00)
-            const startDateTime = `${date}T${time}:00+08:00`;
-            
-            // 計算結束時間
-            let endDateTime;
-            if (endTime) {
-                // 如果前端有傳結束時間 (HH:mm)
-                endDateTime = `${date}T${endTime}:00+08:00`;
+            let startDateTime, endDateTime;
+
+            if (isAllDay) {
+                // For conflict check and DB record, we use full day range
+                startDateTime = `${date}T00:00:00+08:00`;
+                // End of day for conflict check
+                endDateTime = `${date}T23:59:59+08:00`;
             } else {
-                // 預設加 1 小時
-                const startDateObj = new Date(startDateTime);
-                const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
+                // 確保格式為 RFC3339 (含時區 +08:00)
+                startDateTime = `${date}T${time}:00+08:00`;
                 
-                // 轉換為台北時間格式字串
-                const tempDate = new Date(endDateObj.getTime());
-                tempDate.setUTCHours(tempDate.getUTCHours() + 8);
-                endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+                // 計算結束時間
+                if (endTime) {
+                    endDateTime = `${date}T${endTime}:00+08:00`;
+                } else {
+                    const startDateObj = new Date(startDateTime);
+                    const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
+                    
+                    const tempDate = new Date(endDateObj.getTime());
+                    tempDate.setUTCHours(tempDate.getUTCHours() + 8);
+                    endDateTime = tempDate.toISOString().replace('Z', '+08:00');
+                }
             }
 
             // --- 新增：寫入前的最後檢查 ---
-            console.log(`正在進行寫入前的最後撞期檢查 (API)... Start: ${startDateTime}, End: ${endDateTime}`);
-            const checkResponse = await calendar.freebusy.query({
-                resource: {
-                    timeMin: startDateTime,
-                    timeMax: endDateTime,
-                    timeZone: 'Asia/Taipei',
-                    items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
-                },
-            });
-
-            const busySlots = checkResponse.data.calendars[process.env.GOOGLE_CALENDAR_ID].busy;
-
-            // 如果 busySlots 陣列長度大於 0，表示這個時段已經有行程了
-            if (busySlots.length > 0) {
-                console.warn('撞期偵測 (Google Calendar Check)！該時段已被佔用。');
-                return res.status(409).json({
-                    error: 'Conflict',
-                    message: `抱歉！您選擇的時段 [${date} ${time}${endTime ? '-' + endTime : ''}] 剛剛被搶先預約了 (日曆同步)。`
+            // 如果是 admin_override = true，則跳過 Google Calendar 撞期檢查
+            if (!admin_override) {
+                console.log(`正在進行寫入前的最後撞期檢查 (API)... Start: ${startDateTime}, End: ${endDateTime}`);
+                const checkResponse = await calendar.freebusy.query({
+                    resource: {
+                        timeMin: startDateTime,
+                        timeMax: endDateTime,
+                        timeZone: 'Asia/Taipei',
+                        items: [{ id: process.env.GOOGLE_CALENDAR_ID }]
+                    },
                 });
+
+                const busySlots = checkResponse.data.calendars[process.env.GOOGLE_CALENDAR_ID].busy;
+
+                if (busySlots.length > 0) {
+                    console.warn('撞期偵測 (Google Calendar Check)！該時段已被佔用。');
+                    return res.status(409).json({
+                        error: 'Conflict',
+                        message: `抱歉！您選擇的時段 [${date} ${time}${endTime ? '-' + endTime : ''}] 剛剛被搶先預約了 (日曆同步)。`
+                    });
+                }
+            } else {
+                console.log('Admin override enabled: Skipping Google Calendar conflict check.');
             }
 
             // 1. 寫入 Supabase (搶先佔位)
-            // 儲存 endTime 資訊
             const messageStr = JSON.stringify({
                 action: "book",
+                type: type, // 記錄預約類型
                 date: date,
-                time: time,
-                startTime: time,
+                time: isAllDay ? 'All Day' : time,
+                startTime: isAllDay ? '00:00' : time,
+                isAllDay: isAllDay,
                 endTime: endTime || '',
-                phone: phone,
+                phone: phone || '',
                 name: name || '',
                 stylist: stylist || 'Any Staff',
                 pictureUrl: pictureUrl || ''
             });
 
-            // --- 0. 寫入前檢查 (Read Check) - 已恢復 ---
-            // 檢查該時段是否已存在預約 (針對同一位使用者，避免重複提交)
-            // 注意：這不是主要的防撞檢查 (主要防撞在 Google Calendar Check)，這是為了防止前端重複點擊造成的垃圾資料
-            const { data: existingBookings } = await supabase
-                .from('bookings')
-                .select('id')
-                .ilike('message', `%"date": "${date}", "time": "${time}"%`)
-                .eq('user_id', userId);
+            // --- 0. 寫入前檢查 (Read Check) - 只針對非 block 類型 ---
+            if (userId && type !== 'block') {
+                const { data: existingBookings } = await supabase
+                    .from('bookings')
+                    .select('id')
+                    .ilike('message', `%"date": "${date}", "time": "${time}"%`)
+                    .eq('user_id', userId);
 
-            if (existingBookings && existingBookings.length > 0) {
-                console.warn('使用者重複提交預約，嘗試刪除舊資料以允許覆蓋 (Overwriting logic restored)');
-                // 刪除舊的預約 (使用者要求的恢復邏輯)
-                // 這在某些情境下是有用的，例如使用者想修正資料重新送出
-                for (const booking of existingBookings) {
-                    await supabase.from('bookings').delete().eq('id', booking.id);
+                if (existingBookings && existingBookings.length > 0) {
+                    console.warn('使用者重複提交預約，嘗試刪除舊資料以允許覆蓋');
+                    for (const booking of existingBookings) {
+                        await supabase.from('bookings').delete().eq('id', booking.id);
+                    }
                 }
             }
             
+            // 構建 insert 物件
+            const insertPayload = {
+                message: messageStr,
+                created_at: new Date().toISOString(),
+                type: type // 新增欄位
+            };
+            if (userId) insertPayload.user_id = userId; // 只有當 userId 存在時才寫入，否則為 null
+
             const { data: bookingData, error: supabaseError } = await supabase
                 .from('bookings')
-                .insert([
-                    {
-                        user_id: userId,
-                        message: messageStr,
-                        created_at: new Date().toISOString(),
-                    },
-                ])
+                .insert([insertPayload])
                 .select()
                 .single();
 
@@ -173,31 +199,32 @@ export default async function handler(req, res) {
             insertedBooking = bookingData;
             console.log(`Supabase 寫入成功 ID: ${insertedBooking.id}`);
 
-            // 1.5 雙重預約檢查 (Compensating Transaction)
-            const { data: duplicateBookings } = await supabase
-                .from('bookings')
-                .select('id, created_at')
-                .ilike('message', `%"date": "${date}", "time": "${time}"%`)
-                .order('created_at', { ascending: true });
+            // 1.5 雙重預約檢查 (Compensating Transaction) - 僅在非 admin_override 時執行
+            if (!admin_override) {
+                const { data: duplicateBookings } = await supabase
+                    .from('bookings')
+                    .select('id, created_at')
+                    .ilike('message', `%"date": "${date}", "time": "${time}"%`)
+                    .order('created_at', { ascending: true });
 
-            if (duplicateBookings && duplicateBookings.length > 1) {
-                const firstBooking = duplicateBookings[0];
-                if (firstBooking.id !== insertedBooking.id) {
-                    console.warn(`雙重預約偵測 (API)！我 (${insertedBooking.id}) 晚了一步。第一筆是 ${firstBooking.id}`);
-                    
-                    // 補償措施：刪除自己剛寫入的資料
-                    await supabase.from('bookings').delete().eq('id', insertedBooking.id);
-                    
-                    return res.status(409).json({ 
-                        error: 'Conflict', 
-                        message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (競爭失敗)。` 
-                    });
+                if (duplicateBookings && duplicateBookings.length > 1) {
+                    const firstBooking = duplicateBookings[0];
+                    if (firstBooking.id !== insertedBooking.id) {
+                        console.warn(`雙重預約偵測 (API)！我 (${insertedBooking.id}) 晚了一步。第一筆是 ${firstBooking.id}`);
+                        
+                        await supabase.from('bookings').delete().eq('id', insertedBooking.id);
+                        
+                        return res.status(409).json({ 
+                            error: 'Conflict', 
+                            message: `抱歉！您選擇的時段 [${date} ${time}] 剛剛被搶先預約了 (競爭失敗)。` 
+                        });
+                    }
                 }
             }
 
             // 2.5 取得用戶暱稱 (For Google Calendar)
             let nickname = '';
-            if (userId && userId !== 'U_GUEST') {
+            if (userId && userId !== 'U_GUEST' && type !== 'block') {
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('display_name')
@@ -211,8 +238,6 @@ export default async function handler(req, res) {
             const summaryName = (name || '').trim();
             const summaryNickname = (nickname || '').trim();
             
-            // 邏輯：只有當「姓名」與「暱稱」不相似時，才將暱稱附加上去
-            // 如果姓名已經包含暱稱，或兩者完全相同，就只顯示姓名
             let summaryDisplay = summaryName;
             
             if (summaryNickname && summaryName !== summaryNickname && !summaryName.includes(summaryNickname)) {
@@ -220,18 +245,36 @@ export default async function handler(req, res) {
             }
 
             // 3. 建立事件物件
+            let eventSummary = `【新預約】${summaryDisplay} ${phone || ''} - ${stylist || 'Any Staff'}`;
+            let eventDescription = `透過 LINE 預約系統建立 (API)\nBooking ID: ${insertedBooking.id}\nUser ID: ${userId || 'N/A'}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}\nStylist: ${stylist || 'Any Staff'}`;
+            let colorId = null; // Default color
+
+            // 根據類型調整標題與顏色
+            if (type === 'block') {
+                eventSummary = `⛔ [保留] ${stylist || '全店'} - ${name || '內部保留'}`;
+                eventDescription = `內部保留時段\n備註: ${name || '無'}\nStylist: ${stylist || 'N/A'}\nBooking ID: ${insertedBooking.id}`;
+                colorId = '8'; // 灰色 (Graphite) 或其他顏色，視 Google Calendar 設定而定
+            } else if (type === 'staff_booking') {
+                eventSummary = `📅 [代約] ${summaryDisplay} ${phone || ''} - ${stylist || 'Any Staff'}`;
+                colorId = '6'; // 橘色 (Tangerine)
+            }
+
             const event = {
-                summary: `【新預約】${summaryDisplay} ${phone} - ${stylist || 'Any Staff'}`,
-                description: `透過 LINE 預約系統建立 (API)\nBooking ID: ${insertedBooking.id}\nUser ID: ${userId}\nName: ${name || 'N/A'}\nNickname: ${nickname || 'N/A'}\nStylist: ${stylist || 'Any Staff'}`,
-                start: {
-                    dateTime: startDateTime,
-                    timeZone: 'Asia/Taipei',
-                },
-                end: {
-                    dateTime: endDateTime,
-                    timeZone: 'Asia/Taipei',
-                },
+                summary: eventSummary,
+                description: eventDescription,
+                colorId: colorId
             };
+
+            if (isAllDay) {
+                event.start = { date: date }; // YYYY-MM-DD
+                // End date for single day all-day event is next day
+                const d = new Date(date);
+                d.setDate(d.getDate() + 1);
+                event.end = { date: d.toISOString().split('T')[0] };
+            } else {
+                event.start = { dateTime: startDateTime, timeZone: 'Asia/Taipei' };
+                event.end = { dateTime: endDateTime, timeZone: 'Asia/Taipei' };
+            }
 
             // 4. 寫入 Google Calendar (含補償機制)
             let insertResponse;

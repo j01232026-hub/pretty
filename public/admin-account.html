@@ -378,13 +378,7 @@
                 const staffJson = JSON.stringify(staff).replace(/'/g, "&apos;");
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <!-- Toggle Switch -->
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" onchange="toggleStaffVisibility('${staff.id}', this.checked)" ${isVisible ? 'checked' : ''}>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        </label>
-
-                        <div class="w-12 h-12 rounded-full bg-blue-50 overflow-hidden avatar-circle ${avatarClass} ml-2">
+                        <div class="w-12 h-12 rounded-full bg-blue-50 overflow-hidden avatar-circle ${avatarClass}">
                             ${avatarHtml}
                         </div>
                         <div>
@@ -392,7 +386,13 @@
                             <p class="text-xs text-slate-500">${staff.title || '員工'} · ${staff.phone || '無電話'}</p>
                         </div>
                     </div>
-                    <div class="flex gap-1">
+                    <div class="flex items-center gap-2">
+                        <!-- Toggle Switch -->
+                        <label class="relative inline-flex items-center cursor-pointer mr-2" title="${isVisible ? '顯示中' : '已隱藏'}">
+                            <input type="checkbox" class="sr-only peer" onchange="toggleStaffVisibility('${staff.id}', this.checked)" ${isVisible ? 'checked' : ''}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+
                         <button class="icon-btn" title="編輯" onclick='openEditStaffModal(${staffJson})'>
                             <span class="material-icons">edit</span>
                         </button>

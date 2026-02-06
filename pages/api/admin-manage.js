@@ -58,7 +58,9 @@ export default async function handler(req, res) {
                         time: booking.time || details.time,
                         phone: booking.phone || details.phone,
                         name: details.name, // Try to extract name from JSON
-                        service: details.service // Try to extract service from JSON
+                        service: details.service, // Try to extract service from JSON
+                        type: booking.type || details.type || 'regular', // Ensure type is present
+                        googleEventId: details.googleEventId // Expose for debugging if needed
                     };
                 })
                 .filter(b => b.date && b.date >= today) // 只留今天以後的
@@ -104,18 +106,21 @@ export default async function handler(req, res) {
 
             // 第二步：嘗試刪除 Google 日曆行程
             let googleDeleted = false;
+            
+            // Extract googleEventId from JSON message
+            const googleEventId = booking.google_event_id || bookingDetails.googleEventId;
 
             // 優先策略：使用 google_event_id 直接刪除
-            if (booking?.google_event_id) {
+            if (googleEventId) {
                 try {
                     await calendar.events.delete({
                         calendarId: process.env.GOOGLE_CALENDAR_ID,
-                        eventId: booking.google_event_id
+                        eventId: googleEventId
                     });
-                    console.log(`Google Event ${booking.google_event_id} deleted (By ID).`);
+                    console.log(`Google Event ${googleEventId} deleted (By ID).`);
                     googleDeleted = true;
                 } catch (err) {
-                    console.warn(`Failed to delete by ID ${booking.google_event_id}, trying fallback...`, err.message);
+                    console.warn(`Failed to delete by ID ${googleEventId}, trying fallback...`, err.message);
                 }
             }
 
