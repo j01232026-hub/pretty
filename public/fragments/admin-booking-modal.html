@@ -5,7 +5,7 @@
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAdminBookingModal()"></div>
     
     <!-- Modal Content -->
-    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 w-[324px] mx-auto bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh]">
+    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[480px] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh]">
         
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b border-gray-100/50 dark:border-gray-800/50">
@@ -24,7 +24,7 @@
                     代客預約
                 </button>
                 <button onclick="setBookingType('block')" id="typeBtn_block" class="w-full h-11 rounded-lg text-base font-bold transition-colors duration-200 flex items-center justify-center border border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                    內部保留
+                    內部保留 <span class="hidden sm:inline ml-1 font-normal opacity-80">(休假/忙碌)</span>
                 </button>
             </div>
 
@@ -86,7 +86,7 @@
                     <input type="hidden" name="time" id="hiddenTimeInput" required>
 
                     <!-- Calendar Section -->
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-[10px] shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-100 dark:border-gray-700">
                         <!-- Calendar Header -->
                         <div class="flex items-center justify-between mb-2">
                             <button type="button" onclick="changeMonth(-1)" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
