@@ -36,9 +36,19 @@ function setBookingType(type) {
     const staffBtn = document.getElementById('typeBtn_staff_booking');
     const blockBtn = document.getElementById('typeBtn_block');
     
+    // Define classes
+    const activeClasses = ['bg-white', 'shadow', 'text-primary', 'dark:bg-gray-700', 'dark:text-white'];
+    const inactiveClasses = ['text-gray-500', 'hover:text-gray-700', 'dark:text-gray-400', 'dark:hover:text-gray-200'];
+    
+    // Reset base classes for safety (though not strictly needed if we manage add/remove correctly)
+    // Better to just add/remove the diff
+    
     if (type === 'staff_booking') {
-        staffBtn.className = 'py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-primary';
-        blockBtn.className = 'py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+        staffBtn.classList.add(...activeClasses);
+        staffBtn.classList.remove(...inactiveClasses);
+        
+        blockBtn.classList.remove(...activeClasses);
+        blockBtn.classList.add(...inactiveClasses);
         
         document.getElementById('customerInfoSection').classList.remove('hidden');
         document.getElementById('blockNoteSection').classList.add('hidden');
@@ -49,8 +59,11 @@ function setBookingType(type) {
         // Hide All Day option
         document.getElementById('allDayWrapper').classList.add('hidden');
     } else {
-        blockBtn.className = 'py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-primary';
-        staffBtn.className = 'py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+        blockBtn.classList.add(...activeClasses);
+        blockBtn.classList.remove(...inactiveClasses);
+        
+        staffBtn.classList.remove(...activeClasses);
+        staffBtn.classList.add(...inactiveClasses);
         
         document.getElementById('customerInfoSection').classList.add('hidden');
         document.getElementById('blockNoteSection').classList.remove('hidden');
