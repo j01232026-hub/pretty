@@ -1,11 +1,11 @@
 
 <!-- Admin Booking Modal -->
-<div id="adminBookingModal" class="fixed inset-0 z-[100] hidden">
+<div id="adminBookingModal" class="fixed inset-0 z-[10001] hidden">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAdminBookingModal()"></div>
     
     <!-- Modal Content -->
-    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[480px] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[90vh]">
+    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[480px] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh]">
         
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b border-gray-100/50 dark:border-gray-800/50">
@@ -63,15 +63,15 @@
                 </div>
 
                 <!-- Dynamic Section Wrapper to prevent layout jump -->
-                <div class="min-h-[230px]">
+                <div class="h-[250px] relative">
                     <!-- Customer Info (Conditional) -->
-                    <div id="customerInfoSection" class="space-y-4">
+                    <div id="customerInfoSection" class="space-y-4 absolute inset-0 w-full transition-opacity duration-200">
                         <!-- Member Search -->
                         <div class="relative">
                             <label class="text-xs font-bold text-gray-500">搜尋會員 (自動帶入)</label>
                             <div class="relative">
                                 <input type="text" id="memberSearchInput" placeholder="輸入姓名或電話搜尋..." 
-                                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pl-9"
+                                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pl-9 py-2.5 text-sm"
                                     oninput="handleMemberSearch(this.value)">
                                 <span class="material-icons absolute left-2.5 top-2.5 text-gray-400 text-lg">search</span>
                                 
@@ -84,19 +84,19 @@
 
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-500">客戶姓名</label>
-                            <input type="text" name="name" placeholder="請輸入姓名" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                            <input type="text" name="name" placeholder="請輸入姓名" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2.5 text-sm">
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-500">手機號碼</label>
-                            <input type="tel" name="phone" placeholder="0912345678" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                            <input type="tel" name="phone" placeholder="0912345678" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2.5 text-sm">
                         </div>
                     </div>
 
                     <!-- Block Note (Conditional) -->
-                    <div id="blockNoteSection" class="space-y-2 hidden">
+                    <div id="blockNoteSection" class="space-y-2 hidden absolute inset-0 w-full transition-opacity duration-200">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-500">備註 (休假/進修/出國)</label>
-                            <input type="text" name="note" id="blockNoteInput" placeholder="例如：出國旅遊" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                            <input type="text" name="note" id="blockNoteInput" placeholder="例如：出國旅遊" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2.5 text-sm">
                         </div>
                         <!-- Quick Tags -->
                         <div class="flex flex-wrap gap-2">
