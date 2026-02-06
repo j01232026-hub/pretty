@@ -79,24 +79,60 @@
                     </div>
                 </div>
 
-                <!-- Date & Time -->
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-500">日期</label>
-                            <input type="date" name="date" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                <!-- Date & Time (New UI) -->
+                <div class="space-y-6">
+                    <!-- Hidden Inputs for Form Submission -->
+                    <input type="hidden" name="date" id="hiddenDateInput" required>
+                    <input type="hidden" name="time" id="hiddenTimeInput" required>
+
+                    <!-- Calendar Section -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                        <!-- Calendar Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <button type="button" onclick="changeMonth(-1)" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                                <span class="material-icons text-gray-500">chevron_left</span>
+                            </button>
+                            <h3 id="calendarMonthYear" class="text-lg font-bold text-gray-800 dark:text-gray-200"></h3>
+                            <button type="button" onclick="changeMonth(1)" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                                <span class="material-icons text-gray-500">chevron_right</span>
+                            </button>
                         </div>
-                        <div class="space-y-1 relative">
-                            <label class="text-xs font-bold text-gray-500">開始時間</label>
-                            <input type="time" name="time" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                            
-                            <!-- All Day Checkbox (Hidden by default, shown in block mode) -->
-                            <div id="allDayWrapper" class="hidden absolute -top-1 right-0">
-                                <label class="inline-flex items-center cursor-pointer">
+                        
+                        <!-- Days of Week -->
+                        <div class="grid grid-cols-7 mb-2 text-center">
+                            <div class="text-xs font-bold text-gray-400">日</div>
+                            <div class="text-xs font-bold text-gray-400">一</div>
+                            <div class="text-xs font-bold text-gray-400">二</div>
+                            <div class="text-xs font-bold text-gray-400">三</div>
+                            <div class="text-xs font-bold text-gray-400">四</div>
+                            <div class="text-xs font-bold text-gray-400">五</div>
+                            <div class="text-xs font-bold text-gray-400">六</div>
+                        </div>
+
+                        <!-- Calendar Grid -->
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-y-2 text-center">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Time Slot Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 border-l-4 border-primary pl-3">
+                                <h3 class="text-base font-bold text-gray-800 dark:text-gray-200">選擇時段</h3>
+                                <span class="text-xs text-gray-500 font-normal">(每選擇一個時段為30分鐘)</span>
+                            </div>
+                            <!-- All Day Checkbox -->
+                            <div id="allDayWrapper" class="hidden">
+                                <label class="inline-flex items-center cursor-pointer select-none">
                                     <input type="checkbox" id="allDayCheck" class="rounded text-primary focus:ring-primary border-gray-300 w-3.5 h-3.5" onchange="toggleAllDay(this.checked)">
                                     <span class="ml-1 text-xs text-gray-500 font-bold">全天</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <div id="timeSlotsContainer" class="space-y-4">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                 </div>

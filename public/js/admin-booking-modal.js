@@ -1,6 +1,11 @@
 let currentBookingType = 'staff_booking'; // 'staff_booking' or 'block'
 let searchTimeout = null;
 
+// Calendar & Time Logic Variables
+let currentCalendarDate = new Date();
+let selectedDate = null;
+let selectedTime = null;
+
 // Ensure we have access to the secret
 const SEARCH_API_SECRET = (typeof ADMIN_SECRET !== 'undefined') ? ADMIN_SECRET : 'MyBeautyShop_2026_Boss_Only!';
 
@@ -10,10 +15,17 @@ function openAdminBookingModal() {
         modal.classList.remove('hidden');
         loadModalStylists();
         
-        // Set default date to today
-        const today = new Date().toISOString().split('T')[0];
-        const dateInput = modal.querySelector('input[name="date"]');
-        if (dateInput && !dateInput.value) dateInput.value = today;
+        // Initialize Calendar and Time
+        currentCalendarDate = new Date();
+        const todayStr = formatDate(new Date());
+        
+        // Set default selected date to today
+        selectDate(todayStr);
+        
+        // Reset time
+        selectedTime = null;
+        document.getElementById('hiddenTimeInput').value = '';
+        renderTimeSlots();
         
         // Reset search
         const searchInput = document.getElementById('memberSearchInput');
@@ -77,24 +89,172 @@ function setBookingType(type) {
 }
 
 function toggleAllDay(checked) {
-    const timeInput = document.querySelector('input[name="time"]');
+    const timeInput = document.getElementById('hiddenTimeInput');
     if (checked) {
-        timeInput.value = '00:00'; // Or just keep it but in backend treat as full day? 
-        // For visual feedback, maybe disable it or set to a standard start time
-        // But user might want to adjust.
-        // Actually "All Day" usually means occupying the whole slot.
-        // Let's set it to opening time or 00:00. 
-        // If we want to be precise, maybe disable time input?
-        // Let's just set a flag or handle logic. 
-        // Since backend expects start time, let's pick 00:00 or current day start.
-        // But for simplicity let's just leave it enabled but maybe default to opening time if we knew it.
-        // Let's just disable it to indicate "All Day covers everything"
-        timeInput.disabled = true;
-        timeInput.classList.add('bg-gray-100', 'text-gray-400');
+        selectedTime = null;
+        if(timeInput) timeInput.value = '00:00';
+        renderTimeSlots();
     } else {
-        timeInput.disabled = false;
-        timeInput.classList.remove('bg-gray-100', 'text-gray-400');
+        if(timeInput) timeInput.value = '';
     }
+}
+
+// --- Calendar & Time Slot Functions ---
+
+function formatDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function renderCalendar() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    // Update Header
+    const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+    const headerEl = document.getElementById('calendarMonthYear');
+    if (headerEl) {
+        headerEl.textContent = `${year}年 ${monthNames[month]}`;
+    }
+    
+    const grid = document.getElementById('calendarGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay(); // 0 is Sunday
+    
+    // Previous month padding
+    for (let i = 0; i < startingDay; i++) {
+        const div = document.createElement('div');
+        div.className = 'h-8 flex items-center justify-center text-xs text-gray-300';
+        grid.appendChild(div);
+    }
+    
+    // Days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isSelected = selectedDate === dateStr;
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = day;
+        // Use primary color (purple) for selection
+        btn.className = `h-8 w-8 mx-auto rounded-full flex items-center justify-center text-sm transition-colors ${
+            isSelected 
+            ? 'bg-primary text-white font-bold shadow-md' 
+            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+        }`;
+        btn.onclick = () => selectDate(dateStr);
+        
+        // Mark today with a border if not selected
+        const todayStr = formatDate(new Date());
+        if (dateStr === todayStr && !isSelected) {
+            btn.classList.add('border', 'border-primary', 'text-primary');
+        }
+        
+        grid.appendChild(btn);
+    }
+}
+
+function changeMonth(delta) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+    renderCalendar();
+}
+
+function selectDate(dateStr) {
+    selectedDate = dateStr;
+    const dateInput = document.getElementById('hiddenDateInput');
+    if (dateInput) dateInput.value = dateStr;
+    
+    // Sync calendar view if needed
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+        if (date.getFullYear() !== currentCalendarDate.getFullYear() || date.getMonth() !== currentCalendarDate.getMonth()) {
+            currentCalendarDate = new Date(date);
+        }
+    }
+    
+    renderCalendar();
+    renderTimeSlots();
+}
+
+function renderTimeSlots() {
+    const container = document.getElementById('timeSlotsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Define slots (Every 30 mins from 10:00 to 20:00)
+    const startHour = 10;
+    const endHour = 20;
+    const slots = [];
+    
+    for (let h = startHour; h <= endHour; h++) {
+        slots.push(`${String(h).padStart(2, '0')}:00`);
+        if (h !== endHour) { 
+             slots.push(`${String(h).padStart(2, '0')}:30`);
+        }
+    }
+    
+    const groups = {
+        '上午': slots.filter(t => parseInt(t.split(':')[0]) < 12),
+        '下午': slots.filter(t => parseInt(t.split(':')[0]) >= 12 && parseInt(t.split(':')[0]) < 18),
+        '晚上': slots.filter(t => parseInt(t.split(':')[0]) >= 18)
+    };
+    
+    for (const [label, groupSlots] of Object.entries(groups)) {
+        if (groupSlots.length === 0) continue;
+        
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'mb-2';
+        
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'text-xs text-gray-400 mb-2 font-bold';
+        labelDiv.textContent = label;
+        groupDiv.appendChild(labelDiv);
+        
+        const gridDiv = document.createElement('div');
+        gridDiv.className = 'grid grid-cols-4 gap-2';
+        
+        groupSlots.forEach(time => {
+            const isSelected = selectedTime === time;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = time;
+            // Use primary color (purple) for selection
+            btn.className = `py-2 rounded-lg text-sm border transition-all ${
+                isSelected
+                ? 'bg-primary border-primary text-white shadow-md'
+                : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200'
+            }`;
+            btn.onclick = () => selectTimeSlot(time);
+            gridDiv.appendChild(btn);
+        });
+        
+        groupDiv.appendChild(gridDiv);
+        container.appendChild(groupDiv);
+    }
+}
+
+function selectTimeSlot(time) {
+    selectedTime = time;
+    const timeInput = document.getElementById('hiddenTimeInput');
+    if (timeInput) timeInput.value = time;
+    
+    // Uncheck "All Day" if specific time selected
+    const allDayCheck = document.getElementById('allDayCheck');
+    if (allDayCheck && allDayCheck.checked) {
+        allDayCheck.checked = false;
+        // Logic for toggleAllDay(false) without clearing time
+    }
+    
+    renderTimeSlots();
 }
 
 function addBlockTag(tag) {
