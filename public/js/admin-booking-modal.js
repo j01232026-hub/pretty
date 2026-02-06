@@ -228,10 +228,10 @@ function renderTimeSlots() {
             btn.type = 'button';
             btn.textContent = time;
             // Use primary color (purple) for selection
-            btn.className = `py-1.5 rounded-lg text-sm border transition-all ${
+            btn.className = `py-1 rounded-full text-xs border transition-all ${
                 isSelected
-                ? 'bg-primary border-primary text-white shadow-md'
-                : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200'
+                ? 'bg-primary border-primary text-white shadow-sm font-bold'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
             }`;
             btn.onclick = () => selectTimeSlot(time);
             gridDiv.appendChild(btn);
