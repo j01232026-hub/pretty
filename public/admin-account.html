@@ -369,13 +369,22 @@
                     ? `<img src="${staff.avatar_url}" class="w-full h-full object-cover">`
                     : initial;
                 const avatarClass = staff.avatar_url ? '' : 'flex items-center justify-center text-blue-600 font-bold text-lg';
+                
+                // Visibility Toggle Logic
+                const isVisible = staff.visible !== false; // Default to true if undefined
 
                 const div = document.createElement('div');
                 div.className = 'list-item-card flex items-center justify-between';
                 const staffJson = JSON.stringify(staff).replace(/'/g, "&apos;");
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-blue-50 overflow-hidden avatar-circle ${avatarClass}">
+                        <!-- Toggle Switch -->
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" onchange="toggleStaffVisibility('${staff.id}', this.checked)" ${isVisible ? 'checked' : ''}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+
+                        <div class="w-12 h-12 rounded-full bg-blue-50 overflow-hidden avatar-circle ${avatarClass} ml-2">
                             ${avatarHtml}
                         </div>
                         <div>
@@ -398,6 +407,27 @@
         } catch (e) {
             console.error(e);
             container.innerHTML = '<div class="text-center py-4 text-red-400">載入失敗</div>';
+        }
+    }
+
+    async function toggleStaffVisibility(id, isVisible) {
+        try {
+            const res = await fetch('/api/staff', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, visible: isVisible })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Update failed');
+            }
+            // Success - no action needed, UI is already toggled
+            console.log(`Staff ${id} visibility updated to ${isVisible}`);
+        } catch (e) {
+            console.error(e);
+            alert('更新狀態失敗: ' + e.message);
+            fetchStaff(); // Reload to revert UI
         }
     }
 

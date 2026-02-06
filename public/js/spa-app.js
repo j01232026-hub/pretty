@@ -227,7 +227,8 @@ const App = {
                 if (!container) return;
                 
                 const staffMap = App.state.staffMap;
-                const staffList = Object.values(staffMap);
+                // Filter out hidden staff (visible defaults to true)
+                const staffList = Object.values(staffMap).filter(s => s.visible !== false);
                 
                 if (staffList.length === 0) {
                     container.innerHTML = '<div class="text-sm text-gray-400 p-2">暫無設計師資料</div>';
