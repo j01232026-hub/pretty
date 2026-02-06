@@ -16,31 +16,31 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-6">
+        <div class="flex-1 overflow-y-auto p-3 space-y-3">
             
             <!-- Type Selector -->
-            <div class="grid grid-cols-2 gap-2 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl select-none">
-                <button onclick="setBookingType('staff_booking')" id="typeBtn_staff_booking" class="w-full h-10 rounded-lg text-sm font-bold transition-colors duration-200 flex items-center justify-center border border-transparent bg-white shadow-sm text-primary dark:bg-gray-700 dark:text-white">
+            <div class="grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl select-none">
+                <button onclick="setBookingType('staff_booking')" id="typeBtn_staff_booking" class="w-full h-9 rounded-lg text-sm font-bold transition-colors duration-200 flex items-center justify-center border border-transparent bg-white shadow-sm text-primary dark:bg-gray-700 dark:text-white">
                     代客預約
                 </button>
-                <button onclick="setBookingType('block')" id="typeBtn_block" class="w-full h-10 rounded-lg text-sm font-bold transition-colors duration-200 flex items-center justify-center border border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <button onclick="setBookingType('block')" id="typeBtn_block" class="w-full h-9 rounded-lg text-sm font-bold transition-colors duration-200 flex items-center justify-center border border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     內部保留 <span class="hidden sm:inline ml-1 font-normal opacity-80">(休假/忙碌)</span>
                 </button>
             </div>
 
             <!-- Form -->
-            <form id="adminBookingForm" class="space-y-4" onsubmit="handleAdminBookingSubmit(event)">
+            <form id="adminBookingForm" class="space-y-3" onsubmit="handleAdminBookingSubmit(event)">
                 
                 <!-- Dynamic Section Wrapper to prevent layout jump -->
-                <div class="h-[250px] relative">
+                <div class="h-[210px] relative">
                     <!-- Customer Info (Conditional) -->
-                    <div id="customerInfoSection" class="space-y-4 absolute inset-0 w-full transition-opacity duration-200">
+                    <div id="customerInfoSection" class="space-y-2 absolute inset-0 w-full transition-opacity duration-200">
                         <!-- Member Search -->
                         <div class="relative">
-                            <label class="text-xs font-bold text-gray-500">搜尋會員 (自動帶入)</label>
+                            <label class="text-xs font-bold text-gray-500 mb-0.5 block">搜尋會員 (自動帶入)</label>
                             <div class="relative">
                                 <input type="text" id="memberSearchInput" placeholder="輸入姓名或電話搜尋..." 
-                                    class="w-full h-10 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pl-11 text-sm"
+                                    class="w-full h-9 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pl-11 text-sm"
                                     oninput="handleMemberSearch(this.value)">
                                 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">search</span>
                                 
@@ -51,21 +51,21 @@
                             </div>
                         </div>
 
-                        <div class="space-y-1">
+                        <div class="space-y-0.5">
                             <label class="text-xs font-bold text-gray-500">客戶姓名</label>
-                            <input type="text" name="name" placeholder="請輸入姓名" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2.5 text-sm">
+                            <input type="text" name="name" placeholder="請輸入姓名" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2 text-sm h-9">
                         </div>
-                        <div class="space-y-1">
+                        <div class="space-y-0.5">
                             <label class="text-xs font-bold text-gray-500">手機號碼</label>
-                            <input type="tel" name="phone" placeholder="0912345678" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2.5 text-sm">
+                            <input type="tel" name="phone" placeholder="0912345678" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2 text-sm h-9">
                         </div>
                     </div>
 
                     <!-- Block Note (Conditional) -->
                     <div id="blockNoteSection" class="space-y-2 hidden absolute inset-0 w-full transition-opacity duration-200">
-                        <div class="space-y-1">
+                        <div class="space-y-0.5">
                             <label class="text-xs font-bold text-gray-500">備註 (休假/進修/出國)</label>
-                            <input type="text" name="note" id="blockNoteInput" placeholder="例如：出國旅遊" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2.5 text-sm">
+                            <input type="text" name="note" id="blockNoteInput" placeholder="例如：出國旅遊" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all py-2 text-sm h-9">
                         </div>
                         <!-- Quick Tags -->
                         <div class="flex flex-wrap gap-2">
@@ -80,26 +80,26 @@
                 </div>
 
                 <!-- Date & Time (New UI) -->
-                <div class="space-y-6">
+                <div class="space-y-3">
                     <!-- Hidden Inputs for Form Submission -->
                     <input type="hidden" name="date" id="hiddenDateInput" required>
                     <input type="hidden" name="time" id="hiddenTimeInput" required>
 
                     <!-- Calendar Section -->
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-100 dark:border-gray-700">
                         <!-- Calendar Header -->
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between mb-2">
                             <button type="button" onclick="changeMonth(-1)" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
                                 <span class="material-icons text-gray-500">chevron_left</span>
                             </button>
-                            <h3 id="calendarMonthYear" class="text-lg font-bold text-gray-800 dark:text-gray-200"></h3>
+                            <h3 id="calendarMonthYear" class="text-base font-bold text-gray-800 dark:text-gray-200"></h3>
                             <button type="button" onclick="changeMonth(1)" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
                                 <span class="material-icons text-gray-500">chevron_right</span>
                             </button>
                         </div>
                         
                         <!-- Days of Week -->
-                        <div class="grid grid-cols-7 mb-2 text-center">
+                        <div class="grid grid-cols-7 mb-1 text-center">
                             <div class="text-xs font-bold text-gray-400">日</div>
                             <div class="text-xs font-bold text-gray-400">一</div>
                             <div class="text-xs font-bold text-gray-400">二</div>
@@ -110,17 +110,17 @@
                         </div>
 
                         <!-- Calendar Grid -->
-                        <div id="calendarGrid" class="grid grid-cols-7 gap-y-2 text-center">
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-y-1 text-center">
                             <!-- Populated by JS -->
                         </div>
                     </div>
 
                     <!-- Time Slot Section -->
-                    <div class="space-y-4">
+                    <div class="space-y-2">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2 border-l-4 border-primary pl-3">
-                                <h3 class="text-base font-bold text-gray-800 dark:text-gray-200">選擇時段</h3>
-                                <span class="text-xs text-gray-500 font-normal">(每選擇一個時段為30分鐘)</span>
+                            <div class="flex items-center gap-2 border-l-4 border-primary pl-2">
+                                <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200">選擇時段</h3>
+                                <span class="text-[10px] text-gray-500 font-normal">(30分/格)</span>
                             </div>
                             <!-- All Day Checkbox -->
                             <div id="allDayWrapper" class="hidden">
@@ -131,16 +131,16 @@
                             </div>
                         </div>
 
-                        <div id="timeSlotsContainer" class="space-y-4">
+                        <div id="timeSlotsContainer" class="space-y-2">
                             <!-- Populated by JS -->
                         </div>
                     </div>
                 </div>
 
                 <!-- Stylist -->
-                <div class="space-y-1">
+                <div class="space-y-0.5">
                     <label class="text-xs font-bold text-gray-500">設計師</label>
-                    <select id="modalStylistSelect" name="stylist" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                    <select id="modalStylistSelect" name="stylist" class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-9 text-sm">
                         <option value="">不指定</option>
                         <!-- Populated by JS -->
                     </select>

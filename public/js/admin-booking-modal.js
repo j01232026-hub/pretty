@@ -132,7 +132,7 @@ function renderCalendar() {
     // Previous month padding
     for (let i = 0; i < startingDay; i++) {
         const div = document.createElement('div');
-        div.className = 'h-8 flex items-center justify-center text-xs text-gray-300';
+        div.className = 'h-7 flex items-center justify-center text-xs text-gray-300';
         grid.appendChild(div);
     }
     
@@ -145,7 +145,7 @@ function renderCalendar() {
         btn.type = 'button';
         btn.textContent = day;
         // Use primary color (purple) for selection
-        btn.className = `h-8 w-8 mx-auto rounded-full flex items-center justify-center text-sm transition-colors ${
+        btn.className = `h-7 w-7 mx-auto rounded-full flex items-center justify-center text-sm transition-colors ${
             isSelected 
             ? 'bg-primary text-white font-bold shadow-md' 
             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -212,15 +212,15 @@ function renderTimeSlots() {
         if (groupSlots.length === 0) continue;
         
         const groupDiv = document.createElement('div');
-        groupDiv.className = 'mb-2';
+        groupDiv.className = 'mb-1';
         
         const labelDiv = document.createElement('div');
-        labelDiv.className = 'text-xs text-gray-400 mb-2 font-bold';
+        labelDiv.className = 'text-xs text-gray-400 mb-1 font-bold';
         labelDiv.textContent = label;
         groupDiv.appendChild(labelDiv);
         
         const gridDiv = document.createElement('div');
-        gridDiv.className = 'grid grid-cols-4 gap-2';
+        gridDiv.className = 'grid grid-cols-4 gap-1.5';
         
         groupSlots.forEach(time => {
             const isSelected = selectedTime === time;
@@ -228,7 +228,7 @@ function renderTimeSlots() {
             btn.type = 'button';
             btn.textContent = time;
             // Use primary color (purple) for selection
-            btn.className = `py-2 rounded-lg text-sm border transition-all ${
+            btn.className = `py-1.5 rounded-lg text-sm border transition-all ${
                 isSelected
                 ? 'bg-primary border-primary text-white shadow-md'
                 : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200'
