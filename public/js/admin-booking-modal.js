@@ -228,7 +228,8 @@ function renderTimeSlots() {
             btn.type = 'button';
             btn.textContent = time;
             // Use primary color (purple) for selection
-            btn.className = `py-0.5 rounded-full text-sm border transition-all ${
+            // FORCE HEIGHT and CAPSULE SHAPE
+            btn.className = `h-7 w-full flex items-center justify-center rounded-full text-sm border transition-all ${
                 isSelected
                 ? 'bg-primary border-primary text-white shadow-sm font-bold'
                 : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
