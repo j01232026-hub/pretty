@@ -220,7 +220,7 @@ function renderTimeSlots() {
         groupDiv.appendChild(labelDiv);
         
         const gridDiv = document.createElement('div');
-        gridDiv.className = 'grid grid-cols-4 gap-1.5';
+        gridDiv.className = 'grid grid-cols-4 gap-1';
         
         groupSlots.forEach(time => {
             const isSelected = selectedTime === time;
@@ -228,7 +228,7 @@ function renderTimeSlots() {
             btn.type = 'button';
             btn.textContent = time;
             // Use primary color (purple) for selection
-            btn.className = `py-1 rounded-full text-xs border transition-all ${
+            btn.className = `py-0.5 rounded-full text-sm border transition-all ${
                 isSelected
                 ? 'bg-primary border-primary text-white shadow-sm font-bold'
                 : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
