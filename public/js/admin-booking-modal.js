@@ -5,6 +5,7 @@ let searchTimeout = null;
 let currentCalendarDate = new Date();
 let selectedDate = null;
 let selectedTime = null;
+let selectedTimeSlots = [];
 
 // Ensure we have access to the secret
 const SEARCH_API_SECRET = (typeof ADMIN_SECRET !== 'undefined') ? ADMIN_SECRET : 'MyBeautyShop_2026_Boss_Only!';
@@ -24,6 +25,7 @@ function openAdminBookingModal() {
         
         // Reset time
         selectedTime = null;
+        selectedTimeSlots = [];
         document.getElementById('hiddenTimeInput').value = '';
         renderTimeSlots();
         
@@ -110,6 +112,7 @@ function toggleAllDay(checked) {
     const timeInput = document.getElementById('hiddenTimeInput');
     if (checked) {
         selectedTime = null;
+        selectedTimeSlots = [];
         if(timeInput) timeInput.value = '00:00';
         renderTimeSlots();
     } else {
@@ -155,8 +158,13 @@ function renderCalendar() {
     }
     
     // Days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const currentDate = new Date(year, month, day);
+        const isPast = currentDate < today;
         const isSelected = selectedDate === dateStr;
         const isToday = dateStr === formatDate(new Date());
 
@@ -167,20 +175,23 @@ function renderCalendar() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = day;
-        btn.onclick = () => selectDate(dateStr);
-
-        if (isSelected) {
-            // MATCH IMAGE: w-9 h-9 flex items-center justify-center bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 z-10
-            btn.className = 'w-9 h-9 flex items-center justify-center bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 z-10 transition-all transform scale-105';
+        
+        if (isPast) {
+             btn.className = 'w-9 h-9 flex items-center justify-center text-sm font-medium text-slate-300 dark:text-slate-600 cursor-not-allowed';
+             btn.disabled = true;
         } else {
-            // Unselected: py-2 text-sm font-medium
-            // We need to override the wrapper's py-1 if we want it to look exactly like the plain text list in 001.html
-            // But for buttons we need a hit area.
-            // Let's use a consistent size for alignment but style it minimally.
-            btn.className = 'w-9 h-9 flex items-center justify-center text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all';
-            
-            if (isToday) {
-                btn.classList.add('ring-1', 'ring-primary', 'text-primary', 'font-bold');
+             btn.onclick = () => selectDate(dateStr);
+             
+            if (isSelected) {
+                // MATCH IMAGE: w-9 h-9 flex items-center justify-center bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 z-10
+                btn.className = 'w-9 h-9 flex items-center justify-center bg-[#9D5B8B] text-white rounded-full font-bold shadow-lg shadow-primary/30 z-10 transition-all transform scale-105';
+            } else {
+                // Unselected: py-2 text-sm font-medium
+                btn.className = 'w-9 h-9 flex items-center justify-center text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all';
+                
+                if (isToday) {
+                    btn.classList.add('ring-1', 'ring-primary', 'text-primary', 'font-bold');
+                }
             }
         }
         
@@ -222,6 +233,11 @@ function renderTimeSlots() {
     const endHour = 20;
     const slots = [];
     
+    // Calculate current time buffer (now + 30 mins)
+    const now = new Date();
+    const isToday = selectedDate === formatDate(now);
+    const bufferTime = new Date(now.getTime() + 30 * 60 * 1000); // Now + 30m
+
     for (let h = startHour; h <= endHour; h++) {
         slots.push(`${String(h).padStart(2, '0')}:00`);
         if (h !== endHour) { 
@@ -252,22 +268,40 @@ function renderTimeSlots() {
         gridDiv.className = 'grid grid-cols-4 gap-3';
         
         group.slots.forEach(time => {
-            const isSelected = selectedTime === time;
+            const isSelected = selectedTimeSlots.includes(time);
+            
+            // Check disable logic
+            let isDisabled = false;
+            if (isToday) {
+                const [h, m] = time.split(':').map(Number);
+                const slotDate = new Date();
+                slotDate.setHours(h, m, 0, 0);
+                if (slotDate < bufferTime) {
+                    isDisabled = true;
+                }
+            }
+
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.textContent = time;
             
-            // Base: py-3 px-1 text-sm font-semibold rounded-xl bg-card-light dark:bg-card-dark shadow-sm ring-1 ring-slate-100 dark:ring-slate-800
-            let classes = 'w-full py-3 px-1 text-sm font-semibold rounded-xl shadow-sm transition-all active:scale-95';
-            
-            if (isSelected) {
-                classes += ' bg-[#9D5B8B] text-white shadow-md ring-2 ring-primary';
+            if (isDisabled) {
+                btn.className = 'w-full py-3 px-1 text-sm font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed shadow-none ring-0';
+                btn.disabled = true;
             } else {
-                classes += ' bg-card-light dark:bg-card-dark ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md dark:text-slate-200';
+                // Base: py-3 px-1 text-sm font-semibold rounded-xl bg-card-light dark:bg-card-dark shadow-sm ring-1 ring-slate-100 dark:ring-slate-800
+                let classes = 'w-full py-3 px-1 text-sm font-semibold rounded-xl shadow-sm transition-all active:scale-95';
+                
+                if (isSelected) {
+                    classes += ' bg-[#9D5B8B] text-white shadow-md ring-2 ring-primary';
+                } else {
+                    classes += ' bg-card-light dark:bg-card-dark ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md dark:text-slate-200';
+                }
+                
+                btn.className = classes;
+                btn.onclick = () => selectTimeSlot(time);
             }
-            
-            btn.className = classes;
-            btn.onclick = () => selectTimeSlot(time);
+
             gridDiv.appendChild(btn);
         });
         
@@ -277,9 +311,53 @@ function renderTimeSlots() {
 }
 
 function selectTimeSlot(time) {
-    selectedTime = time;
+    if (selectedTimeSlots.length === 0) {
+        selectedTimeSlots = [time];
+    } else {
+        if (selectedTimeSlots.includes(time)) {
+            // Deselect logic: remove this slot and ALL subsequent slots
+            // Find index
+            const idx = selectedTimeSlots.indexOf(time);
+            // If user clicks the first one, clear all? Or just remove from there?
+            // "Clicking an already selected slot deselects it and all subsequent slots."
+            selectedTimeSlots = selectedTimeSlots.slice(0, idx);
+        } else {
+            // Add logic
+            // Check if consecutive to the LAST selected slot
+            const lastTime = selectedTimeSlots[selectedTimeSlots.length - 1];
+            
+            const [lastH, lastM] = lastTime.split(':').map(Number);
+            const [currH, currM] = time.split(':').map(Number);
+            
+            const lastDate = new Date(); lastDate.setHours(lastH, lastM, 0, 0);
+            const currDate = new Date(); currDate.setHours(currH, currM, 0, 0);
+            
+            const diff = (currDate - lastDate) / (1000 * 60); // Difference in minutes
+            
+            if (diff < 0) {
+                alert('只能往後連續選擇');
+                return;
+            } else if (diff === 30) {
+                // Consecutive
+                selectedTimeSlots.push(time);
+            } else {
+                // Not consecutive (diff > 30)
+                alert('只能連續選擇');
+                return;
+            }
+        }
+    }
+
+    // Sort just in case, though logic ensures order
+    selectedTimeSlots.sort();
+
+    // Update UI & Inputs
+    // Start time is the first slot
+    const startTime = selectedTimeSlots.length > 0 ? selectedTimeSlots[0] : '';
+    selectedTime = startTime;
+    
     const timeInput = document.getElementById('hiddenTimeInput');
-    if (timeInput) timeInput.value = time;
+    if (timeInput) timeInput.value = startTime;
     
     // Uncheck "All Day" if specific time selected
     const allDayCheck = document.getElementById('allDayCheck');
@@ -390,9 +468,21 @@ async function handleAdminBookingSubmit(e) {
     const formData = new FormData(form);
     const isAllDay = document.getElementById('allDayCheck') ? document.getElementById('allDayCheck').checked : false;
     
+    // Calculate End Time from selected slots
+    let endTime = '';
+    if (selectedTimeSlots.length > 0) {
+        // Last slot + 30 mins
+        const lastSlot = selectedTimeSlots[selectedTimeSlots.length - 1];
+        const [h, m] = lastSlot.split(':').map(Number);
+        const d = new Date();
+        d.setHours(h, m + 30, 0, 0);
+        endTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
     const payload = {
         date: formData.get('date'),
         time: formData.get('time'),
+        endTime: endTime,
         stylist: formData.get('stylist'),
         admin_override: formData.get('admin_override') === 'on',
         type: currentBookingType,
