@@ -335,14 +335,14 @@ function selectTimeSlot(time) {
             const diff = (currDate - lastDate) / (1000 * 60); // Difference in minutes
             
             if (diff < 0) {
-                alert('只能往後連續選擇');
+                CustomModal.alert('提示', '只能往後連續選擇');
                 return;
             } else if (diff === 30) {
                 // Consecutive
                 selectedTimeSlots.push(time);
             } else {
                 // Not consecutive (diff > 30)
-                alert('只能連續選擇');
+                CustomModal.alert('提示', '只能連續選擇');
                 return;
             }
         }
@@ -509,7 +509,7 @@ async function handleAdminBookingSubmit(e) {
         const data = await res.json();
         
         if (res.ok) {
-            alert('新增成功！');
+            await CustomModal.success('成功', '新增成功！');
             closeAdminBookingModal();
             form.reset();
             const userIdInput = document.getElementById('userIdInput');
@@ -521,9 +521,9 @@ async function handleAdminBookingSubmit(e) {
                 window.location.reload();
             }
         } else {
-            alert('失敗: ' + (data.message || data.error));
+            CustomModal.error('失敗', data.message || data.error);
         }
     } catch (err) {
-        alert('系統錯誤: ' + err.message);
+        CustomModal.error('錯誤', '系統錯誤: ' + err.message);
     }
 }
