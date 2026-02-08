@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>註冊新帳號 - 電子郵件版</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "dusty-rose": {
+                            "50": "#fdf8fa",
+                            "100": "#f7f0f4",
+                            "200": "#efdfe9",
+                            "300": "#e0c4d5",
+                            "400": "#c89eb7",
+                            "500": "#986584",
+                            "600": "#8a5875",
+                            "700": "#734861",
+                            "800": "#603c51",
+                            "900": "#513545",
+                        }
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Noto Sans TC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "3xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-rose: #986584;
+            --bg-soft: #fbf8fa;
+        }
+        body {
+            font-family: 'Manrope', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fdfbfd 0%, #f9f2f6 100%);
+            min-height: 100dvh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(152, 101, 132, 0.1);
+            box-shadow: 0 20px 50px -12px rgba(152, 101, 132, 0.12);
+        }
+        .input-focus-glow:focus {
+            box-shadow: 0 0 0 4px rgba(152, 101, 132, 0.08);
+        }
+        .tap-highlight-none {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(720px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col items-center p-6 pt-12 pb-10 relative overflow-x-hidden">
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="absolute top-[-5%] right-[-10%] w-[350px] h-[350px] bg-dusty-rose-200/20 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-[10%] left-[-5%] w-[300px] h-[300px] bg-dusty-rose-100/30 rounded-full blur-[100px]"></div>
+</div>
+<div class="relative w-full max-w-[400px] z-10 mb-8">
+<div class="flex flex-col items-center text-center">
+<h1 class="text-slate-800 text-3xl font-bold tracking-tight">註冊新帳號</h1>
+<p class="text-dusty-rose-500/80 mt-2 font-medium text-[15px] leading-relaxed">
+                請填寫以下資訊以建立您的<br/>商家管理帳號
+            </p>
+</div>
+</div>
+<div class="relative w-full max-w-[400px] z-10">
+<div class="glass-card rounded-[2.5rem] p-8">
+<div class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-slate-400 text-xs font-bold uppercase tracking-wider ml-1">電子郵件</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-300 text-[20px] group-focus-within:text-dusty-rose-500 transition-colors">mail</span>
+</div>
+<input class="form-input block w-full pl-11 pr-4 py-2.5 bg-dusty-rose-50/50 border border-dusty-rose-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/20 focus:border-dusty-rose-500 transition-all input-focus-glow" placeholder="請輸入您的電子郵件" type="email"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-slate-400 text-xs font-bold uppercase tracking-wider ml-1">設定密碼</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-300 text-[20px] group-focus-within:text-dusty-rose-500 transition-colors">lock</span>
+</div>
+<input class="form-input block w-full pl-11 pr-12 py-2.5 bg-dusty-rose-50/50 border border-dusty-rose-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/20 focus:border-dusty-rose-500 transition-all input-focus-glow" placeholder="請設定 8-16 位英數密碼" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-300 hover:text-dusty-rose-500 transition-colors tap-highlight-none">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-slate-400 text-xs font-bold uppercase tracking-wider ml-1">確認密碼</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-300 text-[20px] group-focus-within:text-dusty-rose-500 transition-colors">lock_reset</span>
+</div>
+<input class="form-input block w-full pl-11 pr-12 py-2.5 bg-dusty-rose-50/50 border border-dusty-rose-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/20 focus:border-dusty-rose-500 transition-all input-focus-glow" placeholder="請再次輸入密碼" type="password"/>
+</div>
+</div>
+<button class="w-full bg-dusty-rose-500 hover:bg-dusty-rose-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-dusty-rose-200/40 transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2 tap-highlight-none">
+                    下一步 完善個人資料
+                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="mt-8 text-center">
+<p class="text-slate-500 text-[15px]">
+                已有帳號？
+                <a class="text-dusty-rose-500 font-bold hover:underline decoration-2 underline-offset-4 ml-1 tap-highlight-none" href="#">立即登入</a>
+</p>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-dusty-rose-300/30 to-transparent"></div>
+
+</body></html>

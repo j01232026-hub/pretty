@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>完善個人資料 - 玩美商家</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "dusty-rose": {
+                            "50": "#fbf8fa",
+                            "100": "#f7f0f4",
+                            "200": "#efdfe9",
+                            "300": "#e0c4d5",
+                            "400": "#c89eb7",
+                            "500": "#986584",
+                            "600": "#8a5875",
+                            "700": "#734861",
+                            "800": "#603c51",
+                            "900": "#513545",
+                        }
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Noto Sans TC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-rose: #986584;
+            --bg-soft: #fbf8fa;
+        }
+        body {
+            font-family: 'Manrope', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fdfbfd 0%, #f7f0f4 100%);
+            min-height: 100dvh;
+            color: #334155;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(152, 101, 132, 0.08);
+            box-shadow: 0 10px 30px rgba(152, 101, 132, 0.05);
+        }
+        .input-group:focus-within .icon-label {
+            color: #986584;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col p-6 max-w-[400px] mx-auto">
+<header class="mt-8 mb-8 text-center">
+<h1 class="text-2xl font-bold text-slate-800 tracking-tight">完善個人資料</h1>
+<p class="text-dusty-rose-400 text-sm mt-2">請填寫基本資料以開啟管理功能</p>
+</header>
+<div class="relative mx-auto mb-10">
+<div class="w-28 h-28 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-slate-200 text-6xl">account_circle</span>
+</div>
+<button class="absolute bottom-1 right-1 w-9 h-9 bg-dusty-rose-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+</button>
+</div>
+<main class="glass-card rounded-3xl p-6 space-y-5">
+<div class="input-group">
+<label class="text-slate-400 text-xs font-bold mb-1.5 ml-1 block tracking-wider uppercase">真實姓名</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none icon-label transition-colors">
+<span class="material-symbols-outlined text-[20px] text-slate-300">badge</span>
+</div>
+<input class="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/10 focus:border-dusty-rose-500 transition-all text-sm" placeholder="請輸入您的姓名" type="text"/>
+</div>
+</div>
+<div class="input-group">
+<label class="text-slate-400 text-xs font-bold mb-1.5 ml-1 block tracking-wider uppercase">出生日期</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none icon-label transition-colors">
+<span class="material-symbols-outlined text-[20px] text-slate-300">calendar_month</span>
+</div>
+<input class="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/10 focus:border-dusty-rose-500 transition-all text-sm" type="date"/>
+</div>
+</div>
+<div class="input-group">
+<label class="text-slate-400 text-xs font-bold mb-1.5 ml-1 block tracking-wider uppercase">手機號碼</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none icon-label transition-colors">
+<span class="material-symbols-outlined text-[20px] text-slate-300">smartphone</span>
+</div>
+<input class="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/10 focus:border-dusty-rose-500 transition-all text-sm" placeholder="0912345678" type="tel"/>
+</div>
+</div>
+<div class="input-group">
+<label class="text-slate-400 text-xs font-bold mb-1.5 ml-1 block tracking-wider uppercase">電子郵件</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none icon-label transition-colors">
+<span class="material-symbols-outlined text-[20px] text-slate-300">mail</span>
+</div>
+<input class="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/10 focus:border-dusty-rose-500 transition-all text-sm" placeholder="example@mail.com" type="email"/>
+</div>
+</div>
+</main>
+<div class="flex justify-center items-center gap-2 mt-8 mb-6">
+<div class="w-8 h-1.5 rounded-full bg-dusty-rose-500"></div>
+<div class="w-2 h-1.5 rounded-full bg-dusty-rose-200"></div>
+<div class="w-2 h-1.5 rounded-full bg-dusty-rose-200"></div>
+</div>
+<footer class="mt-auto pb-10">
+<button class="w-full bg-dusty-rose-500 hover:bg-dusty-rose-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-dusty-rose-200/50 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+<span>下一頁 完善商家資料</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</footer>
+<div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+<div class="absolute top-[-5%] right-[-10%] w-[350px] h-[350px] bg-dusty-rose-200/20 rounded-full blur-[80px]"></div>
+<div class="absolute bottom-[10%] left-[-5%] w-[300px] h-[300px] bg-dusty-rose-100/30 rounded-full blur-[80px]"></div>
+</div>
+
+</body></html>

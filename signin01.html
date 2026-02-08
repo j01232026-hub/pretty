@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>玩美商家管理系統 - 登入</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "dusty-rose": {
+                            "50": "#fbf8fa",
+                            "100": "#f7f0f4",
+                            "200": "#efdfe9",
+                            "300": "#e0c4d5",
+                            "400": "#c89eb7",
+                            "500": "#986584", // Theme Main Color
+                            "600": "#8a5875",
+                            "700": "#734861",
+                            "800": "#603c51",
+                            "900": "#513545",
+                        }
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Noto Sans TC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-rose: #986584;
+            --bg-soft: #fbf8fa;
+        }
+        body {
+            font-family: 'Manrope', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fdfbfd 0%, #f7f0f4 100%);
+            min-height: 100dvh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(152, 101, 132, 0.1);
+            box-shadow: 0 12px 40px 0 rgba(152, 101, 132, 0.08);
+        }
+        .input-focus-glow:focus {
+            box-shadow: 0 0 0 4px rgba(152, 101, 132, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col items-center justify-center p-6 relative overflow-x-hidden">
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="absolute top-[-5%] right-[-10%] w-[350px] h-[350px] bg-dusty-rose-200/30 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-[10%] left-[-5%] w-[300px] h-[300px] bg-dusty-rose-100/40 rounded-full blur-[100px]"></div>
+</div>
+<div class="relative w-full max-w-[400px] z-10">
+<div class="flex flex-col items-center mb-10 text-center">
+<div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-dusty-rose-100">
+<span class="material-symbols-outlined text-dusty-rose-500 text-5xl">spa</span>
+</div>
+<h1 class="text-slate-800 text-2xl font-bold tracking-tight">玩美商家管理系統</h1>
+<p class="text-dusty-rose-500/80 mt-1 font-medium tracking-wide text-sm">Perfect Beauty Business Manager</p>
+</div>
+<div class="glass-card rounded-3xl p-8">
+<h2 class="text-slate-700 text-lg font-bold mb-8 text-center">歡迎登入</h2>
+<div class="space-y-6">
+<div class="flex flex-col gap-2">
+<label class="text-slate-400 text-xs font-bold uppercase tracking-wider ml-1">帳號 / 信箱</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-300 text-[20px] group-focus-within:text-dusty-rose-500 transition-colors">person</span>
+</div>
+<input class="form-input block w-full pl-11 pr-4 py-3.5 bg-white/60 border border-dusty-rose-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/20 focus:border-dusty-rose-500 transition-all input-focus-glow" placeholder="請輸入您的帳號" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center px-1">
+<label class="text-slate-400 text-xs font-bold uppercase tracking-wider">密碼</label>
+<a class="text-dusty-rose-500 text-xs font-medium hover:text-dusty-rose-600" href="#">忘記密碼？</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-300 text-[20px] group-focus-within:text-dusty-rose-500 transition-colors">lock</span>
+</div>
+<input class="form-input block w-full pl-11 pr-12 py-3.5 bg-white/60 border border-dusty-rose-100 rounded-xl text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose-500/20 focus:border-dusty-rose-500 transition-all input-focus-glow" placeholder="請輸入您的密碼" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-300 hover:text-dusty-rose-500 transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<button class="w-full bg-dusty-rose-500 hover:bg-dusty-rose-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-dusty-rose-200 transition-all active:scale-[0.98] mt-2">
+                    登入系統
+                </button>
+<div class="relative flex items-center py-2">
+<div class="flex-grow border-t border-slate-200"></div>
+<span class="flex-shrink mx-4 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold">或</span>
+<div class="flex-grow border-t border-slate-200"></div>
+</div>
+<button class="w-full bg-[#06C755] hover:bg-[#05b34c] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-md shadow-green-100 transition-all active:scale-[0.98]">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+<path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.777.038 1.083l-.164 1.027c-.045.301-.24 1.186 1.04 0 1.279-1.186 6.891-4.058 9.397-6.947 1.488-1.597 2.596-3.418 2.596-5.417zm-15.004 3.424c0 .164-.132.3-.3.3h-1.84c-.164 0-.3-.136-.3-.3v-4.104c0-.164.136-.3.3-.3h.485c.164 0 .3.136.3.3v3.319h1.055c.164 0 .3.136.3.3v.485zm1.503-.3c0 .164-.132.3-.3.3h-.485c-.164 0-.3-.136-.3-.3v-4.104c0-.164.136-.3.3-.3h.485c.164 0 .3.136.3.3v4.104zm4.499 0c0 .121-.058.234-.158.303-.102.067-.229.079-.34.032l-1.928-1.503-.002 1.168c0 .164-.132.3-.3.3h-.485c-.164 0-.3-.136-.3-.3v-4.104c0-.164.136-.3.3-.3h.485c.164 0 .3.136.3.3v1.168l1.928-1.503c.112-.047.239-.035.341.032.1.069.158.182.158.303v.681c0 .13-.053.253-.146.342l-1.018.825 1.133.882c.093.089.146.212.146.342v.681zm3.75-.3c0 .164-.132.3-.3.3h-1.84c-.164 0-.3-.136-.3-.3v-.485c0-.164.136-.3.3-.3h1.055v-.735h-1.055c-.164 0-.3-.136-.3-.3v-.539c0-.164.136-.3.3-.3h1.055v-.735h-1.055c-.164 0-.3-.136-.3-.3v-.485c0-.164.136-.3.3-.3h1.84c.164 0 .3.136.3.3v4.104z"></path>
+</svg>
+                    使用 LINE 帳號登入
+                </button>
+</div>
+</div>
+<div class="mt-10 text-center space-y-6">
+<p class="text-slate-500 text-sm">
+                尚未開通帳號？ 
+                <a class="text-dusty-rose-500 font-bold hover:underline decoration-2 underline-offset-4 ml-1" href="#">立即註冊</a>
+</p>
+<div class="flex items-center justify-center gap-6 text-[11px] text-slate-400 font-bold uppercase tracking-widest">
+<a class="hover:text-dusty-rose-500 transition-colors" href="#">隱私政策</a>
+<span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+<a class="hover:text-dusty-rose-500 transition-colors" href="#">服務條款</a>
+<span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+<a class="hover:text-dusty-rose-500 transition-colors" href="#">聯繫客服</a>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-dusty-rose-300/30 to-transparent"></div>
+
+</body></html>
