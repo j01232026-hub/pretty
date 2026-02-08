@@ -52,9 +52,6 @@ function setBookingType(type) {
     const activeClasses = ['bg-white', 'shadow-sm', 'text-primary', 'dark:bg-gray-700', 'dark:text-white'];
     const inactiveClasses = ['text-gray-500', 'hover:text-gray-700', 'dark:text-gray-400', 'dark:hover:text-gray-200'];
     
-    // Reset base classes for safety (though not strictly needed if we manage add/remove correctly)
-    // Better to just add/remove the diff
-    
     if (type === 'staff_booking') {
         staffBtn.classList.add(...activeClasses);
         staffBtn.classList.remove(...inactiveClasses);
@@ -144,18 +141,19 @@ function renderCalendar() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = day;
-        // Use primary color (purple) for selection
-        btn.className = `h-10 w-10 mx-auto rounded-full flex items-center justify-center text-base transition-colors ${
+        // MATCH IMAGE: Rounded Square (rounded-lg/xl), not full circle
+        btn.className = `h-10 w-10 mx-auto rounded-lg flex items-center justify-center text-base transition-all ${
             isSelected 
-            ? 'bg-primary text-white font-bold shadow-md' 
-            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+            ? 'bg-primary text-white font-bold shadow-md transform scale-105' 
+            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 font-medium'
         }`;
         btn.onclick = () => selectDate(dateStr);
         
         // Mark today with a border if not selected
         const todayStr = formatDate(new Date());
         if (dateStr === todayStr && !isSelected) {
-            btn.classList.add('border', 'border-primary', 'text-primary');
+            // Blue outline circle/square for today
+            btn.classList.add('border-2', 'border-primary', 'text-primary', 'font-bold');
         }
         
         grid.appendChild(btn);
@@ -212,27 +210,27 @@ function renderTimeSlots() {
         if (groupSlots.length === 0) continue;
         
         const groupDiv = document.createElement('div');
-        groupDiv.className = 'mb-1';
+        groupDiv.className = 'mb-2';
         
         const labelDiv = document.createElement('div');
-        labelDiv.className = 'text-xs text-gray-400 mb-1 font-bold';
+        labelDiv.className = 'text-xs text-gray-400 mb-1.5 font-bold';
         labelDiv.textContent = label;
         groupDiv.appendChild(labelDiv);
         
         const gridDiv = document.createElement('div');
-        gridDiv.className = 'grid grid-cols-4 gap-y-2 gap-x-1';
+        // MATCH IMAGE: 4 columns, gap
+        gridDiv.className = 'grid grid-cols-4 gap-2';
         
         groupSlots.forEach(time => {
             const isSelected = selectedTime === time;
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.textContent = time;
-            // Use primary color (purple) for selection
-            // COMPACT CAPSULE: Auto width, centered, fixed height
-            btn.className = `h-8 w-[72px] mx-auto flex items-center justify-center rounded-full text-sm font-display tracking-wide border transition-all ${
+            // MATCH IMAGE: Rounded Rectangle (rounded-xl), White bg, shadow-sm
+            btn.className = `w-full h-10 flex items-center justify-center rounded-xl text-sm font-bold tracking-wide border transition-all ${
                 isSelected
-                ? 'bg-primary border-primary text-white shadow-md font-bold'
-                : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 font-bold'
+                ? 'bg-primary border-primary text-white shadow-md'
+                : 'bg-white border-gray-100 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 shadow-sm'
             }`;
             btn.onclick = () => selectTimeSlot(time);
             gridDiv.appendChild(btn);
@@ -346,10 +344,7 @@ function selectMember(name, phone, userId) {
     document.querySelector('input[name="name"]').value = name;
     document.querySelector('input[name="phone"]').value = phone;
     
-    // Store userId if needed, maybe in a hidden field or just use it logic wise
-    // For now we just fill the visible fields as requested.
-    // If we want to link the booking to the user, we might need a hidden input for userId.
-    // Let's check if the form has userId input, if not create/set it.
+    // Store userId if needed
     let userIdInput = document.querySelector('input[name="userId"]');
     if (!userIdInput) {
         userIdInput = document.createElement('input');
@@ -383,11 +378,10 @@ async function handleAdminBookingSubmit(e) {
     if (currentBookingType === 'staff_booking') {
         payload.name = formData.get('name');
         payload.phone = formData.get('phone');
-        // Use the hidden userId if present (from search), otherwise null
         payload.userId = formData.get('userId') || null; 
     } else {
         payload.name = formData.get('note') || '內部保留';
-        payload.phone = ''; // No phone needed
+        payload.phone = '';
         payload.userId = null;
     }
 
@@ -404,11 +398,9 @@ async function handleAdminBookingSubmit(e) {
             alert('新增成功！');
             closeAdminBookingModal();
             form.reset();
-            // Clear hidden userId
             const userIdInput = document.querySelector('input[name="userId"]');
             if (userIdInput) userIdInput.value = '';
             
-            // Assuming loadBookings is globally available from admin.html
             if (typeof loadBookings === 'function') {
                 loadBookings();
             } else {
