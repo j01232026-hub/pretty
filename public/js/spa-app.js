@@ -508,7 +508,7 @@ const App = {
                         // Strict Rule: Must be consecutive and later (Append only)
                         // "必須連續往後的時段，不能往前也不能不連續"
                         if (currentMinutes !== lastMinutes + 30) {
-                            alert('只能往後連續預約 (例如: 14:00, 14:30...)');
+                            CustomModal.alert('提示', '只能往後連續預約 (例如: 14:00, 14:30...)');
                             return;
                         }
                     }
@@ -518,39 +518,57 @@ const App = {
                     btn.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-purple-500/30');
                 }
             },
-            openModal: () => {
+            openModal: async () => {
                 const state = App.pages.booking.state;
                 const nameInput = document.getElementById('nameInput');
                 const phoneInput = document.getElementById('phoneInput');
                 
-                if (!state.selectedDate) { alert('請選擇日期'); return; }
-                if (state.selectedTimes.size < 2) { alert('預約時間必須超過 30 分鐘 (至少選擇 2 個時段)'); return; }
-                if (!nameInput.value.trim()) { alert('請輸入姓名'); return; }
-                if (!phoneInput.value.trim()) { alert('請輸入手機'); return; }
+                if (!state.selectedDate) { CustomModal.alert('提示', '請選擇日期'); return; }
+                if (state.selectedTimes.size < 2) { CustomModal.alert('提示', '預約時間必須超過 30 分鐘 (至少選擇 2 個時段)'); return; }
+                if (!nameInput.value.trim()) { CustomModal.alert('提示', '請輸入姓名'); return; }
+                if (!phoneInput.value.trim()) { CustomModal.alert('提示', '請輸入手機'); return; }
                 
                 // Sort times
                 const times = Array.from(state.selectedTimes).sort();
-                
-                document.getElementById('modalStylist').textContent = state.selectedStylist || '不指定';
-                document.getElementById('modalDate').textContent = state.selectedDate;
-                document.getElementById('modalTime').textContent = times.join(', ');
-                document.getElementById('modalName').textContent = nameInput.value;
-                document.getElementById('modalPhone').textContent = phoneInput.value;
-                
-                const modal = document.getElementById('confirmModal');
-                const content = document.getElementById('modalContent');
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    content.classList.remove('translate-y-full');
-                }, 10);
+                const stylistName = state.selectedStylist || '不指定';
+                const dateStr = state.selectedDate;
+                const timeStr = times.join(', ');
+                const nameVal = nameInput.value;
+                const phoneVal = phoneInput.value;
+
+                const htmlContent = `
+                    <div class="space-y-3 mb-4 text-base text-left">
+                        <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                            <span class="text-gray-500">設計師</span>
+                            <span class="font-bold text-gray-900 dark:text-white">${stylistName}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                            <span class="text-gray-500">日期</span>
+                            <span class="font-bold text-gray-900 dark:text-white">${dateStr}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                            <span class="text-gray-500">時間</span>
+                            <span class="font-bold text-gray-900 dark:text-white">${timeStr}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                            <span class="text-gray-500">姓名</span>
+                            <span class="font-bold text-gray-900 dark:text-white">${nameVal}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                            <span class="text-gray-500">手機</span>
+                            <span class="font-bold text-gray-900 dark:text-white">${phoneVal}</span>
+                        </div>
+                    </div>
+                    <p class="text-center text-lg font-bold">確定預約嗎？</p>
+                `;
+
+                const confirmed = await CustomModal.confirm('預約確認', htmlContent, '確定送出', '取消');
+                if (confirmed) {
+                    await App.pages.booking.submitBooking();
+                }
             },
             closeModal: () => {
-                const modal = document.getElementById('confirmModal');
-                const content = document.getElementById('modalContent');
-                content.classList.add('translate-y-full');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
+                // No-op, kept for compatibility if called elsewhere
             },
             submitBooking: async () => {
                 const state = App.pages.booking.state;
@@ -567,10 +585,8 @@ const App = {
                 const endM = endDate.getMinutes().toString().padStart(2, '0');
                 const endTime = `${endH}:${endM}`;
                 
-                const submitBtn = document.querySelector('#modalContent button');
-                const originalContent = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<span>送出預約中...</span><i class="fa-solid fa-spinner fa-spin ml-2"></i>';
-                submitBtn.disabled = true;
+                // Show loading (optional, but CustomModal closes immediately)
+                // We could use a global loader here if implemented, or just proceed.
                 
                 try {
                     const res = await fetch('/api/submit', {
@@ -590,13 +606,12 @@ const App = {
                     
                     if (!res.ok) throw new Error('預約失敗');
                     
-                    alert('預約成功！');
-                    App.pages.booking.closeModal();
+                    await CustomModal.success('成功', '預約成功！');
                     App.navigate('status');
                     
                 } catch (err) {
                     console.error(err);
-                    alert('發生錯誤: ' + err.message);
+                    CustomModal.error('錯誤', '發生錯誤: ' + err.message);
                     submitBtn.innerHTML = originalContent;
                     submitBtn.disabled = false;
                 }
@@ -805,7 +820,7 @@ const App = {
                 const rescheduleBtn = clone.querySelector('.btn-reschedule');
                 if (rescheduleBtn) {
                     rescheduleBtn.onclick = () => {
-                         alert('請聯繫客服進行更改'); 
+                         CustomModal.alert('提示', '請聯繫客服進行更改'); 
                     };
                 }
 
@@ -1038,7 +1053,7 @@ const App = {
                     });
                 } catch (e) {
                     console.error('Send failed', e);
-                    alert('發送失敗');
+                    CustomModal.error('錯誤', '發送失敗');
                 }
             },
             appendMessage: (msg) => {
@@ -1243,7 +1258,7 @@ const App = {
                     App.pages.member.state.pendingAvatar = compressed;
                 } catch (e) {
                     console.error('Avatar error', e);
-                    alert('圖片處理失敗');
+                    CustomModal.error('錯誤', '圖片處理失敗');
                 }
             },
             init: async () => {
@@ -1451,7 +1466,7 @@ const App = {
                 const submitBtn = document.getElementById('submit-btn');
 
                 if (!phoneInput.value || !birthdayInput.value) {
-                    alert('請填寫手機和生日');
+                    CustomModal.alert('提示', '請填寫手機和生日');
                     return;
                 }
                 
@@ -1481,16 +1496,16 @@ const App = {
                     
                     if (res.ok) {
                         const result = await res.json();
-                        alert('資料更新成功！');
+                        await CustomModal.success('成功', '資料更新成功！');
                         App.pages.member.state.currentProfile = result.profile;
                         App.pages.member.showMemberCard(result.profile);
                     } else {
                         const errData = await res.json();
-                        alert(`更新失敗: ${errData.error || '請稍後再試'}`);
+                        CustomModal.error('錯誤', `更新失敗: ${errData.error || '請稍後再試'}`);
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('發生錯誤');
+                    CustomModal.error('錯誤', '發生錯誤');
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;

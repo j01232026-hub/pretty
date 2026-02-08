@@ -11,36 +11,52 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/admin-style.css">
-<script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              primary: "#9D5B8B",
-              secondary: "#5C9DFF",
-              "background-light": "#F8F9FA",
-              "background-dark": "#121212",
-              "card-light": "#FFFFFF",
-              "card-dark": "#1E1E1E",
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8e5d7a", // Muted Plum/Mauve
+                        "primary-dark": "#6b455c", // Darker purple for selected text
+                        "tab-bg": "#f3eff6", // Very light purple strip background
+                        "background-light": "#f8f5f7", // Very light grey-purple
+                        "primary-light": "#f2ecf0", // Light mauve background for tags
+                        "secondary-grey": "#efeff1", // Cancel button background
+                        "background-dark": "#121212",
+                        "card-dark": "#1E1E1E",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Sans TC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
             },
-            fontFamily: {
-              display: ["Inter", "sans-serif"],
-            },
-            borderRadius: {
-              DEFAULT: "0.5rem",
-            },
-          },
-        },
-      };
-    </script>
-<style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
-        .ios-scroll-hide::-webkit-scrollbar {
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --primary-color: #8e5d7a;
+            --bg-light-purple: #f8f5f7;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        body {
+            min-height: 100dvh;
+        }
+        .no-scrollbar::-webkit-scrollbar {
             display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 <style>
@@ -61,32 +77,23 @@
 </button>
 </div>
 </header>
-<main class="max-w-lg mx-auto p-4 pb-24">
-    <!-- Stats -->
-<div class="grid grid-cols-2 gap-4 mb-6">
-<div class="stat-card">
-<p class="label">今日預約</p>
-<p class="value" id="todayCount">0</p>
-</div>
-<div class="stat-card">
-<p class="label">總預約</p>
-<p class="value" id="totalCount">0</p>
-</div>
-</div>
+<main class="flex-1 px-4 py-2 space-y-4 pb-24">
+    <!-- Tabs -->
+    <div class="sticky top-[72px] z-20 bg-background-light/90 ios-blur pt-2 pb-4 -mx-4 px-4">
+        <div class="bg-tab-bg p-1 rounded-full flex items-center w-full" id="filterTabs">
+            <button class="flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm transition-all" onclick="filterBookings('today', this)">今日</button>
+            <button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors" onclick="filterBookings('week', this)">七日內</button>
+            <button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors" onclick="filterBookings('all', this)">全部</button>
+        </div>
+    </div>
 
-<!-- Filters -->
-<div class="flex gap-2 mb-6 overflow-x-auto ios-scroll-hide pb-2">
-<button class="filter-btn active" onclick="filterBookings('all', this)">全部</button>
-<button class="filter-btn" onclick="filterBookings('today', this)">今天</button>
-<button class="filter-btn" onclick="filterBookings('week', this)">本週</button>
-<!-- <button class="filter-btn">已取消</button> -->
-</div>
+    <!-- Date Header -->
+    <div id="dateHeader" class="text-xs font-bold text-slate-400 px-1 hidden"></div>
 
-<!-- Booking List -->
-<div class="space-y-4" id="bookingList">
-    <div class="text-center py-10 text-gray-400">載入中...</div>
-</div>
-
+    <!-- Booking List -->
+    <div class="flex flex-col gap-4" id="bookingList">
+        <div class="text-center py-10 text-gray-400">載入中...</div>
+    </div>
 </main>
 <nav class="bottom-nav">
 <a href="/admin.html" class="bottom-nav-item active">
@@ -102,8 +109,8 @@
 <span>帳號管理</span>
 </a>
 </nav>
-<button class="fab-add fixed right-6 bottom-24 text-white w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-transform" onclick="openAdminBookingModal()">
-<span class="material-icons text-3xl">add</span>
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform active:scale-95 z-40" onclick="openAdminBookingModal()">
+<span class="material-symbols-outlined text-3xl">add</span>
 </button>
 
 <!-- Include Modal Fragment -->
@@ -200,6 +207,30 @@
              const db = (b.date || '') + (b.time || '');
              return da.localeCompare(db);
         });
+        
+        // Update Date Header
+        const dateHeader = document.getElementById('dateHeader');
+        if (bookings.length > 0) {
+             const firstDate = bookings[0].date;
+             try {
+                const d = new Date(firstDate);
+                const today = new Date();
+                const isToday = d.toDateString() === today.toDateString();
+                const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                // Check if date is valid
+                if (!isNaN(d.getTime())) {
+                    const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 (${weekdays[d.getDay()]})${isToday ? ' (今日)' : ''}`;
+                    dateHeader.innerText = dateStr;
+                    dateHeader.classList.remove('hidden');
+                } else {
+                    dateHeader.classList.add('hidden');
+                }
+             } catch(e) {
+                 dateHeader.classList.add('hidden');
+             }
+        } else {
+             dateHeader.classList.add('hidden');
+        }
 
         listDiv.innerHTML = bookings.map(b => {
             let details = {};
@@ -217,7 +248,7 @@
 
             // Calculate End Time & Duration
             let endTime = b.end_time || details.end_time || details.endTime;
-            let durationStr = '1小時'; // Default display string
+            let durationStr = '60 分鐘';
 
             if (time !== '未知') {
                 try {
@@ -226,99 +257,54 @@
                     startDate.setHours(h, m, 0, 0);
                     
                     if (!endTime) {
-                        // Default to +1 hour if not exists
                         const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
                         endTime = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
                     }
                     
-                    // Calculate duration
                     const [eh, em] = endTime.split(':').map(Number);
                     const endDate = new Date();
                     endDate.setHours(eh, em, 0, 0);
                     
                     let diffMs = endDate - startDate;
-                    if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000; // Assume next day if negative
+                    if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
                     
                     const diffMins = Math.floor(diffMs / 60000);
-                    const diffHrs = Math.floor(diffMins / 60);
-                    const remMins = diffMins % 60;
-                    
-                    if (diffHrs > 0 && remMins > 0) durationStr = `${diffHrs}小時${remMins}分`;
-                    else if (diffHrs > 0) durationStr = `${diffHrs}小時`;
-                    else durationStr = `${remMins}分鐘`;
-                    
+                    durationStr = `${diffMins} 分鐘`;
                 } catch (e) { console.error('Time Calc Error', e); }
             }
 
-            const timeDisplay = endTime ? `${time}-${endTime}` : time;
-            const fullTimeDisplay = `${timeDisplay} (${durationStr})`;
-
-            // Date formatting
-            let dateDisplay = date;
-            if (date && date !== '未知') {
-                try {
-                    const d = new Date(date);
-                    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-                    // Ensure date is parsed correctly in local time context if string is YYYY-MM-DD
-                    // If date string is simple YYYY-MM-DD, new Date(date) might be UTC or Local depending on browser.
-                    // Let's assume input is YYYY-MM-DD and treat it as local date parts.
-                    const parts = date.split('-');
-                    if (parts.length === 3) {
-                         const localDate = new Date(parts[0], parts[1]-1, parts[2]);
-                         dateDisplay = `${date} (${weekdays[localDate.getDay()]})`;
-                    }
-                } catch(e) {}
-            }
-
-            const type = details.type || b.type || 'regular';
-            const isAllDay = details.isAllDay || false;
-            
-            // Style based on type
-            let typeBadge = '';
-            let cardBgClass = 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'; // Default
-            
-            if (type === 'block') {
-                typeBadge = '<span class="text-xs font-bold text-white bg-gray-500 px-2 py-0.5 rounded ml-2">內部保留</span>';
-                cardBgClass = 'bg-gray-50 dark:bg-gray-800/50 border-gray-200';
-                service = details.name || '無備註'; // Override service with note for blocks
-                name = details.stylist ? `設計師: ${details.stylist}` : '全店保留';
-            } else if (type === 'staff_booking') {
-                typeBadge = '<span class="text-xs font-bold text-white bg-orange-500 px-2 py-0.5 rounded ml-2">代客預約</span>';
-                cardBgClass = 'bg-orange-50/30 dark:bg-orange-900/10 border-orange-100';
-            }
-
-            if (isAllDay) {
-                fullTimeDisplay = '全天 (All Day)';
-            }
-
             return `
-            <div class="booking-card mb-4 ${cardBgClass}">
-                <div class="flex justify-between items-start mb-4">
-                <div>
-                <div class="mb-2 flex items-center">
-                    <span class="text-sm font-bold text-primary bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg tracking-tight">${fullTimeDisplay}</span>
-                    ${typeBadge}
+            <div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex gap-4">
+                        <div class="w-14 h-14 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-50">
+                            <img alt="${escapeHtml(name)}" class="w-full h-full object-cover" src="${avatarUrl}" onerror="this.src='https://www.w3schools.com/howto/img_avatar.png'"/>
+                        </div>
+                        <div class="flex flex-col">
+                            <h3 class="text-base font-bold text-[#333333]">${escapeHtml(name)}</h3>
+                            <div class="flex items-center gap-1 text-slate-500 text-sm mt-0.5">
+                                <span class="material-symbols-outlined text-xs">call</span>
+                                <span>${escapeHtml(phone)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-primary font-bold text-base">${time}</div>
+                        <div class="text-[10px] text-slate-400 font-medium">${durationStr}</div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 mt-3">
-                     <img src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.src='https://www.w3schools.com/howto/img_avatar.png'">
-                     <div>
-                         <h3 class="text-xl font-bold text-[var(--text-primary)] leading-tight">${escapeHtml(name)}</h3>
-                         <p class="text-sm text-[var(--text-secondary)] mt-0.5">${escapeHtml(phone)}</p>
-                     </div>
+                <div class="bg-primary-light rounded-lg p-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-sm">spa</span>
+                        <p class="text-sm font-semibold text-primary">${escapeHtml(service)}</p>
+                    </div>
                 </div>
-                </div>
-                <div class="text-right">
-                <p class="text-sm font-bold text-[var(--text-secondary)]">${dateDisplay}</p>
-                <p class="text-sm font-semibold text-[var(--brand-color)] mt-1">${escapeHtml(service)}</p>
-                </div>
-                </div>
-                <div class="flex gap-3">
-                <button class="flex-1 btn-primary py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="editBooking(${b.id}, '${date}', '${time}', '${endTime}')">
-                <span class="material-icons text-sm">edit</span> 編輯
-                </button>
-                <button class="flex-1 btn-danger py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2" onclick="cancelBooking(${b.id})">
-                <span class="material-icons text-sm">cancel</span> 取消
-                </button>
+                <div class="flex gap-2 pt-1">
+                    <button class="flex-1 bg-primary text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2" onclick="editBooking(${b.id}, '${date}', '${time}', '${endTime}')">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                        編輯
+                    </button>
+                    <button class="flex-1 bg-secondary-grey text-slate-600 text-sm font-bold py-3 rounded-xl" onclick="cancelBooking(${b.id})">取消預約</button>
                 </div>
             </div>
             `;
@@ -326,30 +312,24 @@
     }
 
     function updateStats(bookings) {
-        document.getElementById('totalCount').innerText = bookings.length;
-        // Use local time instead of UTC
-        const d = new Date();
-        const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        const todayCount = bookings.filter(b => b.date === todayStr).length;
-        document.getElementById('todayCount').innerText = todayCount;
+        // Removed
     }
 
     function filterBookings(type, btn) {
-        // Reset buttons
-        const btns = btn.parentElement.querySelectorAll('button');
+        const container = document.getElementById('filterTabs');
+        const btns = container.querySelectorAll('button');
+        
         btns.forEach(b => {
-            b.className = "filter-btn";
+            b.className = "flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors";
         });
-        btn.className = "filter-btn active";
+        btn.className = "flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm transition-all";
 
         let filtered = allBookings;
         if (type === 'today') {
-            // Use local time instead of UTC
             const d = new Date();
             const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             filtered = allBookings.filter(b => b.date === todayStr);
         } else if (type === 'week') {
-            // Simple logic for this week
             const now = new Date();
             const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
             const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6));
@@ -368,9 +348,10 @@
 
     // Logic from old admin.html for Edit/Cancel
     async function editBooking(id, oldDate, oldTime, oldEndTime) {
-        const newDate = prompt('請輸入新的日期 (YYYY-MM-DD):', oldDate);
+        const newDate = await CustomModal.prompt('修改預約', '請輸入新的日期 (YYYY-MM-DD):', oldDate, 'YYYY-MM-DD', 'date');
         if (!newDate) return;
-        const newStartTime = prompt('請輸入新的開始時間 (HH:mm):', oldTime);
+        
+        const newStartTime = await CustomModal.prompt('修改預約', '請輸入新的開始時間 (HH:mm):', oldTime, 'HH:mm', 'time');
         if (!newStartTime) return;
         
         let defaultEndTime = oldEndTime || '';
@@ -382,7 +363,7 @@
             } catch (e) {}
         }
         
-        const newEndTime = prompt('請輸入新的結束時間 (HH:mm):', defaultEndTime);
+        const newEndTime = await CustomModal.prompt('修改預約', '請輸入新的結束時間 (HH:mm):', defaultEndTime, 'HH:mm', 'time');
         if (!newEndTime) return;
 
         try {
@@ -392,16 +373,18 @@
                 body: JSON.stringify({ appointment_id: id, new_date: newDate, new_start_time: newStartTime, new_end_time: newEndTime })
             });
             if (response.ok) {
-                alert('修改成功！');
+                await CustomModal.success('成功', '修改成功！');
                 loadBookings();
             } else {
-                alert('修改失敗');
+                await CustomModal.error('失敗', '修改失敗');
             }
-        } catch (e) { alert('錯誤: ' + e.message); }
+        } catch (e) { await CustomModal.error('錯誤', '系統錯誤: ' + e.message); }
     }
 
     async function cancelBooking(id) {
-        if (!confirm('確定要取消嗎？')) return;
+        const confirmed = await CustomModal.confirm('取消預約', '確定要取消此預約嗎？此操作無法復原。', '確定取消', '保留');
+        if (!confirmed) return;
+        
         try {
             const response = await fetch(API_URL, {
                 method: 'DELETE',
@@ -409,12 +392,12 @@
                 body: JSON.stringify({ appointment_id: id })
             });
             if (response.ok) {
-                alert('預約已取消');
+                await CustomModal.success('成功', '預約已取消');
                 loadBookings();
             } else {
-                alert('取消失敗');
+                await CustomModal.error('失敗', '取消失敗');
             }
-        } catch (e) { alert('錯誤: ' + e.message); }
+        } catch (e) { await CustomModal.error('錯誤', '系統錯誤: ' + e.message); }
     }
 
     init();

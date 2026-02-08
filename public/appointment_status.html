@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="js/custom-modal.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -158,7 +159,7 @@
         </div>
 
         <div class="flex flex-col gap-3 mt-4 mb-4 pt-6">
-            <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 bg-primary text-white text-base font-bold transition-all hover:bg-opacity-90 active:scale-[0.98]" onclick="alert('Please contact us to reschedule.')">
+            <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 bg-primary text-white text-base font-bold transition-all hover:bg-opacity-90 active:scale-[0.98]" onclick="CustomModal.alert('Reschedule', 'Please contact us to reschedule.')">
                 <span class="truncate">Reschedule Appointment</span>
             </button>
             <button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 border border-gray-200 dark:border-gray-700 text-[#1b0d18] dark:text-white text-base font-medium transition-all hover:bg-gray-50 dark:hover:bg-white/5 active:scale-[0.98]" onclick="handleCancel()">
@@ -421,7 +422,8 @@
         }
         
         async function handleCancel(id) {
-            if(!confirm('Are you sure you want to cancel this appointment?')) return;
+            const confirmed = await CustomModal.confirm('Cancel Appointment', 'Are you sure you want to cancel this appointment?');
+            if(!confirmed) return;
             
             try {
                 const res = await fetch('/api/cancel-appointment', {
@@ -431,14 +433,14 @@
                 });
                 
                 if (res.ok) {
-                    alert('Appointment cancelled');
+                    await CustomModal.alert('Success', 'Appointment cancelled');
                     location.reload();
                 } else {
-                    alert('Failed to cancel');
+                    CustomModal.alert('Error', 'Failed to cancel');
                 }
             } catch (e) {
                 console.error(e);
-                alert('Error cancelling appointment');
+                CustomModal.alert('Error', 'Error cancelling appointment');
             }
         }
     </script>

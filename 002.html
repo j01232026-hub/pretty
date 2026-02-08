@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>預約管理頁面 - 膠囊分頁優化版</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8e5d7a", // Muted Plum/Mauve
+                        "primary-dark": "#6b455c", // Darker purple for selected text
+                        "tab-bg": "#f3eff6", // Very light purple strip background
+                        "background-light": "#f8f5f7", // Very light grey-purple
+                        "primary-light": "#f2ecf0", // Light mauve background for tags
+                        "secondary-grey": "#efeff1", // Cancel button background
+                    },
+                    fontFamily: {
+                        "display": ["Noto Sans TC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #8e5d7a;
+            --bg-light-purple: #f8f5f7;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        body {
+            min-height: 100dvh;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light font-display text-[#333333]">
+<div class="relative mx-auto max-w-[430px] min-h-screen bg-background-light flex flex-col">
+<header class="sticky top-0 z-30 bg-background-light/90 ios-blur px-4 pt-10 pb-4">
+<div class="bg-tab-bg p-1 rounded-full flex items-center w-full">
+<button class="flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm">今日</button>
+<button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500">七日內</button>
+<button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500">全部</button>
+</div>
+</header>
+<main class="flex-1 px-4 py-2 space-y-4">
+<div class="text-xs font-bold text-slate-400 px-1">2023年10月24日 (今日)</div>
+<div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="flex gap-4">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-50">
+<img alt="陳小美" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW2k4IF5devrXVfTYPNurYMGqGCdenW77QpmZ2HZVkJ9nK9EWzl2a2xrSIqolKqi1bnd5ndlG0aU6E4p310mfE5qKwGSuDrJgXD5fl5oNX6_Si_qnEu_HmSdq7QjImYpt8rQUEL4sZh7IGDV4n9Y0djNcUGdoSlvsF-1UGGDMEikgHXv1V71sOzNjd-isDecTbLJT49buPDjKyg0dvtTArcx6ONUj5iAfJ0HTjjCrsw1wYOwvoB0Z9EgP5fvLwI3Ezeq6RKbK93oE"/>
+</div>
+<div class="flex flex-col">
+<h3 class="text-base font-bold text-[#333333]">陳小美</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mt-0.5">
+<span class="material-symbols-outlined text-xs">call</span>
+<span>0912-345-678</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-primary font-bold text-base">14:30</div>
+<div class="text-[10px] text-slate-400 font-medium">60 分鐘</div>
+</div>
+</div>
+<div class="bg-primary-light rounded-lg p-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">spa</span>
+<p class="text-sm font-semibold text-primary">深層毛孔清潔服務</p>
+</div>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">edit</span>
+                        編輯
+                    </button>
+<button class="flex-1 bg-secondary-grey text-slate-600 text-sm font-bold py-3 rounded-xl">取消預約</button>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="flex gap-4">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-50">
+<img alt="林志玲" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZlasudMTrJZ-NUpUIHyVbTdvYu9USwmAO41aSfotJE39PWJb-EIdDxQWItiaG2mjbDF_UmkkD_5erQ-o-KYmMUO7Trt80XTdbsiV0mkVvUWCqVSM_QAy9qvePfxJrootA_QUMkn-zvEjZZdyv6OjJSZwc0AUdBj6y0fHT9bNSyI1Ay0dohygulH7a_Gl9kXMIhvSvwB4htDTQWXGuc5y2YA1uaodklmoLun9HH_XwNjWkbdNp-Stnp7MgYGCUc2rFm-GgNUD0rb0"/>
+</div>
+<div class="flex flex-col">
+<h3 class="text-base font-bold text-[#333333]">林志玲</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mt-0.5">
+<span class="material-symbols-outlined text-xs">call</span>
+<span>0988-123-456</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-primary font-bold text-base">16:00</div>
+<div class="text-[10px] text-slate-400 font-medium">90 分鐘</div>
+</div>
+</div>
+<div class="bg-primary-light rounded-lg p-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">eye_tracking</span>
+<p class="text-sm font-semibold text-primary">日式植睫毛 (山茶花風格)</p>
+</div>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">edit</span>
+                        編輯
+                    </button>
+<button class="flex-1 bg-secondary-grey text-slate-600 text-sm font-bold py-3 rounded-xl">取消預約</button>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="flex gap-4">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-50">
+<img alt="王大衛" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKkUY7s5oq0aP5E3uSIR1IKmyDhn1Ie4xAj6JuMUisI28vAK4BxVGXPpgySBklP_GKP9VScrHhQ7qMYmlDGnmynV2ltIYmoEkib3ZqhLugVGfHlXfMXksJNqSAxm_vL9b60JNdZR2fhVmaOOBuGFIgJAZmkGgQbIgTahkNf_D9KbUMLy4as0vVUnlh0YHHEcPNrWC5_jfldi24ceQAQO6Cd4kvmJRyG9TS2iy_ZEONPYulhalzTX3Yg2yVd46-vimPXUfXj8FNG4g"/>
+</div>
+<div class="flex flex-col">
+<h3 class="text-base font-bold text-[#333333]">王大衛</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mt-0.5">
+<span class="material-symbols-outlined text-xs">call</span>
+<span>0922-555-999</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-primary font-bold text-base">18:30</div>
+<div class="text-[10px] text-slate-400 font-medium">45 分鐘</div>
+</div>
+</div>
+<div class="bg-primary-light rounded-lg p-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">content_cut</span>
+<p class="text-sm font-semibold text-primary">男士修眉與皮膚護理</p>
+</div>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">edit</span>
+                        編輯
+                    </button>
+<button class="flex-1 bg-secondary-grey text-slate-600 text-sm font-bold py-3 rounded-xl">取消預約</button>
+</div>
+</div>
+</main>
+<button class="fixed bottom-10 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform active:scale-95 z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+
+</body></html>

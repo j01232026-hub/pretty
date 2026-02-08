@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/global-style.css">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="js/custom-modal.js"></script>
     <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -384,7 +385,7 @@
             const email = emailInput.value.trim();
 
             if (!phone || !birthday) {
-                alert('請填寫手機號碼和生日以完成註冊');
+                CustomModal.alert('提示', '請填寫手機號碼和生日以完成註冊');
                 return;
             }
 
@@ -409,15 +410,15 @@
                 const result = await res.json();
 
                 if (result.success) {
-                    alert('資料補齊成功！已發送優惠券至您的 LINE');
+                    await CustomModal.success('成功', '資料補齊成功！已發送優惠券至您的 LINE');
                     showMemberCard(result.data[0]); // Upsert returns array
                 } else {
-                    alert('更新失敗：' + (result.error || '未知錯誤'));
+                    CustomModal.error('失敗', '更新失敗：' + (result.error || '未知錯誤'));
                 }
 
             } catch (err) {
                 console.error('Update Error:', err);
-                alert('系統錯誤，請稍後再試');
+                CustomModal.error('錯誤', '系統錯誤，請稍後再試');
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;

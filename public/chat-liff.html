@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/global-style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Modal -->
+    <script src="js/custom-modal.js"></script>
     <!-- LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- Supabase JS Client (for Realtime) -->
@@ -18,7 +20,8 @@
     <script>
         // Global Error Handler for Mobile Debugging
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert('System Error: ' + msg + '\nLine: ' + lineNo);
+            // alert('System Error: ' + msg + '\nLine: ' + lineNo);
+            console.error('Global Error:', msg, url, lineNo);
             // Also log to our custom debug console
             if (typeof log === 'function') {
                 log('Global Error: ' + msg, 'error');
@@ -202,7 +205,7 @@
                 // document.getElementById('message-input').addEventListener('keydown', (e) => { ... });
             } else {
                 console.error('Send button not found!');
-                alert('System Error: Send button missing');
+                CustomModal.alert('錯誤', 'System Error: Send button missing');
             }
 
             const spinner = document.getElementById('loading-spinner');
@@ -372,19 +375,19 @@
             try {
                 input = document.getElementById('message-input');
                 if (!input) {
-                    alert('系統錯誤: 找不到輸入框');
+                    CustomModal.alert('錯誤', '系統錯誤: 找不到輸入框');
                     return;
                 }
                 content = input.value.trim();
                 
                 if (!currentUserId) {
-                    alert('系統尚未初始化完成 (User ID missing)，請稍後再試');
+                    CustomModal.alert('錯誤', '系統尚未初始化完成 (User ID missing)，請稍後再試');
                     return;
                 }
                 
                 if (!content) {
                     // Ideally button is disabled, but if not:
-                    alert('請輸入訊息內容');
+                    CustomModal.alert('提示', '請輸入訊息內容');
                     return;
                 }
 
@@ -420,7 +423,7 @@
 
             } catch (err) {
                 console.error('Send Error:', err);
-                alert('訊息發送失敗: ' + err.message);
+                CustomModal.alert('發送失敗', '訊息發送失敗: ' + err.message);
                 if (input && content) input.value = content; // Restore content
                 document.getElementById('send-btn').disabled = false;
             }

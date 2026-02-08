@@ -13,7 +13,7 @@ class CustomModal {
     init() {
         // Create DOM structure
         const modalHtml = `
-            <div id="custom-modal-overlay" class="fixed inset-0 z-[20000] bg-black/40 backdrop-blur-[2px] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+            <div id="custom-modal-overlay" class="fixed inset-0 z-[20000] bg-black/40 backdrop-blur-[8px] opacity-0 pointer-events-none transition-opacity duration-300"></div>
             <div id="custom-modal-container" class="fixed left-1/2 top-1/2 z-[20001] w-[85%] max-w-[320px] -translate-x-1/2 -translate-y-1/2 scale-90 opacity-0 pointer-events-none transition-all duration-300 ease-out">
                 <div class="bg-[#ffffff] dark:bg-gray-800 rounded-[2rem] shadow-2xl p-6 border border-white/50 dark:border-gray-700 relative overflow-hidden">
                     <!-- Decor: Top Gradient -->
@@ -27,8 +27,11 @@ class CustomModal {
 
                         <h3 id="custom-modal-title" class="text-lg font-bold text-gray-900 dark:text-white leading-tight"></h3>
                         <p id="custom-modal-message" class="text-sm text-gray-500 dark:text-gray-300 leading-relaxed"></p>
+                        
+                        <!-- Input for prompt -->
+                        <input id="custom-modal-input" type="text" class="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9D5B8B] bg-gray-50 dark:bg-gray-700 dark:text-white hidden" />
 
-                        <div id="custom-modal-actions" class="grid grid-cols-2 gap-3 pt-2">
+                        <div id="custom-modal-actions" class="grid grid-cols-2 gap-3 pt-4">
                             <button id="custom-modal-cancel" class="py-2.5 px-4 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors active:scale-95">
                                 取消
                             </button>
@@ -52,6 +55,7 @@ class CustomModal {
         this.container = document.getElementById('custom-modal-container');
         this.titleEl = document.getElementById('custom-modal-title');
         this.messageEl = document.getElementById('custom-modal-message');
+        this.inputEl = document.getElementById('custom-modal-input');
         this.cancelBtn = document.getElementById('custom-modal-cancel');
         this.confirmBtn = document.getElementById('custom-modal-confirm');
         this.iconEl = document.getElementById('custom-modal-icon');
@@ -97,6 +101,31 @@ class CustomModal {
     }
 
     /**
+     * Show Prompt Modal (Input Field)
+     * @param {string} title 
+     * @param {string} message 
+     * @param {string} defaultValue 
+     * @param {string} placeholder 
+     * @param {string} inputType 
+     * @param {string} confirmText 
+     * @param {string} cancelText 
+     * @returns {Promise<string|null>}
+     */
+    static prompt(title, message, defaultValue = '', placeholder = '', inputType = 'text', confirmText = '確認', cancelText = '取消') {
+        return new CustomModal().show({
+            title,
+            message,
+            type: 'prompt',
+            confirmText,
+            cancelText,
+            icon: 'edit',
+            inputValue: defaultValue,
+            inputPlaceholder: placeholder,
+            inputType
+        });
+    }
+
+    /**
      * Show Success Modal
      */
     static success(title, message, confirmText = '好') {
@@ -126,7 +155,7 @@ class CustomModal {
         });
     }
 
-    show({ title, message, type = 'alert', confirmText = '確認', cancelText = '取消', icon = 'info', iconColor = '', iconBg = '' }) {
+    show({ title, message, type = 'alert', confirmText = '確認', cancelText = '取消', icon = 'info', iconColor = '', iconBg = '', inputValue = '', inputPlaceholder = '', inputType = 'text' }) {
         return new Promise((resolve) => {
             this.resolvePromise = resolve;
 
@@ -142,21 +171,45 @@ class CustomModal {
             // Reset colors
             iconContainer.className = `mx-auto w-12 h-12 flex items-center justify-center rounded-full mb-2 ${iconBg || 'bg-[#9D5B8B]/10'} ${iconColor || 'text-[#9D5B8B]'}`;
 
-            // Configure Buttons
+            // Configure Buttons & Input
             if (type === 'alert') {
                 this.cancelBtn.classList.add('hidden');
                 this.actionsContainer.classList.remove('grid-cols-2');
                 this.actionsContainer.classList.add('grid-cols-1');
+                this.inputEl.classList.add('hidden');
+            } else if (type === 'prompt') {
+                this.cancelBtn.classList.remove('hidden');
+                this.actionsContainer.classList.remove('grid-cols-1');
+                this.actionsContainer.classList.add('grid-cols-2');
+                
+                this.inputEl.classList.remove('hidden');
+                this.inputEl.value = inputValue || '';
+                this.inputEl.placeholder = inputPlaceholder || '';
+                this.inputEl.type = inputType || 'text';
+                setTimeout(() => this.inputEl.focus(), 100);
             } else {
                 this.cancelBtn.classList.remove('hidden');
                 this.actionsContainer.classList.remove('grid-cols-1');
                 this.actionsContainer.classList.add('grid-cols-2');
+                this.inputEl.classList.add('hidden');
             }
 
             // Event Listeners (One-time binding per show isn't ideal, but safe enough if we clone or manage properly. 
             // Better to re-assign onclick to avoid stacking listeners)
-            this.confirmBtn.onclick = () => this.close(true);
-            this.cancelBtn.onclick = () => this.close(false);
+            this.confirmBtn.onclick = () => {
+                if (type === 'prompt') {
+                    this.close(this.inputEl.value);
+                } else {
+                    this.close(true);
+                }
+            };
+            this.cancelBtn.onclick = () => {
+                if (type === 'prompt') {
+                    this.close(null);
+                } else {
+                    this.close(false);
+                }
+            };
 
             // Show UI
             this.overlay.classList.remove('opacity-0', 'pointer-events-none');

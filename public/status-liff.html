@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/global-style.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="js/custom-modal.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -542,7 +543,7 @@
                 }
                 
                 const rescheduleBtn = clone.querySelector('.btn-reschedule');
-                rescheduleBtn.onclick = () => alert('請聯繫設計師進行更改'); 
+                rescheduleBtn.onclick = () => CustomModal.alert('提示', '請聯繫設計師進行更改'); 
 
                 // 2. Render Subsequent Items (Compact List) - FILTERED
                 const currentDay = appt.date;
@@ -719,10 +720,11 @@
         }
 
         // Handle Cancel (Placeholder)
-        function handleCancel(bookingId) {
+        async function handleCancel(bookingId) {
             // Future: Call Cancel API
-            if (confirm('確定要取消此預約嗎？\n(目前請直接聯繫店家取消)')) {
-                // alert('請聯繫官方帳號進行取消。');
+            const confirmed = await CustomModal.confirm('取消預約', '確定要取消此預約嗎？\n(目前請直接聯繫店家取消)');
+            if (confirmed) {
+                // CustomModal.alert('提示', '請聯繫官方帳號進行取消。');
                 // Or implement API call here
             }
         }

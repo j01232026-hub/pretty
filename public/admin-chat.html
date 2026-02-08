@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/admin-style.css">
+    <script src="js/custom-modal.js"></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -417,7 +418,7 @@
             }]);
             // appendMessage will be called by realtime subscription
         } catch (e) {
-            alert('發送失敗');
+            CustomModal.error('發送失敗', '訊息發送失敗，請稍後再試');
         }
     }
     
@@ -446,7 +447,7 @@
         if (!currentChatUser) return;
         const u = userProfiles[currentChatUser] || {};
         const oldName = u.customName || u.displayName || '';
-        const newName = prompt("請輸入用戶備註名稱:", oldName);
+        const newName = await CustomModal.prompt("修改備註", "請輸入用戶備註名稱:", oldName);
         if (newName !== null) {
             const { error } = await supabaseClient
                 .from('profiles')
@@ -457,7 +458,7 @@
                 fetchChatUsers();
                 if (currentChatUser) selectUser(currentChatUser); // Update header
             } else {
-                alert("修改失敗");
+                CustomModal.error("修改失敗", "更新備註失敗，請稍後再試");
             }
         }
     }

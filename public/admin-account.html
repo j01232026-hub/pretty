@@ -219,8 +219,9 @@
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    let supabaseClient = null;
+    <script src="/js/custom-modal.js?v=1"></script>
+    <script>
+        let supabaseClient = null;
     let companyInfo = {};
 
     async function initSupabase() {
@@ -283,7 +284,7 @@
             const file = input.files[0];
             // Limit size to avoid DB issues if storing base64
             if (file.size > 500 * 1024) { // 500KB
-                alert('圖片大小請小於 500KB');
+                CustomModal.alert('提示', '圖片大小請小於 500KB');
                 input.value = '';
                 return;
             }
@@ -334,9 +335,9 @@
         }
 
         if (error) {
-            alert('儲存失敗: ' + error.message);
+            CustomModal.error('失敗', '儲存失敗: ' + error.message);
         } else {
-            alert('儲存成功');
+            await CustomModal.success('成功', '儲存成功');
             closeEditCompanyModal();
             fetchCompanyInfo();
         }
@@ -426,7 +427,7 @@
             console.log(`Staff ${id} visibility updated to ${isVisible}`);
         } catch (e) {
             console.error(e);
-            alert('更新狀態失敗: ' + e.message);
+            CustomModal.error('錯誤', '更新狀態失敗: ' + e.message);
             fetchStaff(); // Reload to revert UI
         }
     }
@@ -465,7 +466,7 @@
             const file = input.files[0];
             // Limit size to avoid DB issues if storing base64
             if (file.size > 500 * 1024) { // 500KB
-                alert('圖片大小請小於 500KB');
+                CustomModal.alert('提示', '圖片大小請小於 500KB');
                 input.value = '';
                 return;
             }
@@ -489,7 +490,7 @@
         const avatar_url = document.getElementById('staffAvatarUrl').value;
 
         if (!name) {
-            alert('請輸入姓名');
+            CustomModal.alert('提示', '請輸入姓名');
             return;
         }
 
@@ -515,17 +516,18 @@
                 throw new Error(data.error || 'Operation failed');
             }
 
-            alert('儲存成功');
+            await CustomModal.success('成功', '儲存成功');
             closeEditStaffModal();
             fetchStaff();
 
         } catch (e) {
-            alert('錯誤: ' + e.message);
+            CustomModal.error('錯誤', '錯誤: ' + e.message);
         }
     }
 
     async function deleteStaff(id) {
-        if (!confirm('確定要刪除此成員嗎？')) return;
+        const confirmed = await CustomModal.confirm('刪除成員', '確定要刪除此成員嗎？');
+        if (!confirmed) return;
 
         try {
             const res = await fetch('/api/staff', {
@@ -539,10 +541,10 @@
                 throw new Error(data.error || 'Delete failed');
             }
 
-            alert('刪除成功');
+            await CustomModal.success('成功', '刪除成功');
             fetchStaff();
         } catch (e) {
-            alert('錯誤: ' + e.message);
+            CustomModal.error('錯誤', '錯誤: ' + e.message);
         }
     }
 

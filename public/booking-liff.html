@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/css/style-enhancement.css">
     <link rel="stylesheet" href="css/global-style.css">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="js/custom-modal.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -183,46 +184,7 @@
         </button>
     </footer>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-[60] hidden">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        <!-- Modal Content -->
-        <div class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-t-[2rem] p-6 pb-12 shadow-2xl transform transition-transform duration-300 ease-out translate-y-full border-t border-white/20" id="modalContent">
-            <div class="w-12 h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-full mx-auto mb-6"></div>
-            
-            <h3 class="text-xl font-bold mb-4 text-center">您的預約資訊如下</h3>
-            
-            <div class="space-y-3 mb-8 text-base">
-                <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
-                    <span class="text-gray-500">設計師</span>
-                    <span class="font-bold" id="modalStylist"></span>
-                </div>
-                <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
-                    <span class="text-gray-500">日期</span>
-                    <span class="font-bold" id="modalDate"></span>
-                </div>
-                <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
-                    <span class="text-gray-500">時間</span>
-                    <span class="font-bold" id="modalTime"></span>
-                </div>
-                <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
-                    <span class="text-gray-500">姓名</span>
-                    <span class="font-bold" id="modalName"></span>
-                </div>
-                <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
-                    <span class="text-gray-500">手機</span>
-                    <span class="font-bold" id="modalPhone"></span>
-                </div>
-            </div>
-
-            <p class="text-center text-lg font-bold mb-6">確定預約嗎？</p>
-
-            <button onclick="submitBooking()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
-                <span>確定送出預約資訊</span>
-            </button>
-        </div>
-    </div>
+    <!-- Confirmation Modal Removed (Replaced by CustomModal) -->
 
     <script>
         // State
@@ -562,7 +524,7 @@
                     // Check if current is exactly 30 mins after the last selected
                     // "只能往後不能往前" & "必須是連續時段"
                     if (currentMinutes !== lastSelected + 30) {
-                        alert('必須要連續時段才可預約');
+                        CustomModal.alert('提示', '必須要連續時段才可預約');
                         return;
                     }
                 }
@@ -591,40 +553,48 @@
             label.classList.add('text-primary');
         }
 
-        function confirmBooking() {
+        async function confirmBooking() {
             const name = document.getElementById('nameInput').value.trim();
             const phone = document.getElementById('phoneInput').value.trim();
             
-            if (!selectedStylist) return alert('請選擇設計師 (若列表未載入請重新整理網頁)');
-            if (!selectedDate) return alert('請選擇日期');
-            if (selectedTimes.size === 0) return alert('請選擇至少一個時段');
-            if (!name) return alert('請輸入姓名');
-            if (!phone) return alert('請輸入手機號碼');
+            if (!selectedStylist) return CustomModal.alert('提示', '請選擇設計師 (若列表未載入請重新整理網頁)');
+            if (!selectedDate) return CustomModal.alert('提示', '請選擇日期');
+            if (selectedTimes.size === 0) return CustomModal.alert('提示', '請選擇至少一個時段');
+            if (!name) return CustomModal.alert('提示', '請輸入姓名');
+            if (!phone) return CustomModal.alert('提示', '請輸入手機號碼');
 
-            // Show Modal
-            const modal = document.getElementById('confirmModal');
-            const content = document.getElementById('modalContent');
+            const timeString = formatSelectedTimes();
             
-            document.getElementById('modalStylist').textContent = selectedStylist;
-            document.getElementById('modalDate').textContent = selectedDate;
-            document.getElementById('modalTime').textContent = formatSelectedTimes();
-            document.getElementById('modalName').textContent = name;
-            document.getElementById('modalPhone').textContent = phone;
+            const htmlContent = `
+                <div class="text-left space-y-3 text-base">
+                    <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                        <span class="text-gray-500">設計師</span>
+                        <span class="font-bold text-gray-900 dark:text-gray-100">${selectedStylist}</span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                        <span class="text-gray-500">日期</span>
+                        <span class="font-bold text-gray-900 dark:text-gray-100">${selectedDate}</span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                        <span class="text-gray-500">時間</span>
+                        <span class="font-bold text-gray-900 dark:text-gray-100">${timeString}</span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                        <span class="text-gray-500">姓名</span>
+                        <span class="font-bold text-gray-900 dark:text-gray-100">${name}</span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 dark:border-white/5 pb-2">
+                        <span class="text-gray-500">手機</span>
+                        <span class="font-bold text-gray-900 dark:text-gray-100">${phone}</span>
+                    </div>
+                </div>
+                <p class="text-center text-lg font-bold mt-6">確定預約嗎？</p>
+            `;
 
-            modal.classList.remove('hidden');
-            // Animation
-            setTimeout(() => {
-                content.classList.remove('translate-y-full');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('confirmModal');
-            const content = document.getElementById('modalContent');
-            content.classList.add('translate-y-full');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            const result = await CustomModal.confirm('預約確認', htmlContent, '確定送出預約資訊', '取消');
+            if (result) {
+                await submitBooking();
+            }
         }
 
         function formatSelectedTimes() {
@@ -697,17 +667,8 @@
                     console.error('Get Profile Error:', e);
                 }
             }
-
-            // Show loading state
-            const submitBtn = document.querySelector('#confirmModal button'); 
-            const originalContent = submitBtn.innerHTML;
             
             try {
-                // UI Loading State
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span>送出預約中...</span><i class="fa-solid fa-spinner fa-spin ml-2"></i>';
-                submitBtn.classList.add('animate-pulse', 'opacity-80');
-                
                 const res = await fetch('/api/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -733,22 +694,13 @@
                     // 只關閉視窗，讓後端發送 Push Message
                     liff.closeWindow();
                 } else {
-                    alert(`預約成功！(測試模式)\n設計師：${selectedStylist}\n日期：${selectedDate}\n時間：${timeString}\n姓名：${name}\n手機：${phone}`);
-                    closeModal();
-                    // Restore button state if not closing window (e.g. in browser test mode)
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalContent;
-                    submitBtn.classList.remove('animate-pulse', 'opacity-80');
+                    await CustomModal.success('預約成功', `(測試模式)<br>設計師：${selectedStylist}<br>日期：${selectedDate}<br>時間：${timeString}<br>姓名：${name}<br>手機：${phone}`);
+                    window.location.reload();
                 }
 
             } catch (err) {
                 console.error('Submit Error:', err);
-                alert('預約失敗：' + err.message);
-                
-                // Restore button state
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-                submitBtn.classList.remove('animate-pulse', 'opacity-80');
+                CustomModal.error('預約失敗', err.message);
             }
         }
     </script>
