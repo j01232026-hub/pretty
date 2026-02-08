@@ -30,7 +30,11 @@ function openAdminBookingModal() {
         // Reset search
         const searchInput = document.getElementById('memberSearchInput');
         if (searchInput) searchInput.value = '';
-        document.getElementById('memberSearchResults').classList.add('hidden');
+        const searchResults = document.getElementById('memberSearchResults');
+        if (searchResults) {
+            searchResults.classList.add('hidden');
+            searchResults.innerHTML = '';
+        }
     }
 }
 
@@ -48,37 +52,54 @@ function setBookingType(type) {
     const staffBtn = document.getElementById('typeBtn_staff_booking');
     const blockBtn = document.getElementById('typeBtn_block');
     
-    // Define classes
-    const activeClasses = ['bg-white', 'shadow-sm', 'text-primary', 'dark:bg-gray-700', 'dark:text-white'];
-    const inactiveClasses = ['text-gray-500', 'hover:text-gray-700', 'dark:text-gray-400', 'dark:hover:text-gray-200'];
+    // Define classes based on 001.html
+    // Active: bg-[#ffffff] dark:bg-primary shadow-sm text-primary dark:text-white
+    // Inactive: text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200
     
+    const activeClasses = ['bg-[#ffffff]', 'dark:bg-primary', 'shadow-sm', 'text-primary', 'dark:text-white', 'font-semibold'];
+    const inactiveClasses = ['text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200', 'font-medium'];
+    
+    // Helper to swap classes
+    const setBtnState = (btn, isActive) => {
+        if (isActive) {
+            btn.classList.add(...activeClasses);
+            btn.classList.remove(...inactiveClasses.filter(c => !activeClasses.includes(c))); // Remove only conflicting
+            // Specifically handle font weight which might overlap
+             btn.classList.remove('font-medium');
+             btn.classList.add('font-semibold');
+        } else {
+            btn.classList.remove(...activeClasses);
+            btn.classList.add(...inactiveClasses);
+             btn.classList.remove('font-semibold');
+             btn.classList.add('font-medium');
+        }
+    };
+
     if (type === 'staff_booking') {
-        staffBtn.classList.add(...activeClasses);
-        staffBtn.classList.remove(...inactiveClasses);
-        
-        blockBtn.classList.remove(...activeClasses);
-        blockBtn.classList.add(...inactiveClasses);
+        setBtnState(staffBtn, true);
+        setBtnState(blockBtn, false);
         
         document.getElementById('customerInfoSection').classList.remove('hidden');
         document.getElementById('blockNoteSection').classList.add('hidden');
         
-        document.querySelector('input[name="name"]').setAttribute('required', 'required');
-        document.querySelector('input[name="phone"]').setAttribute('required', 'required');
+        const nameInput = document.querySelector('input[name="name"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+        if(nameInput) nameInput.setAttribute('required', 'required');
+        if(phoneInput) phoneInput.setAttribute('required', 'required');
         
         // Hide All Day option
         document.getElementById('allDayWrapper').classList.add('hidden');
     } else {
-        blockBtn.classList.add(...activeClasses);
-        blockBtn.classList.remove(...inactiveClasses);
-        
-        staffBtn.classList.remove(...activeClasses);
-        staffBtn.classList.add(...inactiveClasses);
+        setBtnState(blockBtn, true);
+        setBtnState(staffBtn, false);
         
         document.getElementById('customerInfoSection').classList.add('hidden');
         document.getElementById('blockNoteSection').classList.remove('hidden');
         
-        document.querySelector('input[name="name"]').removeAttribute('required');
-        document.querySelector('input[name="phone"]').removeAttribute('required');
+        const nameInput = document.querySelector('input[name="name"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+        if(nameInput) nameInput.removeAttribute('required');
+        if(phoneInput) phoneInput.removeAttribute('required');
         
         // Show All Day option
         document.getElementById('allDayWrapper').classList.remove('hidden');
@@ -129,7 +150,7 @@ function renderCalendar() {
     // Previous month padding
     for (let i = 0; i < startingDay; i++) {
         const div = document.createElement('div');
-        div.className = 'h-10 flex items-center justify-center text-sm text-gray-300';
+        div.className = 'py-2 text-sm text-slate-300 dark:text-slate-700'; // Match spacing
         grid.appendChild(div);
     }
     
@@ -137,26 +158,34 @@ function renderCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const isSelected = selectedDate === dateStr;
-        
+        const isToday = dateStr === formatDate(new Date());
+
+        // Wrapper to center
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative flex justify-center py-1';
+
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = day;
-        // MATCH IMAGE: Rounded Square (rounded-lg/xl), not full circle
-        btn.className = `h-10 w-10 mx-auto rounded-lg flex items-center justify-center text-base transition-all ${
-            isSelected 
-            ? 'bg-primary text-white font-bold shadow-md transform scale-105' 
-            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 font-medium'
-        }`;
         btn.onclick = () => selectDate(dateStr);
-        
-        // Mark today with a border if not selected
-        const todayStr = formatDate(new Date());
-        if (dateStr === todayStr && !isSelected) {
-            // Blue outline circle/square for today
-            btn.classList.add('border-2', 'border-primary', 'text-primary', 'font-bold');
+
+        if (isSelected) {
+            // MATCH IMAGE: w-9 h-9 flex items-center justify-center bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 z-10
+            btn.className = 'w-9 h-9 flex items-center justify-center bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 z-10 transition-all transform scale-105';
+        } else {
+            // Unselected: py-2 text-sm font-medium
+            // We need to override the wrapper's py-1 if we want it to look exactly like the plain text list in 001.html
+            // But for buttons we need a hit area.
+            // Let's use a consistent size for alignment but style it minimally.
+            btn.className = 'w-9 h-9 flex items-center justify-center text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all';
+            
+            if (isToday) {
+                btn.classList.add('ring-1', 'ring-primary', 'text-primary', 'font-bold');
+            }
         }
         
-        grid.appendChild(btn);
+        wrapper.appendChild(btn);
+        grid.appendChild(wrapper);
     }
 }
 
@@ -200,38 +229,44 @@ function renderTimeSlots() {
         }
     }
     
-    const groups = {
-        '上午': slots.filter(t => parseInt(t.split(':')[0]) < 12),
-        '下午': slots.filter(t => parseInt(t.split(':')[0]) >= 12 && parseInt(t.split(':')[0]) < 18),
-        '晚上': slots.filter(t => parseInt(t.split(':')[0]) >= 18)
-    };
+    const groups = [
+        { label: '上午', icon: 'wb_sunny', slots: slots.filter(t => parseInt(t.split(':')[0]) < 12) },
+        { label: '下午', icon: 'light_mode', slots: slots.filter(t => parseInt(t.split(':')[0]) >= 12 && parseInt(t.split(':')[0]) < 18) },
+        { label: '晚上', icon: 'bedtime', slots: slots.filter(t => parseInt(t.split(':')[0]) >= 18) }
+    ];
     
-    for (const [label, groupSlots] of Object.entries(groups)) {
-        if (groupSlots.length === 0) continue;
+    for (const group of groups) {
+        if (group.slots.length === 0) continue;
         
         const groupDiv = document.createElement('div');
-        groupDiv.className = 'mb-2';
+        groupDiv.className = 'space-y-3';
         
-        const labelDiv = document.createElement('div');
-        labelDiv.className = 'text-xs text-gray-400 mb-1.5 font-bold';
-        labelDiv.textContent = label;
-        groupDiv.appendChild(labelDiv);
+        // Header
+        const headerP = document.createElement('p');
+        headerP.className = 'text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center gap-2';
+        headerP.innerHTML = `<span class="material-symbols-outlined text-sm">${group.icon}</span> ${group.label}`;
+        groupDiv.appendChild(headerP);
         
+        // Grid
         const gridDiv = document.createElement('div');
-        // MATCH IMAGE: 4 columns, gap
-        gridDiv.className = 'grid grid-cols-4 gap-2';
+        gridDiv.className = 'grid grid-cols-4 gap-3';
         
-        groupSlots.forEach(time => {
+        group.slots.forEach(time => {
             const isSelected = selectedTime === time;
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.textContent = time;
-            // MATCH IMAGE: Rounded Rectangle (rounded-xl), White bg, shadow-sm
-            btn.className = `w-full h-10 flex items-center justify-center rounded-xl text-sm font-bold tracking-wide border transition-all ${
-                isSelected
-                ? 'bg-primary border-primary text-white shadow-md'
-                : 'bg-white border-gray-100 text-gray-700 hover:border-primary hover:text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 shadow-sm'
-            }`;
+            
+            // Base: py-3 px-1 text-sm font-semibold rounded-xl bg-card-light dark:bg-card-dark shadow-sm ring-1 ring-slate-100 dark:ring-slate-800
+            let classes = 'w-full py-3 px-1 text-sm font-semibold rounded-xl shadow-sm transition-all active:scale-95';
+            
+            if (isSelected) {
+                classes += ' bg-[#9D5B8B] text-white shadow-md ring-2 ring-primary';
+            } else {
+                classes += ' bg-card-light dark:bg-card-dark ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md dark:text-slate-200';
+            }
+            
+            btn.className = classes;
             btn.onclick = () => selectTimeSlot(time);
             gridDiv.appendChild(btn);
         });
@@ -250,7 +285,6 @@ function selectTimeSlot(time) {
     const allDayCheck = document.getElementById('allDayCheck');
     if (allDayCheck && allDayCheck.checked) {
         allDayCheck.checked = false;
-        // Logic for toggleAllDay(false) without clearing time
     }
     
     renderTimeSlots();
@@ -259,11 +293,9 @@ function selectTimeSlot(time) {
 function addBlockTag(tag) {
     const noteInput = document.getElementById('blockNoteInput');
     if (noteInput) {
-        // If empty, just set. If not, append.
         if (noteInput.value.trim() === '') {
             noteInput.value = tag;
         } else {
-            // Check if tag already exists to avoid duplication
             if (!noteInput.value.includes(tag)) {
                 noteInput.value += ` ${tag}`;
             }
@@ -273,14 +305,14 @@ function addBlockTag(tag) {
 
 async function loadModalStylists() {
     const select = document.getElementById('modalStylistSelect');
-    if (!select || select.options.length > 1) return; // Already loaded or missing
+    if (!select || select.options.length > 1) return; 
 
     try {
         const res = await fetch('/api/staff');
         if (res.ok) {
             const staff = await res.json();
             staff.forEach(s => {
-                if (s.visible !== false) { // Only show visible staff
+                if (s.visible !== false) {
                     const opt = document.createElement('option');
                     opt.value = s.name;
                     opt.textContent = s.name;
@@ -303,7 +335,7 @@ function handleMemberSearch(keyword) {
 
     searchTimeout = setTimeout(async () => {
         try {
-            resultsDiv.innerHTML = '<div class="p-3 text-center text-gray-400 text-xs">搜尋中...</div>';
+            resultsDiv.innerHTML = '<div class="p-3 text-center text-slate-400 text-xs">搜尋中...</div>';
             resultsDiv.classList.remove('hidden');
 
             const res = await fetch(`/api/search-members?q=${encodeURIComponent(keyword)}&secret=${SEARCH_API_SECRET}`);
@@ -322,19 +354,19 @@ function renderSearchResults(results) {
     const resultsDiv = document.getElementById('memberSearchResults');
     
     if (results.length === 0) {
-        resultsDiv.innerHTML = '<div class="p-3 text-center text-gray-400 text-xs">找不到符合的會員</div>';
+        resultsDiv.innerHTML = '<div class="p-3 text-center text-slate-400 text-xs">找不到符合的會員</div>';
         return;
     }
 
     resultsDiv.innerHTML = results.map(member => `
-        <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-3 border-b border-gray-50 last:border-0"
+        <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0"
              onclick="selectMember('${member.name}', '${member.phone}', '${member.userId}')">
-            <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                ${member.avatar ? `<img src="${member.avatar}" class="w-full h-full object-cover">` : '<span class="material-icons text-gray-400 text-sm p-2">person</span>'}
+            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                ${member.avatar ? `<img src="${member.avatar}" class="w-full h-full object-cover">` : '<span class="material-symbols-outlined text-slate-400 text-sm p-2">person</span>'}
             </div>
             <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-gray-200">${member.name}</div>
-                <div class="text-xs text-gray-500">${member.phone || '無電話'}</div>
+                <div class="text-sm font-bold text-slate-800 dark:text-slate-200">${member.name}</div>
+                <div class="text-xs text-slate-500">${member.phone || '無電話'}</div>
             </div>
         </div>
     `).join('');
@@ -344,17 +376,9 @@ function selectMember(name, phone, userId) {
     document.querySelector('input[name="name"]').value = name;
     document.querySelector('input[name="phone"]').value = phone;
     
-    // Store userId if needed
-    let userIdInput = document.querySelector('input[name="userId"]');
-    if (!userIdInput) {
-        userIdInput = document.createElement('input');
-        userIdInput.type = 'hidden';
-        userIdInput.name = 'userId';
-        document.getElementById('adminBookingForm').appendChild(userIdInput);
-    }
-    userIdInput.value = userId;
+    const userIdInput = document.getElementById('userIdInput');
+    if (userIdInput) userIdInput.value = userId;
 
-    // Clear search
     document.getElementById('memberSearchInput').value = '';
     document.getElementById('memberSearchResults').classList.add('hidden');
     document.getElementById('memberSearchResults').innerHTML = '';
@@ -364,7 +388,7 @@ async function handleAdminBookingSubmit(e) {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
-    const isAllDay = document.getElementById('allDayCheck').checked;
+    const isAllDay = document.getElementById('allDayCheck') ? document.getElementById('allDayCheck').checked : false;
     
     const payload = {
         date: formData.get('date'),
@@ -398,7 +422,7 @@ async function handleAdminBookingSubmit(e) {
             alert('新增成功！');
             closeAdminBookingModal();
             form.reset();
-            const userIdInput = document.querySelector('input[name="userId"]');
+            const userIdInput = document.getElementById('userIdInput');
             if (userIdInput) userIdInput.value = '';
             
             if (typeof loadBookings === 'function') {
