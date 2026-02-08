@@ -77,13 +77,13 @@
 </button>
 </div>
 </header>
-<main class="flex-1 px-4 py-2 space-y-4 pb-24">
+<main class="max-w-[430px] mx-auto px-4 py-2 space-y-4 pb-24">
     <!-- Tabs -->
-    <div class="sticky top-[72px] z-20 bg-background-light/90 ios-blur pt-2 pb-4 -mx-4 px-4">
-        <div class="bg-tab-bg p-1 rounded-full flex items-center w-full" id="filterTabs">
-            <button class="flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm transition-all" onclick="filterBookings('today', this)">今日</button>
-            <button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors" onclick="filterBookings('week', this)">七日內</button>
-            <button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors" onclick="filterBookings('all', this)">全部</button>
+    <div class="sticky top-[72px] z-20 bg-background-light/95 ios-blur pt-4 pb-4 -mx-4 px-4 transition-all duration-300">
+        <div class="bg-tab-bg p-1 rounded-full flex items-center w-full shadow-inner" id="filterTabs">
+            <button class="flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm transition-all duration-300" onclick="filterBookings('today', this)">今日</button>
+            <button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors duration-300" onclick="filterBookings('week', this)">七日內</button>
+            <button class="flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors duration-300" onclick="filterBookings('all', this)">全部</button>
         </div>
     </div>
 
@@ -320,9 +320,9 @@
         const btns = container.querySelectorAll('button');
         
         btns.forEach(b => {
-            b.className = "flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors";
+            b.className = "flex-1 py-2.5 text-sm font-medium rounded-full text-slate-500 hover:text-primary-dark transition-colors duration-300";
         });
-        btn.className = "flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm transition-all";
+        btn.className = "flex-1 py-2.5 text-sm font-bold rounded-full bg-white text-primary-dark shadow-sm transition-all duration-300";
 
         let filtered = allBookings;
         if (type === 'today') {
