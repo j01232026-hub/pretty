@@ -29,7 +29,7 @@
         align-items: center;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         z-index: 50;
-        padding-bottom: 20px; /* Safe area */
+        /* padding-bottom: 20px; Removed to fix alignment */
     }
     .bottom-nav-item {
         display: flex;
@@ -39,9 +39,10 @@
         text-decoration: none;
         font-size: 0.75rem;
         gap: 4px;
+        justify-content: center; /* Ensure vertical centering */
     }
     .bottom-nav-item.active {
-        color: #8E567C;
+        color: #8e5d7a; /* Primary color */
     }
     .material-icons {
         font-family: 'Material Icons';
@@ -116,14 +117,14 @@
   </style>
   </head>
 <body class="bg-background-light text-[#333333] min-h-screen font-display">
-<header class="admin-header sticky top-0 z-50 bg-background-light/90 ios-blur px-4 pt-10 pb-4 shadow-none border-b-0">
+<header class="admin-header sticky top-0 z-50 bg-white px-4 py-4 border-b border-gray-100">
 <div class="flex items-center justify-between max-w-lg mx-auto">
 <div class="flex items-center gap-3">
-<!-- <span class="material-icons text-3xl">calendar_month</span> -->
-<h1 class="text-xl font-bold tracking-tight">預約管理後台</h1>
+<span class="material-icons text-3xl text-primary">calendar_month</span>
+<h1 class="text-xl font-bold tracking-tight text-[#4A4A4A]">預約管理後台</h1>
 </div>
 <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-<span class="material-icons" style="color: var(--accent-color)">notifications</span>
+<span class="material-icons text-primary">notifications</span>
 </button>
 </div>
 </header>
