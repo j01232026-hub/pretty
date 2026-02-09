@@ -65,8 +65,8 @@
         const { data: profile, error: profileError } = await sb
             .from('profiles')
             .select('id, is_complete')
-            .eq('id', user.id)
-            .single();
+            .eq('user_id', user.id)
+            .maybeSingle();
 
         if (profileError || !profile) {
             console.warn('Gateway: No profile found, redirecting to profile setup...');
@@ -74,7 +74,7 @@
             return;
         }
 
-        if (!profile.is_complete) {
+        if (profile.is_complete !== true) {
             console.warn('Gateway: Profile incomplete, redirecting to profile setup...');
             window.location.href = '/auth-profile.html';
             return;

@@ -147,13 +147,16 @@ const AuthFlow = {
 
         // --- 2. Logged In: Check Profile ---
         // Fetch profile if not cached
-        if (!AuthFlow.profile) {
+        if (!AuthFlow.profile && AuthFlow.user) {
             const { data, error } = await AuthFlow.supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', AuthFlow.user.id)
-                .single();
+                .eq('user_id', AuthFlow.user.id)
+                .maybeSingle();
             
+            if (error) {
+                console.warn('Profile fetch error:', error);
+            }
             // If error is "Row not found", data is null.
             AuthFlow.profile = data;
         }
@@ -162,6 +165,7 @@ const AuthFlow = {
         if (!AuthFlow.profile) {
             // Block access to everything except profile setup
             if (page !== 'auth-profile.html') {
+                console.log('Redirecting to auth-profile because no profile found');
                 AuthFlow.navigateTo('auth-profile.html');
             } else {
                 // We are on profile page, try to auto-fill LINE data
@@ -171,9 +175,10 @@ const AuthFlow = {
         }
 
         // Case B: Profile Exists but Not Complete
-        if (!AuthFlow.profile.is_complete) {
+        if (AuthFlow.profile.is_complete !== true) {
             // Block access to everything except profile setup
             if (page !== 'auth-profile.html') {
+                console.log('Redirecting to auth-profile because profile incomplete');
                 AuthFlow.navigateTo('auth-profile.html');
             } else {
                 AuthFlow.autoFillProfile();
@@ -476,7 +481,6 @@ const AuthFlow = {
                 }
 
                 const updates = {
-                    id: AuthFlow.user.id,
                     user_id: AuthFlow.user.id, // Required for RLS INSERT policy
                     display_name: fullName,
                     birthday: birthday || null,
@@ -490,9 +494,18 @@ const AuthFlow = {
                     updates.picture_url = pictureUrl;
                 }
 
+                // Only set ID if creating new, or depend on UNIQUE constraint
+                // Ideally we should NOT set 'id' manually if it's gen_random_uuid()
+                // But for upsert to work on ID, we need to know it.
+                // If we upsert on user_id, we need a unique constraint on user_id.
+                // The schema has UNIQUE(user_id, store_id).
+                // Since store_id is null here, it works as unique key.
+                
+                // Let's use ON CONFLICT
+                
                 const { error } = await AuthFlow.supabase
                     .from('profiles')
-                    .upsert(updates);
+                    .upsert(updates, { onConflict: 'user_id, store_id' });
 
                 if (error) {
                     CustomModal.alert('錯誤', '儲存失敗: ' + error.message);
