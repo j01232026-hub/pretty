@@ -222,11 +222,11 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <span class="material-icons text-primary text-sm">storefront</span> 門市資料
+                            <span class="material-icons text-primary text-sm">storefront</span> 新增門市
                         </h4>
                         <label class="flex items-center gap-1 cursor-pointer select-none">
                             <input type="checkbox" id="checkStoreSameAsAccount" onchange="autofillStoreFromAccount(this)" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4">
-                            <span class="text-xs text-gray-500">同帳號持有人</span>
+                            <span class="text-xs text-gray-500">同商家資料</span>
                         </label>
                     </div>
                     
@@ -250,20 +250,14 @@
 
                 <!-- Staff Info Section -->
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center justify-between">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <span class="material-icons text-primary text-sm">badge</span> 初始員工 (店長/管理者)
+                            <span class="material-icons text-primary text-sm">badge</span> 新增員工
                         </h4>
-                        <div class="flex gap-3">
-                            <label class="flex items-center gap-1 cursor-pointer select-none">
-                                <input type="checkbox" id="checkStaffSameAsAccount" onchange="autofillStaffFromAccount(this)" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4">
-                                <span class="text-xs text-gray-500">同帳號持有人</span>
-                            </label>
-                            <label class="flex items-center gap-1 cursor-pointer select-none">
-                                <input type="checkbox" id="checkStaffSameAsStore" onchange="autofillStaffFromStore(this)" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4">
-                                <span class="text-xs text-gray-500">同門市資訊</span>
-                            </label>
-                        </div>
+                        <label class="flex items-center gap-1 cursor-pointer select-none">
+                            <input type="checkbox" id="checkStaffSameAsAccount" onchange="autofillStaffFromAccount(this)" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4">
+                            <span class="text-xs text-gray-500">同帳號持有人</span>
+                        </label>
                     </div>
 
                     <!-- Staff Avatar -->
@@ -815,10 +809,6 @@
     async function autofillStaffFromAccount(checkbox) {
         if (!checkbox.checked) return;
         
-        // Uncheck conflicting checkbox if checked
-        const conflict = document.getElementById('checkStaffSameAsStore');
-        if (conflict && conflict.checked) conflict.checked = false;
-
         if (!supabaseClient) return;
         try {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -846,22 +836,6 @@
             }
         } catch (e) {
             console.error('Autofill Staff Error:', e);
-        }
-    }
-
-    function autofillStaffFromStore(checkbox) {
-        if (!checkbox.checked) return;
-
-        // Uncheck conflicting checkbox if checked
-        const conflict = document.getElementById('checkStaffSameAsAccount');
-        if (conflict && conflict.checked) conflict.checked = false;
-
-        // Copy from the "New Store" inputs
-        const storePhone = document.getElementById('newStorePhone').value;
-        // Address not used in staff form currently
-        
-        if (storePhone) {
-            document.getElementById('newStaffPhone').value = storePhone;
         }
     }
 
