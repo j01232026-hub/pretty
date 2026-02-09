@@ -16,6 +16,12 @@ export default async function handler(req, res) {
     return res.redirect('/auth-login.html?error=missing_code')
   }
 
+  // 0. Check Env Vars
+  if (!process.env.LINE_LOGIN_CHANNEL_ID || !process.env.LINE_LOGIN_CHANNEL_SECRET || !process.env.LINE_LOGIN_CALLBACK_URL) {
+     console.error('LINE Login: Missing Env Vars');
+     return res.redirect('/auth-login.html?error=config_error&message=' + encodeURIComponent('系統配置錯誤：缺少 LINE 環境變數'))
+  }
+
   try {
     // 1. Exchange code for access token & id_token
     const tokenResponse = await axios.post(
@@ -119,7 +125,17 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('LINE Login Error:', error.response?.data || error.message)
+    
+    // Determine Error Message
+    let msg = '登入失敗，請稍後再試';
+    if (error.response?.data) {
+        // LINE API Error
+        msg = `LINE 錯誤: ${error.response.data.error_description || error.response.data.error || JSON.stringify(error.response.data)}`;
+    } else if (error.message) {
+        msg = `系統錯誤: ${error.message}`;
+    }
+
     // Redirect to login page with error
-    return res.redirect('/auth-login.html?error=line_login_failed&message=' + encodeURIComponent('登入失敗，請稍後再試'))
+    return res.redirect('/auth-login.html?error=line_login_failed&message=' + encodeURIComponent(msg))
   }
 }
