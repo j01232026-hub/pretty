@@ -97,7 +97,7 @@ export default async function handler(req, res) {
         .upsert({
           id: userId,
           line_id: lineId,
-          full_name: name,
+          display_name: name,
           picture_url: picture,
           is_onboarded: false
         })
