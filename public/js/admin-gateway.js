@@ -66,6 +66,9 @@
             .from('profiles')
             .select('id, is_complete')
             .eq('user_id', user.id)
+            .order('is_complete', { ascending: false }) // Prioritize complete profiles
+            .order('created_at', { ascending: false })  // Then newest
+            .limit(1)
             .maybeSingle();
 
         if (profileError || !profile) {

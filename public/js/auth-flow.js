@@ -152,6 +152,9 @@ const AuthFlow = {
                 .from('profiles')
                 .select('*')
                 .eq('user_id', AuthFlow.user.id)
+                .order('is_complete', { ascending: false })
+                .order('created_at', { ascending: false })
+                .limit(1)
                 .maybeSingle();
             
             if (error) {
@@ -494,18 +497,36 @@ const AuthFlow = {
                     updates.picture_url = pictureUrl;
                 }
 
-                // Only set ID if creating new, or depend on UNIQUE constraint
-                // Ideally we should NOT set 'id' manually if it's gen_random_uuid()
-                // But for upsert to work on ID, we need to know it.
-                // If we upsert on user_id, we need a unique constraint on user_id.
-                // The schema has UNIQUE(user_id, store_id).
-                // Since store_id is null here, it works as unique key.
+                // FIX: Do not use upsert with NULL conflict target.
+                // Check if we have an existing profile ID (either from AuthFlow.profile or fetch)
+                let profileId = AuthFlow.profile?.id;
                 
-                // Let's use ON CONFLICT
-                
-                const { error } = await AuthFlow.supabase
-                    .from('profiles')
-                    .upsert(updates, { onConflict: 'user_id, store_id' });
+                if (!profileId) {
+                    // Double check DB
+                    const { data: existing } = await AuthFlow.supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('user_id', AuthFlow.user.id)
+                        .is('store_id', null)
+                        .maybeSingle();
+                    if (existing) profileId = existing.id;
+                }
+
+                let error;
+                if (profileId) {
+                    // Update
+                    const res = await AuthFlow.supabase
+                        .from('profiles')
+                        .update(updates)
+                        .eq('id', profileId);
+                    error = res.error;
+                } else {
+                    // Insert
+                    const res = await AuthFlow.supabase
+                        .from('profiles')
+                        .insert(updates);
+                    error = res.error;
+                }
 
                 if (error) {
                     CustomModal.alert('錯誤', '儲存失敗: ' + error.message);
