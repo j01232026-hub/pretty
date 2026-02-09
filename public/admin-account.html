@@ -416,7 +416,7 @@
                         document.getElementById('companyNameDisplay').textContent = '尚未建立門市';
                         document.getElementById('companyAddressDisplay').textContent = '-';
                         document.getElementById('companyEmailDisplay').textContent = '-';
-                        document.getElementById('companyLiffIdDisplay').textContent = '-';
+                        // document.getElementById('companyLiffIdDisplay').textContent = '-';
                         document.getElementById('staffList').innerHTML = '<div class="text-center py-4 text-gray-400">請先新增門市</div>';
                         
                         // Automatically open "Add Store" modal? 
@@ -431,7 +431,13 @@
                     fetchStaff();
                 }
             }
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e); 
+            // Show error in UI instead of infinite loading
+            document.getElementById('companyNameDisplay').textContent = '載入失敗';
+            document.getElementById('companyNameDisplay').classList.add('text-red-500');
+            document.getElementById('staffList').innerHTML = `<div class="text-center py-4 text-red-400">系統錯誤: ${e.message}</div>`;
+        }
     }
 
     async function fetchCompanyInfo() {
