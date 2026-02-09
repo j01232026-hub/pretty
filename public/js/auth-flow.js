@@ -225,7 +225,18 @@ const AuthFlow = {
 
         // Resolve Values
         const fullName = profile?.display_name || meta.full_name || meta.name || meta.displayName || '';
-        const email = user.email || '';
+        
+        // Handle Email:
+        // 1. If profile has email, use it.
+        // 2. If user.email is a dummy LINE email, ignore it.
+        // 3. Otherwise, use user.email.
+        let email = '';
+        if (profile?.email) {
+            email = profile.email;
+        } else if (user.email && !user.email.startsWith('line_')) {
+            email = user.email;
+        }
+        
         const avatarUrl = profile?.picture_url || meta.avatar_url || meta.picture || '';
 
         // Fill Inputs
@@ -353,7 +364,7 @@ const AuthFlow = {
                 const fullName = document.querySelector('input[placeholder="請輸入您的姓名"]').value;
                 const birthday = document.querySelector('input[type="date"]').value;
                 const phone = document.querySelector('input[type="tel"]').value;
-                // email is usually read-only or auto-filled
+                const email = document.querySelector('input[name="email"]').value;
                 
                 if (!fullName || !phone) {
                     CustomModal.alert('提示', '請填寫必填欄位');
@@ -367,6 +378,7 @@ const AuthFlow = {
                         display_name: fullName,
                         birthday: birthday || null,
                         phone: phone,
+                        email: email, // Save contact email
                         is_complete: true,
                         updated_at: new Date()
                     });
