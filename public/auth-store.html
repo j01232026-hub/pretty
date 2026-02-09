@@ -16,12 +16,14 @@
 <p class="text-dusty-rose-400 text-sm mt-2">請填寫商家基本資料以開啟管理功能</p>
 </header>
 <div class="relative mx-auto mb-10">
-<div class="w-28 h-28 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+<div class="w-28 h-28 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden" id="store-image-preview-container">
 <span class="material-symbols-outlined text-slate-200 text-6xl">storefront</span>
 </div>
-<button class="absolute bottom-1 right-1 w-9 h-9 bg-dusty-rose-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white active:scale-95 transition-transform">
+<button id="btn-upload-store-image" class="absolute bottom-1 right-1 w-9 h-9 bg-dusty-rose-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white active:scale-95 transition-transform">
 <span class="material-symbols-outlined text-[18px]">photo_camera</span>
 </button>
+<input type="file" id="store-image-upload" accept="image/*" class="hidden">
+<input type="hidden" id="store-image-url-input" name="image_url">
 </div>
 <main class="glass-card rounded-3xl p-6 space-y-5">
 <div class="input-group">

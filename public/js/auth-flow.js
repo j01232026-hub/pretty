@@ -206,6 +206,28 @@ const AuthFlow = {
         }
     },
 
+    handleImageUpload: async (file, bucket, path) => {
+        try {
+            const { data, error } = await AuthFlow.supabase.storage
+                .from(bucket)
+                .upload(path, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = AuthFlow.supabase.storage
+                .from(bucket)
+                .getPublicUrl(path);
+
+            return publicUrl;
+        } catch (error) {
+            console.error('Upload Error:', error);
+            throw error;
+        }
+    },
+
     autoFillProfile: () => {
         // Auto-fill logic for LINE login
         const user = AuthFlow.user;
@@ -218,10 +240,10 @@ const AuthFlow = {
         
         const fullNameInput = document.querySelector('input[name="full_name"]');
         const emailInput = document.querySelector('input[name="email"]');
-        const avatarInput = document.querySelector('input[name="avatar_url"]'); // Hidden
+        const avatarUrlInput = document.getElementById('avatar-url-input');
         
         // Find avatar container
-        const avatarContainer = document.querySelector('.w-28.h-28');
+        const avatarContainer = document.getElementById('avatar-preview-container') || document.querySelector('.w-28.h-28');
 
         // Resolve Values
         const fullName = profile?.display_name || meta.full_name || meta.name || meta.displayName || '';
@@ -246,12 +268,17 @@ const AuthFlow = {
         if (emailInput && !emailInput.value) {
             emailInput.value = email;
         }
+        if (avatarUrlInput) {
+            avatarUrlInput.value = avatarUrl;
+        }
         
         // Fill Avatar
         if (avatarUrl && avatarContainer) {
             // Check if img already exists
             if (!avatarContainer.querySelector('img')) {
                 avatarContainer.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="Avatar">`;
+            } else {
+                avatarContainer.querySelector('img').src = avatarUrl;
             }
         }
     },
@@ -356,6 +383,82 @@ const AuthFlow = {
             });
         });
 
+        // --- Avatar Upload Logic (Profile) ---
+        const btnUploadAvatar = document.getElementById('btn-upload-avatar');
+        const avatarUploadInput = document.getElementById('avatar-upload');
+        const avatarUrlInput = document.getElementById('avatar-url-input');
+        const avatarContainer = document.getElementById('avatar-preview-container');
+
+        if (btnUploadAvatar && avatarUploadInput) {
+            btnUploadAvatar.addEventListener('click', (e) => {
+                e.preventDefault();
+                avatarUploadInput.click();
+            });
+
+            avatarUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Show loading state
+                const originalContent = avatarContainer.innerHTML;
+                avatarContainer.innerHTML = '<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-dusty-rose-500"></div>';
+
+                try {
+                    const publicUrl = await AuthFlow.handleImageUpload(file, 'avatars', `${AuthFlow.user.id}/avatar.png`);
+                    
+                    // Update Preview
+                    avatarContainer.innerHTML = `<img src="${publicUrl}?t=${new Date().getTime()}" class="w-full h-full object-cover" alt="Avatar">`;
+                    
+                    // Update Hidden Input
+                    if (avatarUrlInput) {
+                        avatarUrlInput.value = publicUrl;
+                    }
+                } catch (error) {
+                    console.error('Avatar Upload Error:', error);
+                    CustomModal.alert('上傳失敗', '無法上傳頭像，請稍後再試。');
+                    avatarContainer.innerHTML = originalContent; // Restore
+                }
+            });
+        }
+
+        // --- Store Image Upload Logic (Store) ---
+        const btnUploadStore = document.getElementById('btn-upload-store-image');
+        const storeUploadInput = document.getElementById('store-image-upload');
+        const storeUrlInput = document.getElementById('store-image-url-input');
+        const storeContainer = document.getElementById('store-image-preview-container');
+
+        if (btnUploadStore && storeUploadInput) {
+            btnUploadStore.addEventListener('click', (e) => {
+                e.preventDefault();
+                storeUploadInput.click();
+            });
+
+            storeUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Show loading state
+                const originalContent = storeContainer.innerHTML;
+                storeContainer.innerHTML = '<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-dusty-rose-500"></div>';
+
+                try {
+                    const publicUrl = await AuthFlow.handleImageUpload(file, 'stores', `${AuthFlow.user.id}/store.png`);
+                    
+                    // Update Preview
+                    storeContainer.innerHTML = `<img src="${publicUrl}?t=${new Date().getTime()}" class="w-full h-full object-cover" alt="Store Image">`;
+                    
+                    // Update Hidden Input
+                    if (storeUrlInput) {
+                        storeUrlInput.value = publicUrl;
+                    }
+                } catch (error) {
+                    console.error('Store Image Upload Error:', error);
+                    CustomModal.alert('上傳失敗', '無法上傳商家圖片，請稍後再試。');
+                    storeContainer.innerHTML = originalContent; // Restore
+                }
+            });
+        }
+
         // Profile Form
         const profileBtn = document.getElementById('btn-save-profile');
         if (profileBtn) {
@@ -365,24 +468,31 @@ const AuthFlow = {
                 const birthday = document.querySelector('input[type="date"]').value;
                 const phone = document.querySelector('input[type="tel"]').value;
                 const email = document.querySelector('input[name="email"]').value;
+                const pictureUrl = document.getElementById('avatar-url-input')?.value;
                 
                 if (!fullName || !phone) {
                     CustomModal.alert('提示', '請填寫必填欄位');
                     return;
                 }
 
+                const updates = {
+                    id: AuthFlow.user.id,
+                    user_id: AuthFlow.user.id, // Required for RLS INSERT policy
+                    display_name: fullName,
+                    birthday: birthday || null,
+                    phone: phone,
+                    email: email, // Save contact email
+                    is_complete: true,
+                    updated_at: new Date()
+                };
+
+                if (pictureUrl) {
+                    updates.picture_url = pictureUrl;
+                }
+
                 const { error } = await AuthFlow.supabase
                     .from('profiles')
-                    .upsert({
-                        id: AuthFlow.user.id,
-                        user_id: AuthFlow.user.id, // Required for RLS INSERT policy
-                        display_name: fullName,
-                        birthday: birthday || null,
-                        phone: phone,
-                        email: email, // Save contact email
-                        is_complete: true,
-                        updated_at: new Date()
-                    });
+                    .upsert(updates);
 
                 if (error) {
                     CustomModal.alert('錯誤', '儲存失敗: ' + error.message);
@@ -412,6 +522,7 @@ const AuthFlow = {
                 const storeName = document.querySelector('input[placeholder="請輸入商家品牌名稱"]').value;
                 const address = document.querySelector('input[placeholder="請輸入門市詳細地址"]').value;
                 const phone = document.querySelector('input[placeholder="02-12345678"]').value;
+                const imageUrl = document.getElementById('store-image-url-input')?.value;
 
                 if (!storeName) {
                     CustomModal.alert('提示', '商家名稱為必填');
@@ -419,14 +530,20 @@ const AuthFlow = {
                 }
 
                 // Insert Store
+                const storeData = {
+                    owner_id: AuthFlow.user.id,
+                    store_name: storeName,
+                    address: address,
+                    store_phone: phone
+                };
+
+                if (imageUrl) {
+                    storeData.image_url = imageUrl;
+                }
+
                 const { error: storeError } = await AuthFlow.supabase
                     .from('stores')
-                    .insert({
-                        owner_id: AuthFlow.user.id,
-                        store_name: storeName,
-                        address: address,
-                        store_phone: phone
-                    });
+                    .insert(storeData);
 
                 if (storeError) {
                     CustomModal.alert('錯誤', '建立商家失敗: ' + storeError.message);
