@@ -498,6 +498,8 @@
     // Helper for Supabase Storage Upload
     async function uploadImageToSupabase(file, bucket, pathPrefix) {
         try {
+            if (!supabaseClient) throw new Error('系統尚未初始化完成');
+
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) throw new Error('未登入');
 
@@ -505,7 +507,8 @@
             const fileName = `${pathPrefix}_${Date.now()}.${fileExt}`;
             const filePath = `${user.id}/${fileName}`;
 
-            const { data, error } = await window.supabase.storage
+            // Use supabaseClient directly instead of window.supabase
+            const { data, error } = await supabaseClient.storage
                 .from(bucket)
                 .upload(filePath, file, {
                     cacheControl: '3600',
@@ -514,14 +517,14 @@
 
             if (error) throw error;
 
-            const { data: { publicUrl } } = window.supabase.storage
+            const { data: { publicUrl } } = supabaseClient.storage
                 .from(bucket)
                 .getPublicUrl(filePath);
 
             return publicUrl;
         } catch (error) {
-            console.error('Upload Error:', error);
-            throw error;
+            console.error('Upload Error Details:', error);
+            throw error; // Re-throw to be caught by caller
         }
     }
 
@@ -541,10 +544,7 @@
             
             placeholder.classList.add('hidden');
             preview.classList.remove('hidden');
-            // Simple Loading Spinner
-            preview.src = 'https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif'; // Fallback or keep current until load?
-            // Actually, let's just use opacity to indicate loading or a temp loading text
-            // Better: use the helper to upload, then set src.
+            preview.src = 'https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif';
             
             try {
                 // Upload to 'stores' bucket
@@ -553,9 +553,12 @@
                 document.getElementById('editCompanyImageUrl').value = publicUrl;
                 preview.src = publicUrl;
             } catch (e) {
-                CustomModal.error('上傳失敗', '無法上傳圖片，請稍後再試');
+                // Show specific error message
+                const msg = e.message || e.error_description || '未知錯誤';
+                CustomModal.error('上傳失敗', `無法上傳圖片: ${msg}`);
+                
                 input.value = '';
-                if (originalSrc && originalSrc !== window.location.href) {
+                if (originalSrc && originalSrc !== window.location.href && originalSrc !== '') {
                      preview.src = originalSrc;
                 } else {
                     preview.classList.add('hidden');
@@ -742,9 +745,10 @@
                 document.getElementById('staffAvatarUrl').value = publicUrl;
                 preview.src = publicUrl;
             } catch (e) {
-                CustomModal.error('上傳失敗', '無法上傳頭像，請稍後再試');
+                const msg = e.message || e.error_description || '未知錯誤';
+                CustomModal.error('上傳失敗', `無法上傳頭像: ${msg}`);
                 input.value = '';
-                if (originalSrc && originalSrc !== window.location.href) {
+                if (originalSrc && originalSrc !== window.location.href && originalSrc !== '') {
                      preview.src = originalSrc;
                 } else {
                     preview.classList.add('hidden');
@@ -874,9 +878,10 @@
                 document.getElementById('newStaffAvatarUrl').value = publicUrl;
                 preview.src = publicUrl;
             } catch (e) {
-                CustomModal.error('上傳失敗', '無法上傳頭像，請稍後再試');
+                const msg = e.message || e.error_description || '未知錯誤';
+                CustomModal.error('上傳失敗', `無法上傳頭像: ${msg}`);
                 input.value = '';
-                if (originalSrc && originalSrc !== window.location.href) {
+                if (originalSrc && originalSrc !== window.location.href && originalSrc !== '') {
                      preview.src = originalSrc;
                 } else {
                     preview.classList.add('hidden');
