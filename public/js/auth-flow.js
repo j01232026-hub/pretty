@@ -110,6 +110,7 @@ const AuthFlow = {
                                 page.startsWith('history') ||
                                 page.startsWith('member') ||
                                 page === 'index.html' || 
+                                page === 'spa-index.html' ||
                                 page === '';
 
         // If on a protected page, strict checks apply.
@@ -169,33 +170,31 @@ const AuthFlow = {
             return;
         }
 
-        // Case B: Profile Exists but Not Onboarded (Check Store)
-        if (!AuthFlow.profile.is_onboarded) {
-            // Check if store exists (Double check to be sure)
+        // Case B: Profile Exists but Not Complete
+        if (!AuthFlow.profile.is_complete) {
+            // Block access to everything except profile setup
+            if (page !== 'auth-profile.html') {
+                AuthFlow.navigateTo('auth-profile.html');
+            } else {
+                AuthFlow.autoFillProfile();
+            }
+            return;
+        }
+
+        // Case C: Profile Complete but No Store (Optional check, or redirect to store setup)
+        // Check if store exists (only if trying to access admin pages)
+        if (page.startsWith('admin') || page === 'auth-store.html') {
             const { data: store } = await AuthFlow.supabase
                 .from('stores')
                 .select('id')
                 .eq('owner_id', AuthFlow.profile.id)
-                .single();
+                .maybeSingle(); // Use maybeSingle to avoid error on 0 rows
 
             if (!store) {
                 // No store -> Go to Store Setup
-                // Block access to everything except store setup
                 if (page !== 'auth-store.html') {
                     AuthFlow.navigateTo('auth-store.html');
                 }
-                return;
-            } else {
-                // Has store but is_onboarded is false? 
-                // Maybe they finished store creation but flag wasn't set?
-                // Let's force update flag and redirect.
-                await AuthFlow.supabase
-                    .from('profiles')
-                    .update({ is_onboarded: true })
-                    .eq('id', AuthFlow.user.id);
-                
-                // Allow them to proceed to admin
-                window.location.href = 'admin-account.html';
                 return;
             }
         }
@@ -225,9 +224,9 @@ const AuthFlow = {
         const avatarContainer = document.querySelector('.w-28.h-28');
 
         // Resolve Values
-        const fullName = profile?.full_name || meta.full_name || meta.name || meta.displayName || '';
+        const fullName = profile?.display_name || meta.full_name || meta.name || meta.displayName || '';
         const email = user.email || '';
-        const avatarUrl = profile?.avatar_url || meta.avatar_url || meta.picture || '';
+        const avatarUrl = profile?.picture_url || meta.avatar_url || meta.picture || '';
 
         // Fill Inputs
         if (fullNameInput && !fullNameInput.value) {
@@ -365,9 +364,10 @@ const AuthFlow = {
                     .from('profiles')
                     .upsert({
                         id: AuthFlow.user.id,
-                        full_name: fullName,
+                        display_name: fullName,
                         birthday: birthday || null,
                         phone: phone,
+                        is_complete: true,
                         updated_at: new Date()
                     });
 
@@ -375,7 +375,18 @@ const AuthFlow = {
                     CustomModal.alert('錯誤', '儲存失敗: ' + error.message);
                 } else {
                     // Redirect will be handled by handleRouting or manual
-                    AuthFlow.navigateTo('auth-store.html');
+                    // Check if store exists, if not go to store setup
+                    const { data: store } = await AuthFlow.supabase
+                        .from('stores')
+                        .select('id')
+                        .eq('owner_id', AuthFlow.user.id)
+                        .maybeSingle();
+                        
+                    if (!store) {
+                        AuthFlow.navigateTo('auth-store.html');
+                    } else {
+                        AuthFlow.navigateTo('admin-account.html');
+                    }
                 }
             });
         }
@@ -409,10 +420,10 @@ const AuthFlow = {
                     return;
                 }
 
-                // Update Profile Onboarded
+                // Update Profile Complete (Double check)
                 const { error: profileError } = await AuthFlow.supabase
                     .from('profiles')
-                    .update({ is_onboarded: true })
+                    .update({ is_complete: true })
                     .eq('id', AuthFlow.user.id);
 
                 if (profileError) {
