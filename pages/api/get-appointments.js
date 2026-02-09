@@ -21,10 +21,13 @@ export default async function handler(req, res) {
 
         // 查詢 Supabase 資料庫
         // 使用 supabaseAdmin 繞過 RLS，確保能讀取到 bookings 與關聯的 stores 資料
+        // 改用兩階段查詢 (Manual Join) 以避免 "Could not find a relationship" 錯誤
+        // 這通常發生在資料庫缺少 Foreign Key 或是 Schema Cache 未更新時
         
+        // 1. 取得預約資料
         let query = supabaseAdmin
             .from('bookings')
-            .select('*, stores(store_name, address, store_phone)')
+            .select('*') // 不使用 join，直接抓取
             .eq('user_id', user_id);
 
         if (store_id) {
@@ -34,6 +37,23 @@ export default async function handler(req, res) {
         const { data: bookings, error } = await query;
 
         if (error) throw error;
+
+        // 2. 取得相關店家資料 (Manual Join)
+        let storesMap = {};
+        const storeIds = [...new Set(bookings.map(b => b.store_id).filter(id => id))];
+        
+        if (storeIds.length > 0) {
+            const { data: stores, error: storeError } = await supabaseAdmin
+                .from('stores')
+                .select('id, store_name, address, store_phone')
+                .in('id', storeIds);
+            
+            if (!storeError && stores) {
+                stores.forEach(s => {
+                    storesMap[s.id] = s;
+                });
+            }
+        }
 
         // 解析與整理資料
         let appointments = bookings.map(booking => {
@@ -45,6 +65,9 @@ export default async function handler(req, res) {
                 console.warn('JSON parse error:', e);
             }
 
+            // 取得對應的店家資訊
+            const store = storesMap[booking.store_id] || {};
+
             return {
                 id: booking.id,
                 created_at: booking.created_at,
@@ -54,9 +77,9 @@ export default async function handler(req, res) {
                 endTime: details.endTime,
                 phone: details.phone,
                 stylist: details.stylist || '指定設計師',
-                store_name: booking.stores?.store_name, // Include store info
-                store_address: booking.stores?.address,
-                store_phone: booking.stores?.store_phone,
+                store_name: store.store_name, // Include store info from map
+                store_address: store.address,
+                store_phone: store.store_phone,
                 ...details // 展開其他可能欄位
             };
         }).filter(appt => appt.date && appt.time); // 過濾掉無法解析日期的無效資料
