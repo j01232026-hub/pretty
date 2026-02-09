@@ -40,6 +40,7 @@
     if (path.includes('admin-store-select.html') || 
         path.includes('auth-login.html') || 
         path.includes('auth-register.html') ||
+        path.includes('auth-profile.html') ||
         path.includes('auth-store.html')) {
         return;
     }
@@ -52,14 +53,31 @@
     // Check Session
     const { data: { session } } = await sb.auth.getSession();
     if (!session) {
-        // Let the page's own auth logic handle redirect, or do it here
-        // Usually admin pages redirect to login if no session
-        // We'll leave it to the page's main script to handle "not logged in"
-        // to avoid double redirects.
+        console.warn('Gateway: No session, redirecting to login...');
+        window.location.href = '/auth-login.html';
         return;
     }
 
     const user = session.user;
+
+    // Check Profile (Registration Status)
+    try {
+        const { data: profile, error: profileError } = await sb
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || !profile) {
+            console.warn('Gateway: No profile found, redirecting to profile setup...');
+            window.location.href = '/auth-profile.html';
+            return;
+        }
+    } catch (e) {
+        console.error('Gateway: Profile check error', e);
+        // Continue to store check or return? Safe to return to avoid inconsistent state
+        return; 
+    }
 
     // Fetch Stores
     try {
