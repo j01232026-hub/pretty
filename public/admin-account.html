@@ -9,8 +9,27 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/admin-style.css">
+    <style>
+        /* Fallback to ensure icons render */
+        .material-icons, .material-symbols-rounded {
+            font-family: 'Material Icons', 'Material Symbols Rounded', sans-serif;
+            font-weight: normal;
+            font-style: normal;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -344,17 +363,53 @@
 
     async function initSupabase() {
         try {
-            // Get store_id from URL
-            currentStoreId = getQueryParam('store_id');
-            if (!currentStoreId) {
-                console.warn("No store_id found in URL");
-                // In production, might redirect to dashboard
-            }
-
             const res = await fetch('/api/config');
             const config = await res.json();
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+                
+                // 1. Get User
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) {
+                    window.location.href = '/auth-login.html';
+                    return;
+                }
+
+                // 2. Get store_id from URL or Fetch from DB
+                currentStoreId = getQueryParam('store_id');
+                
+                if (!currentStoreId) {
+                    console.log("No store_id in URL, fetching from DB...");
+                    const { data: stores, error } = await supabaseClient
+                        .from('stores')
+                        .select('id, store_name')
+                        .eq('owner_id', user.id);
+                    
+                    if (stores && stores.length > 0) {
+                        // Use the first store
+                        currentStoreId = stores[0].id;
+                        console.log("Found store:", stores[0].store_name);
+                        
+                        // Optional: Update URL without reload
+                        const newUrl = new URL(window.location);
+                        newUrl.searchParams.set('store_id', currentStoreId);
+                        window.history.replaceState({}, '', newUrl);
+                    } else {
+                        console.warn("User has no stores.");
+                        // Update UI to show empty state
+                        document.getElementById('companyNameDisplay').textContent = '尚未建立門市';
+                        document.getElementById('companyAddressDisplay').textContent = '-';
+                        document.getElementById('companyEmailDisplay').textContent = '-';
+                        document.getElementById('companyLiffIdDisplay').textContent = '-';
+                        document.getElementById('staffList').innerHTML = '<div class="text-center py-4 text-gray-400">請先新增門市</div>';
+                        
+                        // Automatically open "Add Store" modal? 
+                        // Maybe too aggressive. Let them click "Add".
+                        // Or highlight the button.
+                        return;
+                    }
+                }
+
                 if (currentStoreId) {
                     fetchCompanyInfo();
                     fetchStaff();
