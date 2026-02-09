@@ -98,7 +98,7 @@ export default async function handler(req, res) {
           id: userId,
           line_id: lineId,
           full_name: name,
-          avatar_url: picture,
+          picture_url: picture,
           is_onboarded: false
         })
       
