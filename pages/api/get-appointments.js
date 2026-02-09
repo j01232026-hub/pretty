@@ -1,4 +1,4 @@
-import supabase from '../../lib/supabaseClient';
+import supabaseAdmin from '../../lib/supabaseAdmin';
 
 export default async function handler(req, res) {
     const { user_id, type = 'upcoming', store_id } = req.query;
@@ -20,11 +20,9 @@ export default async function handler(req, res) {
         const today = new Date(now.getTime() + offset).toISOString().split('T')[0];
 
         // 查詢 Supabase 資料庫
-        // 注意：目前專案使用 'bookings' 資料表，且詳細資訊 (date, time) 儲存在 'message' (JSON string) 欄位中
-        // 因此無法直接在 SQL 層使用 .gte('date', ...) 進行過濾 (除非修改 Schema)
-        // 這裡採用「取出該用戶所有資料 -> JS 解析 -> JS 過濾排序」的策略
+        // 使用 supabaseAdmin 繞過 RLS，確保能讀取到 bookings 與關聯的 stores 資料
         
-        let query = supabase
+        let query = supabaseAdmin
             .from('bookings')
             .select('*, stores(store_name, address, store_phone)')
             .eq('user_id', user_id);
