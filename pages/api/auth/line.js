@@ -92,16 +92,24 @@ export default async function handler(req, res) {
       }
 
       // Create Profile record
-      const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .upsert({
+      // FIX: Do NOT overwrite is_complete if it exists
+      const updates = {
           id: userId,
           user_id: userId,
           line_id: lineId,
           display_name: name,
           picture_url: picture,
-          is_complete: false
-        })
+          updated_at: new Date()
+      };
+      
+      // If new user, set is_complete to false (default is false anyway, but explicit is okay)
+      if (isNewUser) {
+          updates.is_complete = false;
+      }
+
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .upsert(updates)
       
       if (profileError) throw profileError
     }
