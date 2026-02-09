@@ -85,14 +85,14 @@
     <!-- Company Info -->
     <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">公司基本資料</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">門市/總店資訊</h2>
             <button onclick="openEditCompanyModal()" class="text-sm font-medium text-primary hover:opacity-80 flex items-center gap-1">
                 <i class="fas fa-edit"></i> 編輯
             </button>
         </div>
         <div class="admin-card space-y-4">
             <div class="space-y-1">
-                <label class="text-xs text-slate-500">公司名稱</label>
+                <label class="text-xs text-slate-500">門市名稱</label>
                 <p id="companyNameDisplay" class="font-medium text-gray-800">載入中...</p>
             </div>
             <div class="h-px bg-slate-100"></div>
@@ -112,7 +112,7 @@
             </div>
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
-                <label class="text-xs text-slate-500">圖片連結</label>
+                <label class="text-xs text-slate-500">門市圖片連結</label>
                 <div id="companyImageContainer" class="mt-1">
                     <p id="companyImageDisplay" class="text-gray-400 text-sm">無圖片</p>
                 </div>
@@ -124,10 +124,10 @@
     <div id="editCompanyModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeEditCompanyModal()"></div>
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 space-y-4">
-            <h3 class="text-lg font-bold text-gray-900">編輯公司資料</h3>
+            <h3 class="text-lg font-bold text-gray-900">編輯門市資料</h3>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">公司名稱</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">門市名稱</label>
                     <input type="text" id="editCompanyName" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
                 </div>
                 <div>
@@ -143,7 +143,7 @@
                     <input type="email" id="editCompanyEmail" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">公司圖片</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">門市圖片</label>
                     <div class="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer relative group">
                         <img id="companyImagePreview" src="" class="max-h-40 object-contain hidden">
                         <div id="companyImagePlaceholder" class="flex flex-col items-center text-gray-400">
@@ -167,9 +167,14 @@
     <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">員工及門市管理</h2>
-            <button class="btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1" onclick="openAddStoreAndStaffModal()">
-                <span class="material-icons text-sm">add</span>新增門市及員工
-            </button>
+            <div class="flex gap-2">
+                <button class="bg-white border border-gray-200 text-slate-600 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors" onclick="openEditStaffModal()">
+                    <span class="material-icons text-sm">person_add</span>新增成員
+                </button>
+                <button class="btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1" onclick="openAddStoreAndStaffModal()">
+                    <span class="material-icons text-sm">store</span>新增分店
+                </button>
+            </div>
         </div>
         <div id="staffList" class="space-y-3">
             <div class="text-center py-4 text-gray-400">載入中...</div>
@@ -227,7 +232,7 @@
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl transform translate-y-full transition-transform duration-300 flex flex-col max-h-[90vh]" id="addStoreStaffContent">
             <!-- Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-100">
-                <h3 class="text-lg font-bold text-gray-900">新增門市及員工</h3>
+                <h3 class="text-lg font-bold text-gray-900">新增分店及員工</h3>
                 <button onclick="closeAddStoreAndStaffModal()" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
                     <span class="material-icons text-gray-500">close</span>
                 </button>
@@ -239,25 +244,25 @@
             <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <span class="material-icons text-primary text-sm">storefront</span> 新增門市
+                            <span class="material-icons text-primary text-sm">storefront</span> 新增分店
                         </h4>
                         <label class="flex items-center gap-1 cursor-pointer select-none">
                             <input type="checkbox" id="checkStoreSameAsAccount" onchange="autofillStoreFromAccount(this)" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4">
-                            <span class="text-xs text-gray-500">同商家資料</span>
+                            <span class="text-xs text-gray-500">同目前門市資料</span>
                         </label>
                     </div>
                     
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">門市名稱 <span class="text-red-500">*</span></label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">分店名稱 <span class="text-red-500">*</span></label>
                             <input type="text" id="newStoreName" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="例如：玩美髮廊 台北店">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">門市電話</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">分店電話</label>
                             <input type="tel" id="newStorePhone" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="02-xxxxxxx">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">門市地址</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">分店地址</label>
                             <input type="text" id="newStoreAddress" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="請輸入完整地址">
                         </div>
                     </div>

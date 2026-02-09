@@ -104,14 +104,8 @@
 
             stores.forEach(store => {
                 const el = document.createElement('div');
-                el.className = 'group flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 cursor-pointer transition-all shadow-sm hover:shadow-md';
-                el.onclick = () => {
-                    // Navigate to redirect path with store_id
-                    // Handle query params in redirect path
-                    const hasQuery = redirectPath.includes('?');
-                    const targetUrl = `${redirectPath}${hasQuery ? '&' : '?'}store_id=${store.id}`;
-                    window.location.href = targetUrl;
-                };
+                el.className = 'group flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 cursor-pointer transition-all shadow-sm hover:shadow-md';
+                el.onclick = null; // We handle click inside inner div now
 
                 const initial = store.store_name ? store.store_name.charAt(0) : 'S';
                 const imgHtml = store.image_url 
@@ -121,18 +115,54 @@
                 const bgClass = store.image_url ? '' : 'bg-primary/10';
 
                 el.innerHTML = `
-                    <div class="w-12 h-12 rounded-lg ${bgClass} flex items-center justify-center overflow-hidden shrink-0">
-                        ${imgHtml}
+                    <div class="flex-1 flex items-center gap-4 min-w-0" onclick="selectStore('${store.id}')">
+                        <div class="w-12 h-12 rounded-lg ${bgClass} flex items-center justify-center overflow-hidden shrink-0">
+                            ${imgHtml}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-800 truncate group-hover:text-primary transition-colors">${store.store_name}</h3>
+                            <p class="text-xs text-gray-500 truncate">${store.address || '無地址'}</p>
+                        </div>
+                        <span class="material-icons text-gray-300 group-hover:text-primary">chevron_right</span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-bold text-gray-800 truncate group-hover:text-primary transition-colors">${store.store_name}</h3>
-                        <p class="text-xs text-gray-500 truncate">${store.address || '無地址'}</p>
-                    </div>
-                    <span class="material-icons text-gray-300 group-hover:text-primary">chevron_right</span>
+                    <button onclick="deleteStore('${store.id}', event)" class="p-2 text-gray-300 hover:text-red-500 transition-colors" title="刪除店家">
+                        <span class="material-icons">delete_outline</span>
+                    </button>
                 `;
                 container.appendChild(el);
             });
         }
+
+        window.selectStore = (storeId) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectPath = urlParams.get('redirect') || '/admin.html';
+            const hasQuery = redirectPath.includes('?');
+            const targetUrl = `${redirectPath}${hasQuery ? '&' : '?'}store_id=${storeId}`;
+            window.location.href = targetUrl;
+        };
+
+        window.deleteStore = async (storeId, event) => {
+            event.stopPropagation(); // Prevent card click
+            if (!confirm('確定要刪除此店家嗎？此操作無法復原，且會一併刪除相關員工資料。')) return;
+            
+            try {
+                // Delete store (Assumes ON DELETE CASCADE for related staff, or we handle it)
+                // If no cascade, we should delete staff first.
+                // Let's try deleting store first.
+                const { error } = await window.supabase
+                    .from('stores')
+                    .delete()
+                    .eq('id', storeId);
+                
+                if (error) throw error;
+                
+                // Refresh list
+                init();
+            } catch (e) {
+                console.error(e);
+                alert('刪除失敗: ' + (e.message || '未知錯誤'));
+            }
+        };
 
         window.logout = async () => {
             if (window.supabase) {
