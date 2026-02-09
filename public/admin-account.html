@@ -130,8 +130,8 @@
     <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">員工及門市管理</h2>
-            <button class="btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1" onclick="openEditStaffModal()">
-                <span class="material-icons text-sm">add</span>新增成員
+            <button class="btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1" onclick="openAddStoreAndStaffModal()">
+                <span class="material-icons text-sm">add</span>新增門市及員工
             </button>
         </div>
         <div id="staffList" class="space-y-3">
@@ -180,6 +180,107 @@
             <div class="flex gap-3 pt-2">
                 <button onclick="closeEditStaffModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 font-semibold text-gray-600">取消</button>
                 <button onclick="saveStaff()" class="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Store & Staff Slide Modal -->
+    <div id="addStoreStaffModal" class="fixed inset-0 z-50 hidden transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="addStoreStaffBackdrop" onclick="closeAddStoreAndStaffModal()"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl transform translate-y-full transition-transform duration-300 flex flex-col max-h-[90vh]" id="addStoreStaffContent">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900">新增門市及員工</h3>
+                <button onclick="closeAddStoreAndStaffModal()" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <span class="material-icons text-gray-500">close</span>
+                </button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-6">
+                
+                <!-- Store Info Section -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <span class="material-icons text-primary text-sm">storefront</span> 門市資料
+                        </h4>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">門市名稱 <span class="text-red-500">*</span></label>
+                            <input type="text" id="newStoreName" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="例如：玩美髮廊 台北店">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">門市電話</label>
+                            <input type="tel" id="newStorePhone" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="02-xxxxxxx">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">門市地址</label>
+                            <input type="text" id="newStoreAddress" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="請輸入完整地址">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-100"></div>
+
+                <!-- Staff Info Section -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <span class="material-icons text-primary text-sm">badge</span> 初始員工 (店長/管理者)
+                        </h4>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="autofillFromAccount()" class="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">
+                                同帳號持有人
+                            </button>
+                            <button type="button" onclick="autofillFromStore()" class="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">
+                                同門市資訊
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Staff Avatar -->
+                    <div class="flex justify-center">
+                        <div class="relative group cursor-pointer" onclick="document.getElementById('newStaffAvatarInput').click()">
+                            <div class="w-20 h-20 rounded-full bg-slate-50 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden" id="newStaffAvatarContainer">
+                                <span class="material-icons text-slate-300 text-3xl">add_a_photo</span>
+                                <img id="newStaffAvatarPreview" class="absolute inset-0 w-full h-full object-cover hidden">
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-sm">
+                                <span class="material-icons text-xs">edit</span>
+                            </div>
+                        </div>
+                        <input type="file" id="newStaffAvatarInput" accept="image/*" class="hidden" onchange="handleNewStaffAvatar(this)">
+                        <input type="hidden" id="newStaffAvatarUrl">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">姓名 <span class="text-red-500">*</span></label>
+                            <input type="text" id="newStaffName" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="員工姓名">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">職稱</label>
+                            <input type="text" id="newStaffTitle" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="例如：店長">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">電話</label>
+                            <input type="tel" id="newStaffPhone" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="09xxxxxxxx">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Email (登入帳號)</label>
+                            <input type="email" id="newStaffEmail" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm" placeholder="用於系統通知與登入">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-4 border-t border-gray-100 flex gap-3 bg-white pb-8">
+                <button onclick="closeAddStoreAndStaffModal()" class="flex-1 py-3 rounded-xl border border-gray-200 font-semibold text-gray-600 active:scale-95 transition-transform">取消</button>
+                <button onclick="submitNewStoreAndStaff()" class="flex-1 py-3 rounded-xl bg-primary text-white font-semibold shadow-lg shadow-primary/30 active:scale-95 transition-transform">確認新增</button>
             </div>
         </div>
     </div>
@@ -384,7 +485,7 @@
 
             container.innerHTML = ''; // Clear loading
 
-            if (staffList.length === 0) {
+            if (!staffList || staffList.length === 0) {
                 container.innerHTML = '<div class="text-center py-4 text-gray-400">目前沒有員工資料</div>';
                 return;
             }
@@ -432,7 +533,7 @@
 
         } catch (e) {
             console.error(e);
-            container.innerHTML = '<div class="text-center py-4 text-red-400">載入失敗</div>';
+            container.innerHTML = '<div class="text-center py-4 text-gray-400">暫無員工資料</div>';
         }
     }
 
@@ -571,6 +672,181 @@
             fetchStaff();
         } catch (e) {
             CustomModal.error('錯誤', '錯誤: ' + e.message);
+        }
+    }
+
+    // --- New Store & Staff Modal Logic ---
+    function openAddStoreAndStaffModal() {
+        const modal = document.getElementById('addStoreStaffModal');
+        const backdrop = document.getElementById('addStoreStaffBackdrop');
+        const content = document.getElementById('addStoreStaffContent');
+        
+        modal.classList.remove('hidden');
+        // Trigger reflow
+        void modal.offsetWidth;
+        
+        backdrop.classList.remove('opacity-0');
+        content.classList.remove('translate-y-full');
+    }
+
+    function closeAddStoreAndStaffModal() {
+        const modal = document.getElementById('addStoreStaffModal');
+        const backdrop = document.getElementById('addStoreStaffBackdrop');
+        const content = document.getElementById('addStoreStaffContent');
+        
+        backdrop.classList.add('opacity-0');
+        content.classList.add('translate-y-full');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            // Reset form?
+            // document.querySelectorAll('#addStoreStaffModal input').forEach(i => i.value = '');
+        }, 300);
+    }
+
+    function handleNewStaffAvatar(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            if (file.size > 500 * 1024) {
+                CustomModal.alert('提示', '圖片大小請小於 500KB');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('newStaffAvatarPreview');
+                const container = document.getElementById('newStaffAvatarContainer');
+                
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                // Hide icon
+                container.querySelector('span').classList.add('hidden');
+                
+                document.getElementById('newStaffAvatarUrl').value = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function autofillFromAccount() {
+        if (!supabaseClient) return;
+        
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('newStaffName').value = profile.display_name || profile.custom_name || '';
+                document.getElementById('newStaffPhone').value = profile.phone || '';
+                document.getElementById('newStaffEmail').value = profile.email || user.email || '';
+                
+                // Optional: fill avatar if exists
+                if (profile.picture_url) {
+                    document.getElementById('newStaffAvatarUrl').value = profile.picture_url;
+                    const preview = document.getElementById('newStaffAvatarPreview');
+                    preview.src = profile.picture_url;
+                    preview.classList.remove('hidden');
+                    document.getElementById('newStaffAvatarContainer').querySelector('span').classList.add('hidden');
+                }
+            }
+        } catch (e) {
+            console.error('Autofill Error:', e);
+        }
+    }
+
+    function autofillFromStore() {
+        // Copy from the "New Store" inputs
+        const storeName = document.getElementById('newStoreName').value;
+        const storePhone = document.getElementById('newStorePhone').value;
+        // Address not used in staff
+
+        // Maybe fill staff name with Store Name? No, that's weird.
+        // Mainly phone.
+        if (storePhone) {
+            document.getElementById('newStaffPhone').value = storePhone;
+        }
+    }
+
+    async function submitNewStoreAndStaff() {
+        const btn = document.querySelector('button[onclick="submitNewStoreAndStaff()"]');
+        const originalText = btn.innerText;
+        
+        const storeName = document.getElementById('newStoreName').value;
+        const storePhone = document.getElementById('newStorePhone').value;
+        const storeAddress = document.getElementById('newStoreAddress').value;
+        
+        const staffName = document.getElementById('newStaffName').value;
+        const staffTitle = document.getElementById('newStaffTitle').value;
+        const staffPhone = document.getElementById('newStaffPhone').value;
+        const staffEmail = document.getElementById('newStaffEmail').value;
+        const staffAvatar = document.getElementById('newStaffAvatarUrl').value;
+
+        if (!storeName) {
+            CustomModal.alert('提示', '請輸入門市名稱');
+            return;
+        }
+        if (!staffName) {
+            CustomModal.alert('提示', '請輸入員工姓名');
+            return;
+        }
+
+        try {
+            btn.disabled = true;
+            btn.innerText = '處理中...';
+            
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const payload = {
+                owner_id: user.id,
+                store: {
+                    store_name: storeName,
+                    store_phone: storePhone,
+                    address: storeAddress
+                },
+                staff: {
+                    name: staffName,
+                    title: staffTitle,
+                    phone: staffPhone,
+                    email: staffEmail,
+                    avatar_url: staffAvatar
+                }
+            };
+
+            const res = await fetch('/api/create-store-staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Create failed');
+            }
+
+            await CustomModal.success('成功', '新增門市及員工成功');
+            closeAddStoreAndStaffModal();
+            // Reload page or redirect? 
+            // If user has multiple stores now, they might want to switch.
+            // For now, reload current page if they are in the context of one store, 
+            // but this creates a NEW store. 
+            // Ideally we should switch to the new store or ask.
+            // Let's reload to update any lists if applicable, but since this creates a NEW store context,
+            // maybe we should redirect to admin-store-select?
+            window.location.href = 'admin-store-select.html';
+
+        } catch (e) {
+            CustomModal.error('錯誤', '錯誤: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = originalText;
         }
     }
 
