@@ -7,63 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "dusty-rose": {
-                            "50": "#fbf8fa",
-                            "100": "#f7f0f4",
-                            "200": "#efdfe9",
-                            "300": "#e0c4d5",
-                            "400": "#c89eb7",
-                            "500": "#986584", // Theme Main Color
-                            "600": "#8a5875",
-                            "700": "#734861",
-                            "800": "#603c51",
-                            "900": "#513545",
-                        }
-                    },
-                    fontFamily: {
-                        "display": ["Manrope", "Noto Sans TC", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.5rem",
-                        "lg": "1rem",
-                        "xl": "1.5rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-<style type="text/tailwindcss">
-        :root {
-            --primary-rose: #986584;
-            --bg-soft: #fbf8fa;
-        }
-        body {
-            font-family: 'Manrope', 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #fdfbfd 0%, #f7f0f4 100%);
-            min-height: 100dvh;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(152, 101, 132, 0.1);
-            box-shadow: 0 12px 40px 0 rgba(152, 101, 132, 0.08);
-        }
-        .input-focus-glow:focus {
-            box-shadow: 0 0 0 4px rgba(152, 101, 132, 0.1);
-        }
-    </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
+<script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/auth-style.css">
+</head>
 <body class="flex flex-col items-center justify-center p-6 relative overflow-x-hidden">
 <div class="fixed inset-0 overflow-hidden pointer-events-none">
 <div class="absolute top-[-5%] right-[-10%] w-[350px] h-[350px] bg-dusty-rose-200/30 rounded-full blur-[100px]"></div>

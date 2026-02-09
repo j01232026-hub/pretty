@@ -38,9 +38,63 @@ const AuthFlow = {
 
             // 6. Bind Events (if elements exist)
             AuthFlow.bindEvents();
+            
+            // 7. Handle Back/Forward Browser Buttons
+            window.addEventListener('popstate', async () => {
+                // When popping state, we might need to reload content if we want full SPA, 
+                // but usually the browser restores the document state. 
+                // However, since we swapped body content, browser might not restore the previous body state correctly if we didn't save it.
+                // Simpler approach for now: Reload page on popstate to ensure correct state, OR re-fetch.
+                // Let's try to handle it gracefully:
+                await AuthFlow.navigateTo(window.location.pathname, false); 
+            });
 
         } catch (e) {
             console.error('Auth Init Error:', e);
+        }
+    },
+
+    navigateTo: async (url, pushState = true) => {
+        try {
+            // Fetch the target page
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Page not found');
+            const text = await response.text();
+            
+            // Parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            
+            // Update Title
+            document.title = doc.title;
+            
+            // Update Body Class (important for layout differences)
+            document.body.className = doc.body.className;
+            
+            // Extract Body Content (remove scripts to prevent duplication/issues)
+            const newBody = doc.body;
+            newBody.querySelectorAll('script').forEach(s => s.remove());
+            
+            // Replace Content
+            document.body.innerHTML = newBody.innerHTML;
+            
+            // Update URL
+            if (pushState) {
+                window.history.pushState({}, '', url);
+            }
+            
+            // Re-bind events for the new content
+            AuthFlow.bindEvents();
+            
+            // Run specific page logic
+            const page = url.split('/').pop();
+            if (page === 'auth-profile.html') {
+                AuthFlow.autoFillProfile();
+            }
+            
+        } catch (e) {
+            console.error('SPA Navigation Error:', e);
+            window.location.href = url; // Fallback to MPA
         }
     },
 
@@ -48,16 +102,28 @@ const AuthFlow = {
         const path = window.location.pathname;
         const page = path.split('/').pop();
         
-        // Skip routing if not on auth pages (optional, but good for safety)
-        if (!page.startsWith('auth-') && page !== 'admin-account.html') {
-             // If we are on index.html, maybe redirect to auth-login?
-             // Leaving this flexible for now.
-        }
+        // --- 0. Admin Page Protection ---
+        // If user tries to access ANY admin page or other internal pages
+        const isProtectedPage = page.startsWith('admin') || 
+                                page.startsWith('booking') || 
+                                page.startsWith('appointment') ||
+                                page.startsWith('history') ||
+                                page.startsWith('member') ||
+                                page === 'index.html' || 
+                                page === '';
+
+        // If on a protected page, strict checks apply.
+        // If on auth pages, we guide them forward.
 
         // --- 1. Not Logged In ---
         if (!AuthFlow.user) {
+            // Allow access only to login/register
             if (page !== 'auth-login.html' && page !== 'auth-register.html') {
-                window.location.href = 'auth-login.html';
+                // If on protected page, force login
+                if (isProtectedPage || page.startsWith('auth-')) {
+                     // Store intended URL if needed (omitted for simplicity)
+                     AuthFlow.navigateTo('auth-login.html');
+                }
             }
             return;
         }
@@ -77,8 +143,9 @@ const AuthFlow = {
 
         // Case A: No Profile -> Go to Profile Setup
         if (!AuthFlow.profile) {
+            // Block access to everything except profile setup
             if (page !== 'auth-profile.html') {
-                window.location.href = 'auth-profile.html';
+                AuthFlow.navigateTo('auth-profile.html');
             } else {
                 // We are on profile page, try to auto-fill LINE data
                 AuthFlow.autoFillProfile();
@@ -88,7 +155,7 @@ const AuthFlow = {
 
         // Case B: Profile Exists but Not Onboarded (Check Store)
         if (!AuthFlow.profile.is_onboarded) {
-            // Check if store exists
+            // Check if store exists (Double check to be sure)
             const { data: store } = await AuthFlow.supabase
                 .from('stores')
                 .select('id')
@@ -97,8 +164,9 @@ const AuthFlow = {
 
             if (!store) {
                 // No store -> Go to Store Setup
+                // Block access to everything except store setup
                 if (page !== 'auth-store.html') {
-                    window.location.href = 'auth-store.html';
+                    AuthFlow.navigateTo('auth-store.html');
                 }
                 return;
             } else {
@@ -110,12 +178,14 @@ const AuthFlow = {
                     .update({ is_onboarded: true })
                     .eq('id', AuthFlow.user.id);
                 
+                // Allow them to proceed to admin
                 window.location.href = 'admin-account.html';
                 return;
             }
         }
 
         // --- 3. Fully Onboarded ---
+        // If they try to access auth pages again, redirect to admin
         if (page.startsWith('auth-')) {
             window.location.href = 'admin-account.html';
         }
@@ -124,27 +194,54 @@ const AuthFlow = {
     autoFillProfile: () => {
         // Auto-fill logic for LINE login
         const user = AuthFlow.user;
+        const profile = AuthFlow.profile; // Can be null if not created yet (e.g. fresh register), but LINE login creates it.
+        
         if (!user) return;
 
-        // Check for LINE metadata or Google etc.
+        // Data Sources priority: Profile (DB) > User Metadata (Auth)
         const meta = user.user_metadata || {};
+        
         const fullNameInput = document.querySelector('input[name="full_name"]');
         const emailInput = document.querySelector('input[name="email"]');
-        const avatarInput = document.querySelector('input[name="avatar_url"]'); // Hidden or visible
+        const avatarInput = document.querySelector('input[name="avatar_url"]'); // Hidden
+        
+        // Find avatar container
+        const avatarContainer = document.querySelector('.w-28.h-28');
 
+        // Resolve Values
+        const fullName = profile?.full_name || meta.full_name || meta.name || meta.displayName || '';
+        const email = user.email || '';
+        const avatarUrl = profile?.avatar_url || meta.avatar_url || meta.picture || '';
+
+        // Fill Inputs
         if (fullNameInput && !fullNameInput.value) {
-            fullNameInput.value = meta.full_name || meta.name || meta.displayName || '';
+            fullNameInput.value = fullName;
         }
         if (emailInput && !emailInput.value) {
-            emailInput.value = user.email || '';
+            emailInput.value = email;
         }
-        // If we had an avatar display
-        if (meta.avatar_url || meta.picture) {
-            // Update UI if exists
+        
+        // Fill Avatar
+        if (avatarUrl && avatarContainer) {
+            // Check if img already exists
+            if (!avatarContainer.querySelector('img')) {
+                avatarContainer.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="Avatar">`;
+            }
         }
     },
 
     bindEvents: () => {
+        // Intercept internal links for SPA
+        document.querySelectorAll('a').forEach(a => {
+            const href = a.getAttribute('href');
+            if (href && href.endsWith('.html') && href.startsWith('auth-')) {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    AuthFlow.navigateTo(href);
+                });
+            }
+        });
+
         // Login Form
         const loginBtn = document.getElementById('btn-login');
         if (loginBtn) {
@@ -190,7 +287,7 @@ const AuthFlow = {
                 } else {
                     CustomModal.alert('註冊成功', '請收取驗證信或直接登入').then(() => {
                         // Ideally auto login or redirect
-                        window.location.href = 'auth-login.html';
+                        AuthFlow.navigateTo('auth-login.html');
                     });
                 }
             });
@@ -201,13 +298,35 @@ const AuthFlow = {
         lineBtns.forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                const { error } = await AuthFlow.supabase.auth.signInWithOAuth({
-                    provider: 'line',
-                    options: {
-                        redirectTo: window.location.origin + '/auth-profile.html'
+                
+                // Get config (cached or fetch again if needed, but we have AuthFlow.config if we stored it)
+                // Since init() didn't store config in AuthFlow, we fetch it or use what we have.
+                // Let's re-fetch safely or modify init to store it. 
+                // For robustness, let's just fetch it here or assume it was loaded.
+                // Actually, init() variables are local scope. 
+                // Let's modify init to store config in AuthFlow first.
+                
+                // Fetch config for LINE
+                try {
+                    const res = await fetch('/api/config');
+                    const config = await res.json();
+                    
+                    if (!config.lineLoginChannelId || !config.lineLoginCallbackUrl) {
+                        CustomModal.alert('配置錯誤', 'LINE Login 尚未設定');
+                        return;
                     }
-                });
-                if (error) CustomModal.alert('LINE 登入錯誤', error.message);
+
+                    // Generate random state
+                    const state = Math.random().toString(36).substring(7);
+                    
+                    // Construct LINE Auth URL
+                    const lineUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${config.lineLoginChannelId}&redirect_uri=${encodeURIComponent(config.lineLoginCallbackUrl)}&state=${state}&scope=profile%20openid`;
+                    
+                    window.location.href = lineUrl;
+                } catch (err) {
+                    console.error('LINE Login Init Error', err);
+                    CustomModal.alert('錯誤', '無法啟動 LINE 登入');
+                }
             });
         });
 
@@ -240,7 +359,7 @@ const AuthFlow = {
                     CustomModal.alert('錯誤', '儲存失敗: ' + error.message);
                 } else {
                     // Redirect will be handled by handleRouting or manual
-                    window.location.href = 'auth-store.html';
+                    AuthFlow.navigateTo('auth-store.html');
                 }
             });
         }

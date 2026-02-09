@@ -1,0 +1,48 @@
+:root {
+    --primary-rose: #986584;
+    --bg-soft: #fbf8fa;
+}
+
+body {
+    font-family: 'Manrope', 'Noto Sans TC', sans-serif;
+    background: linear-gradient(135deg, #fdfbfd 0%, #f7f0f4 100%);
+    min-height: 100dvh;
+    color: #334155;
+    /* Ensure mobile responsiveness */
+    min-height: -webkit-fill-available; 
+}
+
+/* Glass Card Effect - Standardized */
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(152, 101, 132, 0.1);
+    box-shadow: 0 20px 50px -12px rgba(152, 101, 132, 0.12);
+}
+
+/* Input Focus Glow */
+.input-focus-glow:focus, 
+.form-input:focus,
+input:focus {
+    box-shadow: 0 0 0 4px rgba(152, 101, 132, 0.1) !important;
+    border-color: #986584 !important;
+    outline: none !important;
+}
+
+.tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Input Group Icon Color Transition */
+.input-group:focus-within .icon-label,
+.group:focus-within .material-symbols-outlined {
+    color: #986584 !important;
+}
+
+/* Min Height Fix for Mobile Browsers */
+@supports (-webkit-touch-callout: none) {
+    body {
+        min-height: -webkit-fill-available;
+    }
+}

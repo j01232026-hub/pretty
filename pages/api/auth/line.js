@@ -1,0 +1,128 @@
+import { createClient } from '@supabase/supabase-js'
+import axios from 'axios'
+import querystring from 'querystring'
+
+// Initialize Supabase Admin Client
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+export default async function handler(req, res) {
+  const { code, state } = req.query
+
+  // If no code, this might be an initiation request (optional, but good for testing)
+  if (!code) {
+    return res.status(400).json({ error: 'Authorization code is missing' })
+  }
+
+  try {
+    // 1. Exchange code for access token & id_token
+    const tokenResponse = await axios.post(
+      'https://api.line.me/oauth2/v2.1/token',
+      querystring.stringify({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: process.env.LINE_LOGIN_CALLBACK_URL,
+        client_id: process.env.LINE_LOGIN_CHANNEL_ID,
+        client_secret: process.env.LINE_LOGIN_CHANNEL_SECRET
+      }),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    )
+
+    const { id_token } = tokenResponse.data
+
+    // 2. Decode id_token to get user info (sub, name, picture)
+    // id_token is a JWT. We can just decode the payload since we trust the direct response from LINE.
+    const payload = JSON.parse(Buffer.from(id_token.split('.')[1], 'base64').toString())
+    const { sub: lineId, name, picture } = payload
+
+    // 3. Check if user exists in profiles
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, is_onboarded')
+      .eq('line_id', lineId)
+      .single()
+
+    let userId
+    let isNewUser = false
+
+    if (existingProfile) {
+      userId = existingProfile.id
+    } else {
+      isNewUser = true
+      // 4. If not exists, create new Supabase Auth user
+      // We use a dummy email based on line_id to satisfy Supabase Auth requirements
+      const email = `line_${lineId}@pretty.app` 
+      
+      // Check if this email already exists in Auth (e.g. from a previous partial attempt)
+      const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers()
+      const authUser = existingUser.users.find(u => u.email === email)
+
+      if (authUser) {
+        userId = authUser.id
+      } else {
+        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: email,
+          email_confirm: true,
+          user_metadata: { full_name: name, avatar_url: picture, line_id: lineId }
+        })
+        if (createError) throw createError
+        userId = newUser.user.id
+      }
+
+      // Create Profile record
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: userId,
+          line_id: lineId,
+          full_name: name,
+          avatar_url: picture,
+          is_onboarded: false
+        })
+      
+      if (profileError) throw profileError
+    }
+
+    // 5. Generate Magic Link for passwordless login
+    // Determine redirect target
+    // If existing and onboarded -> Admin
+    // If new or not onboarded -> Auth Profile (signin03)
+    
+    // Check onboarding status again (if existing)
+    const targetPage = (existingProfile && existingProfile.is_onboarded) 
+      ? '/admin-account.html' 
+      : '/auth-profile.html' // signin03
+
+    // Construct the absolute redirect URL
+    const protocol = req.headers['x-forwarded-proto'] || 'http'
+    const host = req.headers.host
+    const baseUrl = `${protocol}://${host}`
+    const redirectUrl = `${baseUrl}${targetPage}`
+
+    // Generate link
+    // We use the email associated with the user
+    const email = `line_${lineId}@pretty.app`
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: email,
+      options: {
+        redirectTo: redirectUrl
+      }
+    })
+
+    if (linkError) throw linkError
+
+    // 6. Redirect user to the Magic Link
+    // The Magic Link will set the session and then redirect to `options.redirectTo`
+    res.redirect(linkData.action_link)
+
+  } catch (error) {
+    console.error('LINE Login Error:', error.response?.data || error.message)
+    res.status(500).json({ 
+      error: 'LINE Login Failed', 
+      details: error.response?.data || error.message 
+    })
+  }
+}

@@ -5,6 +5,8 @@ export default function handler(req, res) {
     
     res.status(200).json({
         supabaseUrl: process.env.SUPABASE_URL,
-        supabaseKey: process.env.SUPABASE_KEY
+        supabaseKey: process.env.SUPABASE_KEY,
+        lineLoginChannelId: process.env.LINE_LOGIN_CHANNEL_ID,
+        lineLoginCallbackUrl: process.env.LINE_LOGIN_CALLBACK_URL
     });
 }

@@ -1,6 +1,5 @@
 -- ⚠️ WARNING: This script will DROP existing profiles and stores tables to resolve schema conflicts.
 -- If you have important data, please back it up first.
--- The previous error "column id does not exist" was caused by an incompatible existing 'profiles' table (using user_id instead of id).
 
 -- 1. Cleanup old conflicting tables
 DROP TABLE IF EXISTS public.stores;
@@ -13,6 +12,7 @@ CREATE TABLE public.profiles (
   birthday DATE,
   phone TEXT,
   avatar_url TEXT,
+  line_id TEXT,
   is_onboarded BOOLEAN DEFAULT FALSE,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
