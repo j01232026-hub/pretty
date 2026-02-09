@@ -1,4 +1,5 @@
 import supabaseAdmin from '../../lib/supabaseAdmin';
+import crypto from 'crypto';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -10,6 +11,11 @@ export default async function handler(req, res) {
 
     if (!user_id) {
         return res.status(400).json({ error: 'Missing user_id' });
+    }
+    
+    // Ensure store_id is provided for multi-tenancy
+    if (!store_id) {
+        return res.status(400).json({ error: 'Missing store_id' });
     }
 
     // Validation (optional, can be enhanced)
@@ -26,11 +32,7 @@ export default async function handler(req, res) {
             // It's likely a LINE ID
             lineId = user_id;
             
-            // 1. Try to find existing profile by line_id (and store_id if needed, but user_id should be global auth id)
-            // Actually, user_id in profiles is the Auth UUID.
-            // We need to find the Auth UUID associated with this LINE ID.
-            
-            // First, check if we already have a profile for this LINE ID
+            // 1. Try to find existing profile by line_id
             // We search globally first because user_id (Auth ID) is the same across stores
             const { data: existingProfile } = await supabaseAdmin
                 .from('profiles')
@@ -45,44 +47,30 @@ export default async function handler(req, res) {
                 // 2. If no profile, check if Auth user exists (by email convention)
                 const dummyEmail = `line_${lineId}@pretty.app`;
                 
-                // We can't easily search users by metadata efficiently without listUsers loop, 
-                // but we can try to create and catch error, or list users by email?
-                // listUsers() doesn't support filter by email directly in all versions, but let's try strict check logic from line.js
-                // Actually, createUser with existing email returns error? Or we can use listUsers.
+                // Check if user exists by email
+                const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
+                const foundUser = usersData.users.find(u => u.email === dummyEmail);
                 
-                // Optimization: Try to create. If fails due to email conflict, find the user.
-                // But safer to list first if possible. 
-                // Let's assume we need to create if not found.
-                
-                // Let's try to fetch user by email if possible (not directly exposed in admin api easily in v1, but v2 has listUsers)
-                // We'll use the logic: try to create. If error says "already registered", then we search.
-                
-                const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-                    email: dummyEmail,
-                    email_confirm: true,
-                    user_metadata: { full_name: finalName, line_id: lineId }
-                });
-                
-                if (createError) {
-                    // If user already exists, we need to find their ID.
-                    // Since we can't query by email easily in single call, we might have to list.
-                    // Or, if we trust the email convention, we can't easily get ID without listing.
-                    // Wait, supabaseAdmin.auth.admin.listUsers() is available.
-                    
-                    const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
-                    const foundUser = usersData.users.find(u => u.email === dummyEmail);
-                    
-                    if (foundUser) {
-                        targetUserId = foundUser.id;
-                    } else {
-                        throw new Error('Could not create user and could not find existing user: ' + createError.message);
-                    }
+                if (foundUser) {
+                    targetUserId = foundUser.id;
                 } else {
+                    // Create new user
+                    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                        email: dummyEmail,
+                        email_confirm: true,
+                        user_metadata: { full_name: finalName, line_id: lineId }
+                    });
+                    
+                    if (createError) {
+                        console.error('Create user error:', createError);
+                        throw new Error('Could not create user: ' + createError.message);
+                    }
                     targetUserId = newUser.user.id;
                 }
             }
         }
 
+        // Prepare updates
         const updates = {
             user_id: targetUserId,
             display_name: finalName,
@@ -90,30 +78,58 @@ export default async function handler(req, res) {
             birthday,
             email,
             is_complete: true,
-            store_id: store_id || null,
-            picture_url: picture_url
+            store_id: store_id,
+            picture_url: picture_url,
+            updated_at: new Date()
         };
         
         if (lineId) {
             updates.line_id = lineId;
         }
 
-        // Upsert based on user_id and store_id combination
-        // Note: Ensure your database has a UNIQUE constraint on (user_id, store_id)
-        const { data, error } = await supabaseAdmin
+        // Check if profile exists for this store
+        const { data: currentProfile } = await supabaseAdmin
             .from('profiles')
-            .upsert(updates, { onConflict: 'user_id, store_id' })
-            .select()
-            .single();
+            .select('id')
+            .eq('user_id', targetUserId)
+            .eq('store_id', store_id)
+            .maybeSingle();
 
-        if (error) {
-            console.error('Error updating profile:', error);
-            return res.status(500).json({ error: error.message });
+        let resultData;
+        let resultError;
+
+        if (currentProfile) {
+            // Update existing
+            const { data, error } = await supabaseAdmin
+                .from('profiles')
+                .update(updates)
+                .eq('id', currentProfile.id)
+                .select()
+                .single();
+            resultData = data;
+            resultError = error;
+        } else {
+            // Insert new (Explicitly generate ID to avoid NOT NULL constraint issues if DB default is missing)
+            updates.id = crypto.randomUUID();
+            updates.created_at = new Date();
+            
+            const { data, error } = await supabaseAdmin
+                .from('profiles')
+                .insert(updates)
+                .select()
+                .single();
+            resultData = data;
+            resultError = error;
         }
 
-        return res.status(200).json({ success: true, profile: data });
+        if (resultError) {
+            console.error('Error updating/inserting profile:', resultError);
+            return res.status(500).json({ error: resultError.message });
+        }
+
+        return res.status(200).json({ success: true, profile: resultData });
     } catch (err) {
-        console.error('Exception:', err);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Exception in update-member-profile:', err);
+        return res.status(500).json({ error: err.message || 'Internal Server Error' });
     }
 }

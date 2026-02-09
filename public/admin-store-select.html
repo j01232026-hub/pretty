@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇店家 | 管理後台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8e5d7a',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="p-6 bg-primary text-white text-center">
+            <h1 class="text-xl font-bold">請選擇要管理的店家</h1>
+            <p class="text-white/80 text-sm mt-1">您擁有多個店家權限</p>
+        </div>
+
+        <div id="storeList" class="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+            <!-- Loading State -->
+            <div class="flex justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
+            <button onclick="logout()" class="text-gray-500 hover:text-gray-700 text-sm font-medium px-3 py-2">
+                登出
+            </button>
+            <a href="/auth-store.html" class="flex items-center gap-1 text-primary hover:text-primary/80 text-sm font-bold px-3 py-2">
+                <span class="material-icons text-sm">add</span> 建立新店家
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        
+        // Load Config
+        async function init() {
+            try {
+                const configRes = await fetch('/api/config');
+                const config = await configRes.json();
+                
+                if (!config.supabaseUrl || !config.supabaseKey) {
+                    alert('系統設定錯誤');
+                    return;
+                }
+
+                const supabase = createClient(config.supabaseUrl, config.supabaseKey);
+                window.supabase = supabase;
+
+                // Check Session
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = '/auth-login.html';
+                    return;
+                }
+
+                // Fetch Stores
+                const { data: stores, error } = await supabase
+                    .from('stores')
+                    .select('*')
+                    .eq('owner_id', session.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderStores(stores);
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('storeList').innerHTML = `<div class="text-red-500 text-center py-4">載入失敗</div>`;
+            }
+        }
+
+        function renderStores(stores) {
+            const container = document.getElementById('storeList');
+            container.innerHTML = '';
+
+            if (stores.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <span class="material-icons text-4xl mb-2">storefront</span>
+                        <p>目前沒有店家</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectPath = urlParams.get('redirect') || '/admin.html';
+
+            stores.forEach(store => {
+                const el = document.createElement('div');
+                el.className = 'group flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 cursor-pointer transition-all shadow-sm hover:shadow-md';
+                el.onclick = () => {
+                    // Navigate to redirect path with store_id
+                    // Handle query params in redirect path
+                    const hasQuery = redirectPath.includes('?');
+                    const targetUrl = `${redirectPath}${hasQuery ? '&' : '?'}store_id=${store.id}`;
+                    window.location.href = targetUrl;
+                };
+
+                const initial = store.store_name ? store.store_name.charAt(0) : 'S';
+                const imgHtml = store.image_url 
+                    ? `<img src="${store.image_url}" class="w-full h-full object-cover">`
+                    : `<span class="text-lg font-bold text-primary">${initial}</span>`;
+                
+                const bgClass = store.image_url ? '' : 'bg-primary/10';
+
+                el.innerHTML = `
+                    <div class="w-12 h-12 rounded-lg ${bgClass} flex items-center justify-center overflow-hidden shrink-0">
+                        ${imgHtml}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-gray-800 truncate group-hover:text-primary transition-colors">${store.store_name}</h3>
+                        <p class="text-xs text-gray-500 truncate">${store.address || '無地址'}</p>
+                    </div>
+                    <span class="material-icons text-gray-300 group-hover:text-primary">chevron_right</span>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        window.logout = async () => {
+            if (window.supabase) {
+                await window.supabase.auth.signOut();
+                window.location.href = '/auth-login.html';
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>
