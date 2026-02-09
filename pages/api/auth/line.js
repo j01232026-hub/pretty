@@ -96,6 +96,7 @@ export default async function handler(req, res) {
         .from('profiles')
         .upsert({
           id: userId,
+          user_id: userId,
           line_id: lineId,
           display_name: name,
           picture_url: picture,
