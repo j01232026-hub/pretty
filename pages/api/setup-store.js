@@ -31,11 +31,11 @@ export default async function handler(req, res) {
         console.log('Starting store creation for owner:', owner_id);
 
         // Initialize Supabase Admin Client dynamically to prevent top-level crashes
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
         const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
         if (!supabaseUrl) {
-            console.error('Missing NEXT_PUBLIC_SUPABASE_URL');
+            console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL');
             throw new Error('Server Configuration Error: Missing NEXT_PUBLIC_SUPABASE_URL');
         }
         if (!supabaseServiceRoleKey) {
