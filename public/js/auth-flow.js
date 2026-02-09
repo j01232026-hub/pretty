@@ -117,6 +117,22 @@ const AuthFlow = {
 
         // --- 1. Not Logged In ---
         if (!AuthFlow.user) {
+            // Check for error params in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const message = urlParams.get('message');
+            
+            if (error === 'line_login_failed' && message) {
+                // Clear URL params
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Show alert
+                if (typeof CustomModal !== 'undefined') {
+                    CustomModal.alert('LINE 登入失敗', decodeURIComponent(message));
+                } else {
+                    alert(decodeURIComponent(message));
+                }
+            }
+
             // Allow access only to login/register
             if (page !== 'auth-login.html' && page !== 'auth-register.html') {
                 // If on protected page, force login

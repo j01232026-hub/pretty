@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   // If no code, this might be an initiation request (optional, but good for testing)
   if (!code) {
-    return res.status(400).json({ error: 'Authorization code is missing' })
+    return res.redirect('/auth-login.html?error=missing_code')
   }
 
   try {
@@ -98,31 +98,28 @@ export default async function handler(req, res) {
     // Construct the absolute redirect URL
     const protocol = req.headers['x-forwarded-proto'] || 'http'
     const host = req.headers.host
-    const baseUrl = `${protocol}://${host}`
-    const redirectUrl = `${baseUrl}${targetPage}`
+    const absoluteTarget = `${protocol}://${host}${targetPage}`
 
     // Generate link
     // We use the email associated with the user
     const email = `line_${lineId}@pretty.app`
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+    const { data: linkDataWithRedirect, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: email,
       options: {
-        redirectTo: redirectUrl
+        redirectTo: absoluteTarget
       }
     })
 
     if (linkError) throw linkError
 
-    // 6. Redirect user to the Magic Link
-    // The Magic Link will set the session and then redirect to `options.redirectTo`
-    res.redirect(linkData.action_link)
+    // Redirect the user to the Supabase verification link
+    // This will set the session cookies and then redirect to our targetPage
+    return res.redirect(linkDataWithRedirect.properties.action_link)
 
   } catch (error) {
     console.error('LINE Login Error:', error.response?.data || error.message)
-    res.status(500).json({ 
-      error: 'LINE Login Failed', 
-      details: error.response?.data || error.message 
-    })
+    // Redirect to login page with error
+    return res.redirect('/auth-login.html?error=line_login_failed&message=' + encodeURIComponent('登入失敗，請稍後再試'))
   }
 }
