@@ -99,10 +99,8 @@
 
         if (!stores || stores.length === 0) {
             console.warn('Gateway: No stores found for this user.');
-            // Redirect to store creation
-            if (confirm('您尚未建立任何店家，是否立即建立？')) {
-                window.location.href = '/auth-store.html';
-            }
+            // Redirect to store creation immediately
+            window.location.href = '/auth-store.html';
         } else if (stores.length === 1) {
             // Single store: Auto-redirect
             console.log('Gateway: Single store found, redirecting...');

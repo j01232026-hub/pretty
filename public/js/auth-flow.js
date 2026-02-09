@@ -130,7 +130,7 @@ const AuthFlow = {
                 if (typeof CustomModal !== 'undefined') {
                     CustomModal.alert('LINE 登入失敗', decodeURIComponent(message));
                 } else {
-                    alert(decodeURIComponent(message));
+                    console.error('LINE Login Failed:', decodeURIComponent(message));
                 }
             }
 
