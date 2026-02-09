@@ -179,26 +179,34 @@ const AuthFlow = {
 
         // Case A: No Profile -> Go to Profile Setup
         if (!AuthFlow.profile) {
-            // Block access to everything except profile setup
-            if (page !== 'auth-profile.html') {
+            // Only force redirect if on a PROTECTED page or explicitly in auth flow
+            const shouldRedirect = isProtectedPage || page.startsWith('auth-');
+
+            if (shouldRedirect && page !== 'auth-profile.html') {
                 console.log('Redirecting to auth-profile because no profile found');
                 AuthFlow.navigateTo('auth-profile.html');
-            } else {
+            } else if (page === 'auth-profile.html') {
                 // We are on profile page, try to auto-fill LINE data
                 AuthFlow.autoFillProfile();
             }
+            // If public page, allow access
+            if (!shouldRedirect) return;
             return;
         }
 
         // Case B: Profile Exists but Not Complete
         if (AuthFlow.profile.is_complete !== true) {
-            // Block access to everything except profile setup
-            if (page !== 'auth-profile.html') {
+            // Only force redirect if on a PROTECTED page or explicitly in auth flow
+            const shouldRedirect = isProtectedPage || page.startsWith('auth-');
+
+            if (shouldRedirect && page !== 'auth-profile.html') {
                 console.log('Redirecting to auth-profile because profile incomplete');
                 AuthFlow.navigateTo('auth-profile.html');
-            } else {
+            } else if (page === 'auth-profile.html') {
                 AuthFlow.autoFillProfile();
             }
+            // If public page, allow access
+            if (!shouldRedirect) return;
             return;
         }
 
