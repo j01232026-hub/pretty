@@ -739,7 +739,8 @@ const App = {
                         let msg = `API Error: ${res.status}`;
                         try {
                             const errData = await res.json();
-                            if (errData.error) msg += ` - ${errData.error}`;
+                            if (errData.details) msg += ` - ${errData.details}`;
+                            else if (errData.error) msg += ` - ${errData.error}`;
                         } catch (e) {}
                         throw new Error(msg);
                     }
