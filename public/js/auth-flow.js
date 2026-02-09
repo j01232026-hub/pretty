@@ -375,6 +375,7 @@ const AuthFlow = {
                     .from('profiles')
                     .upsert({
                         id: AuthFlow.user.id,
+                        user_id: AuthFlow.user.id, // Required for RLS INSERT policy
                         display_name: fullName,
                         birthday: birthday || null,
                         phone: phone,
