@@ -923,8 +923,16 @@
                 body: JSON.stringify(payload)
             });
 
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error("Invalid JSON response:", text);
+                throw new Error(`系統錯誤 (${res.status})`);
+            }
+
             if (!res.ok) {
-                const data = await res.json();
                 throw new Error(data.error || 'Create failed');
             }
 
