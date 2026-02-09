@@ -99,7 +99,7 @@ export default async function handler(req, res) {
           line_id: lineId,
           display_name: name,
           picture_url: picture,
-          is_onboarded: false
+          is_complete: false
         })
       
       if (profileError) throw profileError
@@ -111,7 +111,7 @@ export default async function handler(req, res) {
     // If new or not onboarded -> Auth Profile (signin03)
     
     // Check onboarding status again (if existing)
-    const targetPage = (existingProfile && existingProfile.is_onboarded) 
+    const targetPage = (existingProfile && existingProfile.is_complete) 
       ? '/admin-account.html' 
       : '/auth-profile.html' // signin03
 
