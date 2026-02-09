@@ -72,28 +72,20 @@ export default async function handler(req, res) {
       } catch (err) {
         // If user already exists (orphan auth user), find them
         if (err.message?.includes('already been registered') || err.code === 'email_exists' || (err.response?.data?.msg || '').includes('already been registered')) {
-            console.log('User exists in Auth but not in Profiles. Recovering...');
+            console.log('User exists in Auth but not in Profiles. Recovering via generateLink...');
             
-            // Pagination Search to find the user ID
-            let page = 1;
-            let found = false;
-            while (!found && page <= 50) { // Limit to 50 pages (5000 users) for safety
-                const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page: page, perPage: 100 });
-                
-                if (listError) throw listError;
-                if (!users || users.length === 0) break;
-                
-                const target = users.find(u => u.email === email);
-                if (target) {
-                    userId = target.id;
-                    found = true;
-                }
-                page++;
+            // Use generateLink to retrieve the User object (more reliable than listUsers pagination)
+            const { data: recoverData, error: recoverError } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'magiclink',
+                email: email
+            });
+            
+            if (recoverError || !recoverData?.user) {
+                console.error('Recovery failed:', recoverError);
+                throw new Error(`User exists but failed to recover ID: ${recoverError?.message || 'Unknown error'}`);
             }
             
-            if (!userId) {
-                throw new Error(`User ${email} exists but could not be found via Admin API`);
-            }
+            userId = recoverData.user.id;
         } else {
             throw err;
         }
