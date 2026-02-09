@@ -2,6 +2,20 @@
 import supabaseAdmin from '../../lib/supabaseAdmin';
 
 export default async function handler(req, res) {
+    // Enable CORS if needed (though same-origin usually doesn't need it)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    // Health check endpoint
+    if (req.method === 'GET') {
+        return res.status(200).json({ status: 'ok', message: 'Store Setup API is ready' });
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -13,6 +27,8 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('Starting store creation for owner:', owner_id);
+
         // 1. Create Store
         const { data: storeData, error: storeError } = await supabaseAdmin
             .from('stores')
@@ -32,6 +48,7 @@ export default async function handler(req, res) {
         }
 
         const newStoreId = storeData.id;
+        console.log('Store created:', newStoreId);
 
         // 2. Create Staff (Stylist)
         const { data: staffData, error: staffError } = await supabaseAdmin
@@ -50,8 +67,7 @@ export default async function handler(req, res) {
 
         if (staffError) {
             console.error('Create Staff Error:', staffError);
-            // Rollback store? Ideally yes, but Supabase JS doesn't support transactions easily without RPC.
-            // For now, we'll leave the store (user can edit/delete) or try to delete it.
+            // Attempt rollback
             await supabaseAdmin.from('stores').delete().eq('id', newStoreId);
             throw new Error('Failed to create staff: ' + staffError.message);
         }
@@ -63,7 +79,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Create Store Staff API Error:', error);
+        console.error('Setup Store API Error:', error);
         return res.status(500).json({ error: error.message });
     }
 }
