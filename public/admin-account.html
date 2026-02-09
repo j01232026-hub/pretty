@@ -495,24 +495,73 @@
         document.getElementById('editCompanyModal').classList.remove('hidden');
     }
 
-    function handleCompanyImageUpload(input) {
+    // Helper for Supabase Storage Upload
+    async function uploadImageToSupabase(file, bucket, pathPrefix) {
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) throw new Error('未登入');
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${pathPrefix}_${Date.now()}.${fileExt}`;
+            const filePath = `${user.id}/${fileName}`;
+
+            const { data, error } = await window.supabase.storage
+                .from(bucket)
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = window.supabase.storage
+                .from(bucket)
+                .getPublicUrl(filePath);
+
+            return publicUrl;
+        } catch (error) {
+            console.error('Upload Error:', error);
+            throw error;
+        }
+    }
+
+    async function handleCompanyImageUpload(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
-            // Limit size to avoid DB issues if storing base64
-            if (file.size > 500 * 1024) { // 500KB
-                CustomModal.alert('提示', '圖片大小請小於 500KB');
+            if (file.size > 2 * 1024 * 1024) { // 2MB
+                CustomModal.alert('提示', '圖片大小請小於 2MB');
                 input.value = '';
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('companyImagePreview').src = e.target.result;
-                document.getElementById('companyImagePreview').classList.remove('hidden');
-                document.getElementById('companyImagePlaceholder').classList.add('hidden');
-                document.getElementById('editCompanyImageUrl').value = e.target.result;
+            // Show loading
+            const preview = document.getElementById('companyImagePreview');
+            const placeholder = document.getElementById('companyImagePlaceholder');
+            const originalSrc = preview.src;
+            
+            placeholder.classList.add('hidden');
+            preview.classList.remove('hidden');
+            // Simple Loading Spinner
+            preview.src = 'https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif'; // Fallback or keep current until load?
+            // Actually, let's just use opacity to indicate loading or a temp loading text
+            // Better: use the helper to upload, then set src.
+            
+            try {
+                // Upload to 'stores' bucket
+                const publicUrl = await uploadImageToSupabase(file, 'stores', 'store_image');
+                
+                document.getElementById('editCompanyImageUrl').value = publicUrl;
+                preview.src = publicUrl;
+            } catch (e) {
+                CustomModal.error('上傳失敗', '無法上傳圖片，請稍後再試');
+                input.value = '';
+                if (originalSrc && originalSrc !== window.location.href) {
+                     preview.src = originalSrc;
+                } else {
+                    preview.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                }
             }
-            reader.readAsDataURL(file);
         }
     }
 
@@ -670,24 +719,38 @@
         currentEditingStaffId = null;
     }
 
-    function handleAvatarUpload(input) {
+    async function handleAvatarUpload(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
-            // Limit size to avoid DB issues if storing base64
-            if (file.size > 500 * 1024) { // 500KB
-                CustomModal.alert('提示', '圖片大小請小於 500KB');
+            if (file.size > 2 * 1024 * 1024) { // 2MB
+                CustomModal.alert('提示', '圖片大小請小於 2MB');
                 input.value = '';
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('staffAvatarPreview').src = e.target.result;
-                document.getElementById('staffAvatarPreview').classList.remove('hidden');
-                document.getElementById('staffAvatarPlaceholder').classList.add('hidden');
-                document.getElementById('staffAvatarUrl').value = e.target.result;
+            const preview = document.getElementById('staffAvatarPreview');
+            const placeholder = document.getElementById('staffAvatarPlaceholder');
+            const originalSrc = preview.src;
+
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            preview.src = 'https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif';
+
+            try {
+                // Upload to 'avatars' bucket
+                const publicUrl = await uploadImageToSupabase(file, 'avatars', 'staff_avatar');
+                document.getElementById('staffAvatarUrl').value = publicUrl;
+                preview.src = publicUrl;
+            } catch (e) {
+                CustomModal.error('上傳失敗', '無法上傳頭像，請稍後再試');
+                input.value = '';
+                if (originalSrc && originalSrc !== window.location.href) {
+                     preview.src = originalSrc;
+                } else {
+                    preview.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                }
             }
-            reader.readAsDataURL(file);
         }
     }
 
@@ -787,28 +850,39 @@
         }, 300);
     }
 
-    function handleNewStaffAvatar(input) {
+    async function handleNewStaffAvatar(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
-            if (file.size > 500 * 1024) {
-                CustomModal.alert('提示', '圖片大小請小於 500KB');
+            if (file.size > 2 * 1024 * 1024) { // 2MB
+                CustomModal.alert('提示', '圖片大小請小於 2MB');
                 input.value = '';
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('newStaffAvatarPreview');
-                const container = document.getElementById('newStaffAvatarContainer');
-                
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                // Hide icon
-                container.querySelector('span').classList.add('hidden');
-                
-                document.getElementById('newStaffAvatarUrl').value = e.target.result;
+            const preview = document.getElementById('newStaffAvatarPreview');
+            const container = document.getElementById('newStaffAvatarContainer');
+            const icon = container.querySelector('span');
+            const originalSrc = preview.src;
+
+            preview.classList.remove('hidden');
+            icon.classList.add('hidden');
+            preview.src = 'https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif';
+
+            try {
+                // Upload to 'avatars' bucket
+                const publicUrl = await uploadImageToSupabase(file, 'avatars', 'new_staff_avatar');
+                document.getElementById('newStaffAvatarUrl').value = publicUrl;
+                preview.src = publicUrl;
+            } catch (e) {
+                CustomModal.error('上傳失敗', '無法上傳頭像，請稍後再試');
+                input.value = '';
+                if (originalSrc && originalSrc !== window.location.href) {
+                     preview.src = originalSrc;
+                } else {
+                    preview.classList.add('hidden');
+                    icon.classList.remove('hidden');
+                }
             }
-            reader.readAsDataURL(file);
         }
     }
 
