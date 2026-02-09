@@ -147,21 +147,34 @@ const AuthFlow = {
 
         // --- 2. Logged In: Check Profile ---
         // Fetch profile if not cached
+        // Fix: prioritize COMPLETE profiles to avoid loading phantom/incomplete duplicates.
         if (!AuthFlow.profile && AuthFlow.user) {
             const { data, error } = await AuthFlow.supabase
                 .from('profiles')
                 .select('*')
                 .eq('user_id', AuthFlow.user.id)
-                .order('is_complete', { ascending: false })
-                .order('created_at', { ascending: false })
+                .eq('is_complete', true) // First look for a complete one
                 .limit(1)
                 .maybeSingle();
             
+            if (data) {
+                AuthFlow.profile = data;
+            } else {
+                // If no complete profile, try to find ANY profile (for autofill)
+                // But prefer one with data (e.g. display_name not null)
+                const { data: anyProfile } = await AuthFlow.supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('user_id', AuthFlow.user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                AuthFlow.profile = anyProfile;
+            }
+
             if (error) {
                 console.warn('Profile fetch error:', error);
             }
-            // If error is "Row not found", data is null.
-            AuthFlow.profile = data;
         }
 
         // Case A: No Profile -> Go to Profile Setup
@@ -501,27 +514,29 @@ const AuthFlow = {
                 // Check if we have an existing profile ID (either from AuthFlow.profile or fetch)
                 let profileId = AuthFlow.profile?.id;
                 
+                // Fix: Don't assume store_id null check is enough. 
+                // If AuthFlow.profile has an ID, use it.
+                // If not, try to find an ID to update before inserting.
                 if (!profileId) {
-                    // Double check DB
                     const { data: existing } = await AuthFlow.supabase
                         .from('profiles')
                         .select('id')
                         .eq('user_id', AuthFlow.user.id)
-                        .is('store_id', null)
+                        .limit(1)
                         .maybeSingle();
                     if (existing) profileId = existing.id;
                 }
 
                 let error;
                 if (profileId) {
-                    // Update
+                    console.log("Updating existing profile:", profileId);
                     const res = await AuthFlow.supabase
                         .from('profiles')
                         .update(updates)
                         .eq('id', profileId);
                     error = res.error;
                 } else {
-                    // Insert
+                    console.log("Inserting new profile");
                     const res = await AuthFlow.supabase
                         .from('profiles')
                         .insert(updates);

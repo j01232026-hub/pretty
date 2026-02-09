@@ -60,35 +60,34 @@
 
     const user = session.user;
 
-    // Check Profile (Registration Status)
-    try {
-        const { data: profile, error: profileError } = await sb
-            .from('profiles')
-            .select('id, is_complete')
-            .eq('user_id', user.id)
-            .order('is_complete', { ascending: false }) // Prioritize complete profiles
-            .order('created_at', { ascending: false })  // Then newest
-            .limit(1)
-            .maybeSingle();
+    // 2. Check Profile Status (Is Profile Complete?)
+    // Instead of fetching "the" profile, we check if ANY complete profile exists for this user.
+    // This avoids issues where a duplicate incomplete profile (phantom row) blocks access.
+    const { data: profiles, error: profileError } = await sb
+        .from('profiles')
+        .select('id, is_complete')
+        .eq('user_id', user.id)
+        .eq('is_complete', true)
+        .limit(1);
 
-        if (profileError || !profile) {
-            console.warn('Gateway: No profile found, redirecting to profile setup...');
-            window.location.href = '/auth-profile.html';
-            return;
-        }
-
-        if (profile.is_complete !== true) {
-            console.warn('Gateway: Profile incomplete, redirecting to profile setup...');
-            window.location.href = '/auth-profile.html';
-            return;
-        }
-    } catch (e) {
-        console.error('Gateway: Profile check error', e);
-        // Continue to store check or return? Safe to return to avoid inconsistent state
-        return; 
+    if (profileError) {
+        console.error('Gateway Error:', profileError);
+        // On error, we shouldn't block, but maybe warn? 
+        // Or assume incomplete if error? Let's assume incomplete to be safe but log it.
     }
 
-    // Fetch Stores
+    const hasCompleteProfile = profiles && profiles.length > 0;
+
+    if (!hasCompleteProfile) {
+        console.warn('Gateway: No complete profile found, redirecting to profile setup...');
+        // Check if we are already on the profile page to avoid infinite reload loop
+        if (!window.location.pathname.includes('auth-profile.html')) {
+             window.location.href = '/auth-profile.html';
+        }
+        return;
+    }
+
+    // 3. Check Store Status (Does user have a store?)
     try {
         const { data: stores, error } = await sb
             .from('stores')
