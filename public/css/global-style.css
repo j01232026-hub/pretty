@@ -10,24 +10,20 @@ body {
     font-family: 'Noto Sans TC', 'Manrope', sans-serif;
 }
 
-/* 2. Global Watermark (Soul Injection) */
+/* 2. Global Watermark (Soul Injection) - Temporarily Removed
 body::before {
     content: "";
-    position: fixed; /* Fixed to viewport */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    /* Line Art Female Profile */
-    background-image: url('https://placehold.co/400x400/png?text=Line+Art+Profile'); 
-    background-repeat: no-repeat;
-    background-position: bottom -50px right -50px;
-    background-size: 600px auto;
+    background-image: none;
     opacity: 0.05; 
     pointer-events: none;
     z-index: -1;
-    mix-blend-mode: multiply;
 }
+*/
 
 /* 3. Brand Card - The "Pop" Factor */
 .brand-card {

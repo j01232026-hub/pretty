@@ -108,10 +108,10 @@ const AuthFlow = {
                                 page.startsWith('booking') || 
                                 page.startsWith('appointment') ||
                                 page.startsWith('history') ||
-                                page.startsWith('member') ||
-                                page === 'index.html' || 
-                                page === 'spa-index.html' ||
-                                page === '';
+                                page.startsWith('member');
+                                // page === 'index.html' || 
+                                // page === 'spa-index.html' ||
+                                // page === '';
 
         // If on a protected page, strict checks apply.
         // If on auth pages, we guide them forward.
