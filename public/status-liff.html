@@ -302,12 +302,31 @@
         // LIFF ID (From previous context)
         // 優先從網址參數取得 LIFF ID (例如 ?liffId=xxx)，若無則使用預設值
         const urlParams = new URLSearchParams(window.location.search);
+        const STORE_ID = urlParams.get('store_id');
         // Default to the provided ID for Status Page
-        const LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY'; 
+        let LIFF_ID = urlParams.get('liffId') || '2009027968-4BN6SYDY'; 
         console.log('Using LIFF ID:', LIFF_ID);
         let currentUserId = null; // Will be set after LIFF init
         let currentTab = 'upcoming';
         let staffMap = {}; // Map: name -> { avatar }
+
+        // Fetch Dynamic LIFF ID if store_id is present
+        async function fetchDynamicLiffId() {
+            if (STORE_ID) {
+                try {
+                    const res = await fetch(`/api/get-salon-info?store_id=${STORE_ID}`);
+                    if (res.ok) {
+                        const info = await res.json();
+                        if (info.liff_id) {
+                            LIFF_ID = info.liff_id;
+                            console.log('Using Dynamic LIFF ID:', LIFF_ID);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch store config:', e);
+                }
+            }
+        }
 
         // Name Normalization / Aliasing
         function normalizeName(name) {
@@ -356,6 +375,9 @@
             showSkeleton(currentTab);
 
             try {
+                // 0. Fetch Dynamic LIFF ID
+                await fetchDynamicLiffId();
+
                 // Pre-fetch staff data with cache busting
                 await fetchStaffData();
 
@@ -422,7 +444,12 @@
                     return; 
                 }
 
-                const res = await fetch(`/api/get-appointments?user_id=${currentUserId}&type=${type}&t=${Date.now()}`);
+                let url = `/api/get-appointments?user_id=${currentUserId}&type=${type}&t=${Date.now()}`;
+                if (STORE_ID) {
+                    url += `&store_id=${STORE_ID}`;
+                }
+
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('API Error');
                 const data = await res.json();
                 console.log('Fetched appointments data:', data); // Debug log

@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   // 2. 從網址參數讀取日期
-  const { date } = req.query;
+  const { date, store_id } = req.query;
 
   // 3. 檢查 date 是否存在
   if (!date) {
@@ -77,10 +77,17 @@ export default async function handler(req, res) {
         try {
             // 查詢當天的所有預約 (利用 message 欄位中的 JSON 字串進行模糊搜尋)
             // 格式: "date": "YYYY-MM-DD"
-            const { data: dbBookings, error } = await supabase
+            let query = supabase
                 .from('bookings')
                 .select('message')
                 .ilike('message', `%"date": "${date}"%`);
+
+            // Multi-tenancy filtering
+            if (store_id) {
+                query = query.eq('store_id', store_id);
+            }
+
+            const { data: dbBookings, error } = await query;
 
             if (!error && dbBookings) {
                 const dbSlots = dbBookings.map(booking => {

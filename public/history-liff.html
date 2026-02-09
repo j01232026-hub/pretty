@@ -128,8 +128,9 @@
     <script>
         // 優先從網址參數取得 LIFF ID (例如 ?liffId=xxx)，若無則使用預設值
         const urlParams = new URLSearchParams(window.location.search);
+        const STORE_ID = urlParams.get('store_id');
         // Default to the provided ID for History Page
-        const LIFF_ID = urlParams.get('liffId') || '2009027968-8FTFYHCQ';
+        let LIFF_ID = urlParams.get('liffId') || '2009027968-8FTFYHCQ';
         console.log('Using LIFF ID:', LIFF_ID);
         // 你的預約頁面完整 LIFF URL，請替換為實際的 LIFF URL
         // 如果沒有，可以用 window.location.href 跳轉到相對路徑
@@ -137,8 +138,29 @@
         
         let staffMap = {}; // Map: name -> { avatar }
 
+        // Fetch Dynamic LIFF ID if store_id is present
+        async function fetchDynamicLiffId() {
+            if (STORE_ID) {
+                try {
+                    const res = await fetch(`/api/get-salon-info?store_id=${STORE_ID}`);
+                    if (res.ok) {
+                        const info = await res.json();
+                        if (info.liff_id) {
+                            LIFF_ID = info.liff_id;
+                            console.log('Using Dynamic LIFF ID:', LIFF_ID);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch store config:', e);
+                }
+            }
+        }
+
         window.onload = async function() {
             try {
+                // 0. Fetch Dynamic LIFF ID
+                await fetchDynamicLiffId();
+
                 // Pre-fetch staff data
                 await fetchStaffData();
 
@@ -190,7 +212,11 @@
             const container = document.getElementById('history-container');
             
             try {
-                const res = await fetch(`/api/get-appointments?user_id=${userId}&type=history`);
+                let url = `/api/get-appointments?user_id=${userId}&type=history`;
+                if (STORE_ID) {
+                    url += `&store_id=${STORE_ID}`;
+                }
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('API Error');
                 const data = await res.json();
                 

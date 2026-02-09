@@ -25,14 +25,20 @@ export default async function handler(req, res) {
             pictureUrl, 
             type = 'regular', // default type
             admin_override = false,
-            isAllDay = false
+            isAllDay = false,
+            store_id // Add store_id
         } = req.body;
         
-        console.log('Received booking request:', { userId, date, time, stylist, type, admin_override, isAllDay });
+        console.log('Received booking request:', { userId, date, time, stylist, type, admin_override, isAllDay, store_id });
 
         // Validation logic
         if (!date || (!time && !isAllDay)) {
              return res.status(400).json({ error: 'Missing required fields (date or time)' });
+        }
+        
+        // Ensure store_id is present for multi-tenancy
+        if (!store_id) {
+             return res.status(400).json({ error: 'Missing required fields (store_id)' });
         }
 
         // For 'block' type, userId is optional. For 'regular' and 'staff_booking', userId or phone/name might be needed
@@ -182,7 +188,8 @@ export default async function handler(req, res) {
             const insertPayload = {
                 message: messageStr,
                 created_at: new Date().toISOString(),
-                type: type // 新增欄位
+                type: type, // 新增欄位
+                store_id: store_id // Add store_id to insert
             };
             if (userId) insertPayload.user_id = userId; // 只有當 userId 存在時才寫入，否則為 null
 

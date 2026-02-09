@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
-    const { content, sender_id, receiver_id, sender_name, sender_avatar } = req.body;
+    const { content, sender_id, receiver_id, sender_name, sender_avatar, store_id } = req.body;
 
     // 2. 基本參數檢查
     if (!content || !sender_id || !receiver_id) {
@@ -49,6 +49,7 @@ export default async function handler(req, res) {
                     content,
                     sender_id,
                     receiver_id,
+                    store_id: store_id || null,
                     // created_at 會由資料庫預設值自動產生
                 }
             ])

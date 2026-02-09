@@ -386,7 +386,11 @@ async function loadModalStylists() {
     if (!select || select.options.length > 1) return; 
 
     try {
-        const res = await fetch('/api/staff');
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('store_id');
+        const storeParam = storeId ? `?store_id=${storeId}` : '';
+        
+        const res = await fetch(`/api/staff${storeParam}`);
         if (res.ok) {
             const staff = await res.json();
             staff.forEach(s => {
@@ -416,7 +420,11 @@ function handleMemberSearch(keyword) {
             resultsDiv.innerHTML = '<div class="p-3 text-center text-slate-400 text-xs">搜尋中...</div>';
             resultsDiv.classList.remove('hidden');
 
-            const res = await fetch(`/api/search-members?q=${encodeURIComponent(keyword)}&secret=${SEARCH_API_SECRET}`);
+            const urlParams = new URLSearchParams(window.location.search);
+            const storeId = urlParams.get('store_id');
+            const storeParam = storeId ? `&store_id=${storeId}` : '';
+
+            const res = await fetch(`/api/search-members?q=${encodeURIComponent(keyword)}&secret=${SEARCH_API_SECRET}${storeParam}`);
             if (!res.ok) throw new Error('Search failed');
             
             const results = await res.json();
@@ -486,7 +494,8 @@ async function handleAdminBookingSubmit(e) {
         stylist: formData.get('stylist'),
         admin_override: formData.get('admin_override') === 'on',
         type: currentBookingType,
-        isAllDay: isAllDay
+        isAllDay: isAllDay,
+        store_id: (new URLSearchParams(window.location.search)).get('store_id')
     };
 
     if (currentBookingType === 'staff_booking') {

@@ -74,18 +74,23 @@ const AdminNav = {
         const existingNav = document.querySelector('.bottom-nav');
         if (existingNav) existingNav.remove();
 
+        // Preserve store_id
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('store_id');
+        const query = storeId ? `?store_id=${storeId}` : '';
+
         const nav = document.createElement('nav');
         nav.className = 'bottom-nav';
         nav.innerHTML = `
-            <a href="/admin.html" class="bottom-nav-item" data-page="admin.html">
+            <a href="/admin.html${query}" class="bottom-nav-item" data-page="admin.html">
                 <span class="material-icons">calendar_month</span>
                 <span>預約管理</span>
             </a>
-            <a href="/admin-chat.html" class="bottom-nav-item" data-page="admin-chat.html">
+            <a href="/admin-chat.html${query}" class="bottom-nav-item" data-page="admin-chat.html">
                 <span class="material-icons">forum</span>
                 <span>訊息框</span>
             </a>
-            <a href="/admin-account.html" class="bottom-nav-item" data-page="admin-account.html">
+            <a href="/admin-account.html${query}" class="bottom-nav-item" data-page="admin-account.html">
                 <span class="material-icons">manage_accounts</span>
                 <span>帳號管理</span>
             </a>

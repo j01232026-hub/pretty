@@ -11,7 +11,8 @@ const App = {
         supabase: null,
         currentUserId: null,
         staffMap: {}, // Shared staff data
-        salonInfo: null // Shared salon info
+        salonInfo: null, // Shared salon info
+        store_id: null // Multi-tenancy store ID
     },
 
     utils: {
@@ -37,7 +38,8 @@ const App = {
        },
        fetchStaffData: async () => {
             try {
-                const res = await fetch(`/api/staff?t=${Date.now()}`);
+                const storeIdParam = App.state.store_id ? `&store_id=${App.state.store_id}` : '';
+                const res = await fetch(`/api/staff?t=${Date.now()}${storeIdParam}`);
                 if (res.ok) {
                     const staffList = await res.json();
                     staffList.forEach(s => {
@@ -52,7 +54,8 @@ const App = {
         fetchSalonData: async () => {
             if (App.state.salonInfo) return; // Already loaded
             try {
-                const res = await fetch('/api/get-salon-info');
+                const storeIdParam = App.state.store_id ? `?store_id=${App.state.store_id}` : '';
+                const res = await fetch(`/api/get-salon-info${storeIdParam}`);
                 if (res.ok) {
                     App.state.salonInfo = await res.json();
                     console.log('Salon info loaded');
@@ -75,6 +78,14 @@ const App = {
 
     init: async () => {
         console.log('SPA App Initializing...');
+
+        // Initialize Store ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('store_id');
+        if (storeId) {
+            App.state.store_id = storeId;
+            console.log('Store ID set:', storeId);
+        }
         
         // Router Setup
         const links = document.querySelectorAll('nav a');
@@ -131,6 +142,15 @@ const App = {
                 App.navigate(page);
             });
         });
+
+        // Pre-load Salon Info (to get Dynamic LIFF ID)
+        if (App.state.store_id) {
+            await App.utils.fetchSalonData();
+            if (App.state.salonInfo && App.state.salonInfo.liff_id) {
+                App.state.liffId = App.state.salonInfo.liff_id;
+                console.log('Using Store LIFF ID:', App.state.liffId);
+            }
+        }
 
         // Initialize LIFF
         await App.initLiff();
@@ -371,7 +391,8 @@ const App = {
                 
                 try {
                     const stylist = App.pages.booking.state.selectedStylist === '不指定' ? '' : App.pages.booking.state.selectedStylist;
-                    const res = await fetch(`/api/get-busy-slots?date=${date}&stylist=${encodeURIComponent(stylist)}`);
+                    const storeIdParam = App.state.store_id ? `&store_id=${App.state.store_id}` : '';
+                    const res = await fetch(`/api/get-busy-slots?date=${date}&stylist=${encodeURIComponent(stylist)}${storeIdParam}`);
                     const rawSlots = await res.json();
                     
                     // Convert raw ISO time ranges to occupied 30-min slots (HH:mm)
@@ -600,7 +621,8 @@ const App = {
                             endTime: endTime,
                             phone,
                             stylist: state.selectedStylist === '不指定' ? '' : state.selectedStylist,
-                            pictureUrl: App.state.userProfile ? App.state.userProfile.pictureUrl : ''
+                            pictureUrl: App.state.userProfile ? App.state.userProfile.pictureUrl : '',
+                            store_id: App.state.store_id
                         })
                     });
                     
@@ -711,7 +733,8 @@ const App = {
                 container.innerHTML = skeletonHTML + skeletonHTML;
                 
                 try {
-                    const res = await fetch(`/api/get-appointments?user_id=${App.state.currentUserId}&type=all`);
+                    const storeIdParam = App.state.store_id ? `&store_id=${App.state.store_id}` : '';
+                    const res = await fetch(`/api/get-appointments?user_id=${App.state.currentUserId}&type=all${storeIdParam}`);
                     if (!res.ok) {
                         let msg = `API Error: ${res.status}`;
                         try {
@@ -824,17 +847,16 @@ const App = {
                     };
                 }
 
-                // Update Salon Info from State
-                const salonInfo = App.state.salonInfo;
-                if (salonInfo) {
-                    const sName = clone.querySelector('.salon-name');
-                    const sAddr = clone.querySelector('.salon-address');
-                    const sImg = clone.querySelector('.salon-image');
-                    
-                    if (sName && salonInfo.name) sName.textContent = salonInfo.name;
-                    if (sAddr && salonInfo.address) sAddr.textContent = salonInfo.address;
-                    if (sImg && salonInfo.image_url) sImg.style.backgroundImage = `url("${salonInfo.image_url}")`;
-                }
+                // Update Salon Info (Prefer booking specific info, fallback to state)
+                const salonInfo = App.state.salonInfo || {};
+                const sName = clone.querySelector('.salon-name');
+                const sAddr = clone.querySelector('.salon-address');
+                const sImg = clone.querySelector('.salon-image');
+                
+                if (sName) sName.textContent = first.store_name || salonInfo.name || 'Pretty Salon';
+                if (sAddr) sAddr.textContent = first.store_address || salonInfo.address || '';
+                // Image might not be in booking, use salonInfo or default
+                if (sImg && salonInfo.image_url) sImg.style.backgroundImage = `url("${salonInfo.image_url}")`;
 
                 // Render Compact List (Same Day Later Schedule)
                 const listContainer = clone.getElementById('compact-list-container');
@@ -920,7 +942,8 @@ const App = {
                 data.forEach(app => {
                     const clone = template.content.cloneNode(true);
                     clone.querySelector('.stylist-name').textContent = App.utils.normalizeName(app.stylist);
-                    clone.querySelector('.service-info').textContent = `${app.service || '一般服務'} • ${app.date}`;
+                    const storeStr = app.store_name ? `${app.store_name} • ` : '';
+                    clone.querySelector('.service-info').textContent = `${storeStr}${app.service || '一般服務'} • ${app.date}`;
                     clone.querySelector('.price-info').textContent = `NT$ ${app.price || '500'}`;
                     
                     const staff = App.state.staffMap[app.stylist];
@@ -996,7 +1019,8 @@ const App = {
                 if (!container) return;
                 
                 try {
-                    const res = await fetch(`/api/get-messages?user_id=${App.state.currentUserId}`);
+                    const storeIdParam = App.state.store_id ? `&store_id=${App.state.store_id}` : '';
+                    const res = await fetch(`/api/get-messages?user_id=${App.state.currentUserId}${storeIdParam}`);
                     if (res.ok) {
                         const msgs = await res.json();
                         // Clear spinner if exists (handled by innerHTML='' in append if empty, but here we append)
@@ -1048,7 +1072,8 @@ const App = {
                             sender_id: App.state.currentUserId,
                             receiver_id: 'ADMIN',
                             sender_name: App.state.userProfile?.displayName || 'Guest',
-                            sender_avatar: App.state.userProfile?.pictureUrl || ''
+                            sender_avatar: App.state.userProfile?.pictureUrl || '',
+                            store_id: App.state.store_id
                         })
                     });
                 } catch (e) {
@@ -1134,7 +1159,8 @@ const App = {
                 container.innerHTML = skeletonHTML + skeletonHTML + skeletonHTML;
                 
                 try {
-                    const res = await fetch(`/api/get-appointments?user_id=${userId}&type=history`);
+                    const storeIdParam = App.state.store_id ? `&store_id=${App.state.store_id}` : '';
+                    const res = await fetch(`/api/get-appointments?user_id=${userId}&type=history${storeIdParam}`);
                     if (!res.ok) throw new Error('API Error');
                     const data = await res.json();
                     
@@ -1350,7 +1376,8 @@ const App = {
                          return;
                     }
 
-                    const res = await fetch(`/api/check-member-status?user_id=${userId}`);
+                    const storeIdParam = App.state.store_id ? `&store_id=${App.state.store_id}` : '';
+                    const res = await fetch(`/api/check-member-status?user_id=${userId}${storeIdParam}`);
                     const data = await res.json();
 
                     if (loadingScreen) loadingScreen.style.display = 'none';
@@ -1490,7 +1517,8 @@ const App = {
                             phone: phoneInput.value,
                             birthday: birthdayInput.value,
                             email: emailInput.value,
-                            picture_url: finalAvatar
+                            picture_url: finalAvatar,
+                            store_id: App.state.store_id
                         })
                     });
                     

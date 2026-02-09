@@ -228,9 +228,29 @@
 
     <script>
         // Configuration
-        const LIFF_ID = new URLSearchParams(window.location.search).get('liffId') || '2009027968-lVxTkEIx';
+        const urlParams = new URLSearchParams(window.location.search);
+        const STORE_ID = urlParams.get('store_id');
+        let LIFF_ID = urlParams.get('liffId') || '2009027968-lVxTkEIx';
         let currentUserId = null;
         let currentUserProfile = null;
+
+        // Fetch Dynamic LIFF ID if store_id is present
+        async function fetchDynamicLiffId() {
+            if (STORE_ID) {
+                try {
+                    const res = await fetch(`/api/get-salon-info?store_id=${STORE_ID}`);
+                    if (res.ok) {
+                        const info = await res.json();
+                        if (info.liff_id) {
+                            LIFF_ID = info.liff_id;
+                            console.log('Using Dynamic LIFF ID:', LIFF_ID);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch store config:', e);
+                }
+            }
+        }
 
         // Elements
         const loadingScreen = document.getElementById('loading-screen');
@@ -257,6 +277,7 @@
         // Initialize
         async function init() {
             try {
+                await fetchDynamicLiffId();
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) {
                     liff.login();

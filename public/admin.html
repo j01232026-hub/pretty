@@ -155,7 +155,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     const ADMIN_SECRET = 'MyBeautyShop_2026_Boss_Only!'; 
-    const API_URL = '/api/admin-manage?secret=' + ADMIN_SECRET;
+    
+    // Parse Store ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const STORE_ID = urlParams.get('store_id');
+    
+    const API_URL = '/api/admin-manage?secret=' + ADMIN_SECRET + (STORE_ID ? '&store_id=' + STORE_ID : '');
     
     let supabaseClient = null;
     let allBookings = [];

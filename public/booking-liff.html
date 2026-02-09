@@ -295,7 +295,22 @@
                 // Use the project's LIFF ID
                 // 優先從網址參數取得 LIFF ID (例如 ?liffId=xxx)，若無則使用預設值
                 const urlParams = new URLSearchParams(window.location.search);
-                const LIFF_ID = urlParams.get('liffId') || '2009027968-7nFLpFJt';
+                const STORE_ID = urlParams.get('store_id');
+                let LIFF_ID = urlParams.get('liffId') || '2009027968-7nFLpFJt';
+
+                if (STORE_ID) {
+                    try {
+                        const res = await fetch(`/api/get-salon-info?store_id=${STORE_ID}`);
+                        if (res.ok) {
+                            const info = await res.json();
+                            if (info.liff_id) {
+                                LIFF_ID = info.liff_id;
+                                console.log('Using Dynamic LIFF ID:', LIFF_ID);
+                            }
+                        }
+                    } catch (e) { console.error(e); }
+                }
+
                 await liff.init({ liffId: LIFF_ID });  
                 
                 if (!liff.isLoggedIn()) {

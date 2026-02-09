@@ -1,7 +1,7 @@
 import supabase from '../../lib/supabaseClient';
 
 export default async function handler(req, res) {
-    const { user_id, type = 'upcoming' } = req.query;
+    const { user_id, type = 'upcoming', store_id } = req.query;
 
     if (!user_id) {
         return res.status(400).json({ error: 'Missing user_id' });
@@ -24,10 +24,16 @@ export default async function handler(req, res) {
         // 因此無法直接在 SQL 層使用 .gte('date', ...) 進行過濾 (除非修改 Schema)
         // 這裡採用「取出該用戶所有資料 -> JS 解析 -> JS 過濾排序」的策略
         
-        const { data: bookings, error } = await supabase
+        let query = supabase
             .from('bookings')
-            .select('*')
+            .select('*, stores(store_name, address, store_phone)')
             .eq('user_id', user_id);
+
+        if (store_id) {
+            query = query.eq('store_id', store_id);
+        }
+
+        const { data: bookings, error } = await query;
 
         if (error) throw error;
 
@@ -36,7 +42,7 @@ export default async function handler(req, res) {
             let details = {};
             try {
                 // message 欄位是 JSON 字串
-                details = JSON.parse(booking.message);
+                details = typeof booking.message === 'string' ? JSON.parse(booking.message) : booking.message;
             } catch (e) {
                 console.warn('JSON parse error:', e);
             }
@@ -50,6 +56,9 @@ export default async function handler(req, res) {
                 endTime: details.endTime,
                 phone: details.phone,
                 stylist: details.stylist || '指定設計師',
+                store_name: booking.stores?.store_name, // Include store info
+                store_address: booking.stores?.address,
+                store_phone: booking.stores?.store_phone,
                 ...details // 展開其他可能欄位
             };
         }).filter(appt => appt.date && appt.time); // 過濾掉無法解析日期的無效資料

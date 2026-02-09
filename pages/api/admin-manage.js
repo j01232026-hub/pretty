@@ -30,16 +30,20 @@ export default async function handler(req, res) {
 
         // 1. GET: 讀取預約列表
         if (req.method === 'GET') {
+            const { store_id } = req.query; // Get store_id from query
             const today = new Date().toISOString().split('T')[0];
             
-            // 查詢 bookings 資料表
-            // 由於 schema 中 date/time 存於 JSON message 欄位或不確定是否存在獨立欄位
-            // 保險起見，抓取最近的預約，並在 JS 層過濾與排序
-            const { data, error } = await supabase
+            let query = supabase
                 .from('bookings')
                 .select('*')
                 .order('created_at', { ascending: false }) // 先抓最新的
-                .limit(100); // 限制數量，避免爆量
+                .limit(200); 
+
+            if (store_id) {
+                query = query.eq('store_id', store_id);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
 

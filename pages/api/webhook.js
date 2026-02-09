@@ -65,10 +65,16 @@ export default async function handler(req, res) {
           let insertedBooking = null;
           try {
             const body = JSON.parse(userMessage);
-            const { date, time } = body; // 解構出 date 和 time
+            const { date, time, store_id } = body; // 解構出 date, time 和 store_id
 
             // 0. 內部撞期檢查 (查 Supabase) - 改為 "寫入後檢查" 模式 (Optimistic Concurrency Control)
             // 先不查，直接往下走，利用 Insert 後的再次查詢來確保原子性
+            
+            if (!store_id) {
+                console.warn('Booking request missing store_id');
+                // Optional: Fail here if store_id is strictly required
+                // return res.status(400).send('Missing store_id');
+            }
             
             if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
                 throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is missing');
@@ -165,7 +171,8 @@ export default async function handler(req, res) {
                   user_id: event.source.userId,
                   message: userMessage,
                   created_at: new Date().toISOString(),
-                  raw_event: event
+                  raw_event: event,
+                  store_id: body.store_id || null // Add store_id
                 },
               ])
               .select()

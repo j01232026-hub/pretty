@@ -1,5 +1,6 @@
 
 import supabase from '../../lib/supabaseClient';
+import supabaseAdmin from '../../lib/supabaseAdmin';
 
 export default async function handler(req, res) {
     // 簡單的 API 金鑰驗證 (Optional, consistent with admin-manage.js)
@@ -13,10 +14,14 @@ export default async function handler(req, res) {
     
     if (req.method === 'GET') {
         try {
-            const { data, error } = await supabase
-                .from('stylists')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const { store_id } = req.query;
+            let query = supabase.from('stylists').select('*').order('created_at', { ascending: false });
+
+            if (store_id) {
+                query = query.eq('store_id', store_id);
+            }
+            
+            const { data, error } = await query;
 
             if (error) throw error;
             return res.status(200).json(data);
@@ -26,11 +31,14 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-        const { name, title, phone, email, avatar_url, visible } = req.body;
+        const { name, title, phone, email, avatar_url, visible, store_id } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
+        if (!store_id) return res.status(400).json({ error: 'Store ID is required for multi-tenancy' });
 
         try {
-            const { data, error } = await supabase
+            // Use supabaseAdmin to bypass RLS for writes (since we don't have user session here)
+            // TODO: Add proper authentication (e.g. check secret or token)
+            const { data, error } = await supabaseAdmin
                 .from('stylists')
                 .insert([{ 
                     name, 
@@ -38,7 +46,8 @@ export default async function handler(req, res) {
                     phone, 
                     email, 
                     avatar_url,
-                    visible: visible !== undefined ? visible : true // Default to true
+                    visible: visible !== undefined ? visible : true, // Default to true
+                    store_id
                 }])
                 .select();
 
@@ -50,7 +59,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-        const { id, name, title, phone, email, avatar_url, visible } = req.body;
+        const { id, name, title, phone, email, avatar_url, visible, store_id } = req.body;
         if (!id) return res.status(400).json({ error: 'ID is required' });
 
         try {
@@ -62,8 +71,10 @@ export default async function handler(req, res) {
             if (email !== undefined) updates.email = email;
             if (avatar_url !== undefined) updates.avatar_url = avatar_url;
             if (visible !== undefined) updates.visible = visible;
+            // Ideally, store_id should not change, but if needed:
+            if (store_id !== undefined) updates.store_id = store_id;
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('stylists')
                 .update(updates)
                 .eq('id', id)
@@ -81,7 +92,7 @@ export default async function handler(req, res) {
         if (!id) return res.status(400).json({ error: 'ID is required' });
 
         try {
-            const { error } = await supabase
+            const { error } = await supabaseAdmin
                 .from('stylists')
                 .delete()
                 .eq('id', id);

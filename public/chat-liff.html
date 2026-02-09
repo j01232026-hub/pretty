@@ -186,8 +186,9 @@
 
         // LIFF ID Configuration
         const urlParams = new URLSearchParams(window.location.search);
+        const STORE_ID = urlParams.get('store_id');
         // Default to History LIFF ID if not provided, to ensure init success
-        const LIFF_ID = urlParams.get('liffId') || '2009027968-ULNTsdDd'; 
+        let LIFF_ID = urlParams.get('liffId') || '2009027968-ULNTsdDd'; 
 
         let currentUserId = null;
         let currentDisplayName = null;
@@ -225,6 +226,22 @@
             }, 5000); 
 
             try {
+                // 0. Fetch Dynamic LIFF ID if store_id is present
+                if (STORE_ID) {
+                    try {
+                        const res = await fetch(`/api/get-salon-info?store_id=${STORE_ID}`);
+                        if (res.ok) {
+                            const info = await res.json();
+                            if (info.liff_id) {
+                                LIFF_ID = info.liff_id;
+                                log('Using Dynamic LIFF ID: ' + LIFF_ID);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch store config:', e);
+                    }
+                }
+
                 // 1. Initialize LIFF
                 log('Initializing LIFF...');
                 

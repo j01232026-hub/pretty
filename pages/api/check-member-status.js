@@ -1,22 +1,35 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+import supabaseAdmin from '../../lib/supabaseAdmin';
 
 export default async function handler(req, res) {
-    const { user_id } = req.query;
+    const { user_id, store_id } = req.query;
 
     if (!user_id) {
         return res.status(400).json({ error: 'Missing user_id' });
     }
 
     try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', user_id)
-            .single();
+        // Check if user_id is a valid UUID
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id);
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "Row not found"
+        let query = supabaseAdmin
+            .from('profiles')
+            .select('*');
+
+        if (isUuid) {
+            query = query.eq('user_id', user_id);
+        } else {
+            // Assume it's a LINE ID
+            query = query.eq('line_id', user_id);
+        }
+
+        if (store_id) {
+            query = query.eq('store_id', store_id);
+        }
+
+        // Use maybeSingle() to avoid error if no row found (returns null data)
+        const { data, error } = await query.maybeSingle();
+
+        if (error) {
             console.error('Error fetching profile:', error);
             return res.status(500).json({ error: 'Internal Server Error' });
         }

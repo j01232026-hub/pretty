@@ -8,17 +8,22 @@ DROP TABLE IF EXISTS public.profiles CASCADE;
 -- Since we are adding FKs to them, we should ensure they are compatible or recreate them if this is a fresh install.
 -- For a fresh install script, we define them here.
 
--- 2. Create profiles table (Synced with Supabase Auth)
+-- 2. Create profiles table (Store-specific User Profiles)
 CREATE TABLE public.profiles (
-  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-  full_name TEXT,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  store_id UUID REFERENCES public.stores(id) ON DELETE CASCADE, -- Nullable for global admins, or specific to store
+  display_name TEXT,
+  custom_name TEXT,
   birthday DATE,
   phone TEXT,
-  avatar_url TEXT,
+  picture_url TEXT,
+  email TEXT,
   line_id TEXT,
-  is_onboarded BOOLEAN DEFAULT FALSE,
+  is_complete BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, store_id)
 );
 
 -- 3. Create stores table (Multi-tenant Root)
@@ -27,9 +32,10 @@ CREATE TABLE public.stores (
   store_name TEXT NOT NULL,
   address TEXT,
   store_phone TEXT,
-  image_url TEXT, -- Replaces salon_info.image_url
-  email TEXT,     -- Replaces salon_info.email
-  owner_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  image_url TEXT,
+  email TEXT,
+  liff_id TEXT,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- Changed to reference auth.users
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -81,36 +87,55 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 -- 6. RLS Policies
 
 -- PROFILES
-CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles;
+CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- STORES
+DROP POLICY IF EXISTS "Users can view their own stores" ON public.stores;
 CREATE POLICY "Users can view their own stores" ON public.stores FOR SELECT USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can update their own stores" ON public.stores;
 CREATE POLICY "Users can update their own stores" ON public.stores FOR UPDATE USING (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can insert their own stores" ON public.stores;
 CREATE POLICY "Users can insert their own stores" ON public.stores FOR INSERT WITH CHECK (owner_id = auth.uid());
 
 -- STYLISTS
 -- Public read (for booking page)
+DROP POLICY IF EXISTS "Public can view stylists" ON public.stylists;
 CREATE POLICY "Public can view stylists" ON public.stylists FOR SELECT USING (true);
+
 -- Owner write
+DROP POLICY IF EXISTS "Owners can manage their stylists" ON public.stylists;
 CREATE POLICY "Owners can manage their stylists" ON public.stylists FOR ALL USING (
     store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
 );
 
 -- BOOKINGS
 -- Owner view
+DROP POLICY IF EXISTS "Owners can view their store bookings" ON public.bookings;
 CREATE POLICY "Owners can view their store bookings" ON public.bookings FOR SELECT USING (
     store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
 );
+
 -- Owner manage
+DROP POLICY IF EXISTS "Owners can manage their store bookings" ON public.bookings;
 CREATE POLICY "Owners can manage their store bookings" ON public.bookings FOR ALL USING (
     store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
 );
+
 -- Public insert (Must provide valid store_id)
+DROP POLICY IF EXISTS "Public can create bookings" ON public.bookings;
 CREATE POLICY "Public can create bookings" ON public.bookings FOR INSERT WITH CHECK (store_id IS NOT NULL);
 
 -- MESSAGES
+DROP POLICY IF EXISTS "Owners can view their store messages" ON public.messages;
 CREATE POLICY "Owners can view their store messages" ON public.messages FOR SELECT USING (
     store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
 );

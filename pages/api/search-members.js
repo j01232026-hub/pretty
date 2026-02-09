@@ -4,7 +4,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 
 export default async function handler(req, res) {
     // 1. 安全驗證
-    const { secret, q } = req.query;
+    const { secret, q, store_id } = req.query;
     
     // 簡單的密鑰驗證
     if (secret !== process.env.ADMIN_SECRET) {
@@ -20,11 +20,16 @@ export default async function handler(req, res) {
         
         // 2. 搜尋 profiles 表
         // 支援透過 display_name (Line 暱稱), custom_name (自定義姓名), phone (電話) 查詢
-        const { data, error } = await supabase
+        let query = supabase
             .from('profiles')
             .select('user_id, display_name, custom_name, phone, picture_url')
-            .or(`display_name.ilike.${keyword},custom_name.ilike.${keyword},phone.ilike.${keyword}`)
-            .limit(20); // 限制回傳數量，避免過多資料
+            .or(`display_name.ilike.${keyword},custom_name.ilike.${keyword},phone.ilike.${keyword}`);
+
+        if (store_id) {
+            query = query.eq('store_id', store_id);
+        }
+
+        const { data, error } = await query.limit(20);
 
         if (error) throw error;
 
