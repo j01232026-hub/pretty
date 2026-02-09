@@ -1,11 +1,11 @@
 
-import supabaseAdmin from '../../lib/supabaseAdmin';
+import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-    // Enable CORS if needed (though same-origin usually doesn't need it)
+    // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -17,7 +17,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        console.warn(`Method not allowed: ${req.method}`);
+        return res.status(405).json({ error: `Method not allowed. Received: ${req.method}` });
     }
 
     const { owner_id, store, staff } = req.body;
@@ -29,6 +30,22 @@ export default async function handler(req, res) {
     try {
         console.log('Starting store creation for owner:', owner_id);
 
+        // Initialize Supabase Admin Client dynamically to prevent top-level crashes
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseServiceRoleKey) {
+            console.error('Supabase Credentials Missing in API');
+            throw new Error('Server Configuration Error: Missing Supabase Credentials');
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        });
+
         // 1. Create Store
         const { data: storeData, error: storeError } = await supabaseAdmin
             .from('stores')
@@ -37,7 +54,6 @@ export default async function handler(req, res) {
                 store_name: store.store_name,
                 address: store.address || '',
                 store_phone: store.store_phone || '',
-                // image_url can be added if needed, currently not in form
             }])
             .select()
             .single();

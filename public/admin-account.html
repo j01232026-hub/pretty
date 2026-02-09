@@ -932,11 +932,13 @@
                 data = JSON.parse(text);
             } catch (e) {
                 console.error("Invalid JSON response:", text);
-                throw new Error(`系統錯誤 (${res.status})`);
+                throw new Error(`系統錯誤 (${res.status}): 無法解析伺服器回應`);
             }
 
             if (!res.ok) {
-                throw new Error(data.error || 'Create failed');
+                // 如果後端回傳詳細錯誤訊息，顯示出來
+                const errorMessage = data.error ? `${data.error} (${res.status})` : `系統錯誤 (${res.status})`;
+                throw new Error(errorMessage);
             }
 
             await CustomModal.success('成功', '新增門市及員工成功');
