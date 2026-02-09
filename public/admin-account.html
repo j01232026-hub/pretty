@@ -84,13 +84,13 @@
             </div>
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
-                <label class="text-xs text-slate-500">聯絡信箱</label>
-                <p id="companyEmailDisplay" class="font-medium text-gray-800">載入中...</p>
+                <label class="text-xs text-slate-500">聯絡電話</label>
+                <p id="companyPhoneDisplay" class="font-medium text-gray-800">載入中...</p>
             </div>
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
-                <label class="text-xs text-slate-500">LIFF ID (LINE Front-end Framework)</label>
-                <p id="companyLiffIdDisplay" class="font-medium text-gray-800 font-mono text-sm">載入中...</p>
+                <label class="text-xs text-slate-500">聯絡信箱</label>
+                <p id="companyEmailDisplay" class="font-medium text-gray-800">載入中...</p>
             </div>
             <div class="h-px bg-slate-100"></div>
             <div class="space-y-1">
@@ -117,12 +117,12 @@
                     <input type="text" id="editCompanyAddress" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡信箱</label>
-                    <input type="email" id="editCompanyEmail" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
+                    <input type="tel" id="editCompanyPhone" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">LIFF ID</label>
-                    <input type="text" id="editCompanyLiffId" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary" placeholder="例如：2009027968-BcsbldUe">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡信箱</label>
+                    <input type="email" id="editCompanyEmail" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">公司圖片</label>
@@ -431,9 +431,9 @@
             companyInfo = data;
             // Map store_name to display
             document.getElementById('companyNameDisplay').textContent = data.store_name;
-            document.getElementById('companyAddressDisplay').textContent = data.address;
-            document.getElementById('companyEmailDisplay').textContent = data.email;
-            document.getElementById('companyLiffIdDisplay').textContent = data.liff_id || '未設定';
+            document.getElementById('companyAddressDisplay').textContent = data.address || '-';
+            document.getElementById('companyPhoneDisplay').textContent = data.store_phone || '-';
+            document.getElementById('companyEmailDisplay').textContent = data.email || '-';
             
             const imgContainer = document.getElementById('companyImageContainer');
             if (data.image_url) {
@@ -449,8 +449,8 @@
     function openEditCompanyModal() {
         document.getElementById('editCompanyName').value = companyInfo.store_name || '';
         document.getElementById('editCompanyAddress').value = companyInfo.address || '';
+        document.getElementById('editCompanyPhone').value = companyInfo.store_phone || '';
         document.getElementById('editCompanyEmail').value = companyInfo.email || '';
-        document.getElementById('editCompanyLiffId').value = companyInfo.liff_id || '';
         
         const imageUrl = companyInfo.image_url || '';
         document.getElementById('editCompanyImageUrl').value = imageUrl;
@@ -495,8 +495,8 @@
     async function saveCompanyInfo() {
         const store_name = document.getElementById('editCompanyName').value;
         const address = document.getElementById('editCompanyAddress').value;
+        const store_phone = document.getElementById('editCompanyPhone').value;
         const email = document.getElementById('editCompanyEmail').value;
-        const liff_id = document.getElementById('editCompanyLiffId').value;
         const image_url = document.getElementById('editCompanyImageUrl').value;
 
         if (!supabaseClient || !currentStoreId) return;
@@ -504,8 +504,8 @@
         const updates = {
             store_name,
             address,
+            store_phone,
             email,
-            liff_id,
             image_url,
             updated_at: new Date()
         };
@@ -789,10 +789,26 @@
         
         if (!supabaseClient) return;
         try {
+            // Priority 1: Fetch from Current Store (if exists)
+            if (currentStoreId) {
+                const { data: store } = await supabaseClient
+                    .from('stores')
+                    .select('store_phone, address')
+                    .eq('id', currentStoreId)
+                    .single();
+                
+                if (store) {
+                    if (store.store_phone) document.getElementById('newStorePhone').value = store.store_phone;
+                    if (store.address) document.getElementById('newStoreAddress').value = store.address;
+                    // If we found store data, we stop here (assume user wants store data)
+                    return; 
+                }
+            }
+
+            // Priority 2: Fetch from Profile (Fallback)
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return;
 
-            // Fetch profile (we might already have it cached in AuthFlow, but let's fetch to be safe/consistent)
             const { data: profile } = await supabaseClient
                 .from('profiles')
                 .select('*')
@@ -801,7 +817,7 @@
 
             if (profile) {
                 if (profile.phone) document.getElementById('newStorePhone').value = profile.phone;
-                // Note: Profiles usually don't have address, but if they did, we'd copy it here.
+                // Note: Profiles usually don't have address
             }
         } catch (e) { console.error('Autofill Store Error:', e); }
     }
