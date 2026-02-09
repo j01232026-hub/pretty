@@ -39,7 +39,8 @@
     // Ignore if already on specific pages
     if (path.includes('admin-store-select.html') || 
         path.includes('auth-login.html') || 
-        path.includes('auth-register.html')) {
+        path.includes('auth-register.html') ||
+        path.includes('auth-store.html')) {
         return;
     }
 
@@ -74,7 +75,10 @@
 
         if (!stores || stores.length === 0) {
             console.warn('Gateway: No stores found for this user.');
-            alert('您尚未建立任何店家，請聯繫管理員。');
+            // Redirect to store creation
+            if (confirm('您尚未建立任何店家，是否立即建立？')) {
+                window.location.href = '/auth-store.html';
+            }
         } else if (stores.length === 1) {
             // Single store: Auto-redirect
             console.log('Gateway: Single store found, redirecting...');
