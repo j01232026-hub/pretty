@@ -61,13 +61,7 @@ export default async function handler(req, res) {
       // We use a dummy email based on line_id to satisfy Supabase Auth requirements
       const email = `line_${lineId}@pretty.app` 
       
-      // Check if this email already exists in Auth (e.g. from a previous partial attempt)
-      const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers()
-      const authUser = existingUser.users.find(u => u.email === email)
-
-      if (authUser) {
-        userId = authUser.id
-      } else {
+      try {
         const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: email,
           email_confirm: true,
@@ -75,6 +69,34 @@ export default async function handler(req, res) {
         })
         if (createError) throw createError
         userId = newUser.user.id
+      } catch (err) {
+        // If user already exists (orphan auth user), find them
+        if (err.message?.includes('already been registered') || err.code === 'email_exists' || (err.response?.data?.msg || '').includes('already been registered')) {
+            console.log('User exists in Auth but not in Profiles. Recovering...');
+            
+            // Pagination Search to find the user ID
+            let page = 1;
+            let found = false;
+            while (!found && page <= 50) { // Limit to 50 pages (5000 users) for safety
+                const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page: page, perPage: 100 });
+                
+                if (listError) throw listError;
+                if (!users || users.length === 0) break;
+                
+                const target = users.find(u => u.email === email);
+                if (target) {
+                    userId = target.id;
+                    found = true;
+                }
+                page++;
+            }
+            
+            if (!userId) {
+                throw new Error(`User ${email} exists but could not be found via Admin API`);
+            }
+        } else {
+            throw err;
+        }
       }
 
       // Create Profile record
