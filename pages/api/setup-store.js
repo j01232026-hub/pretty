@@ -34,9 +34,13 @@ export default async function handler(req, res) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-        if (!supabaseUrl || !supabaseServiceRoleKey) {
-            console.error('Supabase Credentials Missing in API');
-            throw new Error('Server Configuration Error: Missing Supabase Credentials');
+        if (!supabaseUrl) {
+            console.error('Missing NEXT_PUBLIC_SUPABASE_URL');
+            throw new Error('Server Configuration Error: Missing NEXT_PUBLIC_SUPABASE_URL');
+        }
+        if (!supabaseServiceRoleKey) {
+            console.error('Missing SUPABASE_SERVICE_ROLE_KEY');
+            throw new Error('Server Configuration Error: Missing SUPABASE_SERVICE_ROLE_KEY');
         }
 
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
